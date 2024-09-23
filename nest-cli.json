@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "src",
+  "generateOptions": {
+    "spec": false
+  },
+  "compilerOptions": {
+    "deleteOutDir": true,
+    "assets": [
+      "**/*.lua",
+      "views/**/*.ejs",
+      "public/**/*"
+    ]
+  }
+}
