@@ -1,0 +1,14 @@
+mixin menu-item(href, text, icon, activeTag)
+  a.item(href=href, class=activeTag === activePage ? "active" : "")
+    i(class=`${icon} icon`)
+    | #{ text }
+
+.ui.container
+  //- TODO: fix image size 
+  a.header.item(href="/")
+    img(src=`${app.cdnUrl}assets/tywzoj.svg`, style="height: 100%; width: auto")
+
+  +menu-item("/", "首页", "home", "home")
+  +menu-item("/problems", "题库", "list", "problems")
+  +menu-item("/contests", "比赛", "calendar", "contest")
+  +menu-item("/help", "帮助", "help circle", "help")

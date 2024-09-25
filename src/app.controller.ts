@@ -7,7 +7,7 @@ export class AppController {
     constructor(private readonly appService: AppService) {}
 
     @Get()
-    @Render("app")
+    @Render("home")
     public app(): { message: string } {
         return {
             message: this.appService.getHello(),
