@@ -1,9 +1,11 @@
 import { Type } from "class-transformer";
-import { IsIn, IsIP, IsNotEmpty, IsNotEmptyObject, IsString, IsUrl, ValidateNested } from "class-validator";
+import { IsIn, IsIP, IsNotEmpty, IsNotEmptyObject, IsOptional, IsString, IsUrl, ValidateNested } from "class-validator";
 
 import { IsHostname, IsPortNumber } from "@/common/validators";
 
-class ServerConfig {
+import { IAppConfig, IDatabaseConfig, IServerConfig } from "./config.type";
+
+class ServerConfig implements IServerConfig {
     @IsIP()
     public readonly hostname: string;
 
@@ -11,7 +13,7 @@ class ServerConfig {
     public readonly port: number;
 }
 
-class DatabaseConfig {
+class DatabaseConfig implements IDatabaseConfig {
     @IsHostname({
         require_tld: false,
     })
@@ -36,7 +38,7 @@ class DatabaseConfig {
     public readonly type: "mysql" | "mariadb";
 }
 
-export class AppConfig {
+export class AppConfig implements IAppConfig {
     @IsString()
     @IsNotEmpty()
     public readonly appName: string;
@@ -44,12 +46,12 @@ export class AppConfig {
     @Type(() => ServerConfig)
     @ValidateNested()
     @IsNotEmptyObject()
-    public readonly server: ServerConfig;
+    public readonly server: IServerConfig;
 
     @Type(() => DatabaseConfig)
     @ValidateNested()
     @IsNotEmptyObject()
-    public readonly database: DatabaseConfig;
+    public readonly database: IDatabaseConfig;
 
     @IsUrl({
         protocols: ["redis", "rediss", "redis-socket", "redis-sentinel"],
@@ -58,4 +60,13 @@ export class AppConfig {
         require_tld: false,
     })
     public readonly redis: string;
+
+    @IsUrl({
+        protocols: ["http", "https"],
+        require_protocol: true,
+        require_host: true,
+        require_tld: true,
+    })
+    @IsOptional()
+    public readonly cdnUrl?: string;
 }

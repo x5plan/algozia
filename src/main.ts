@@ -1,7 +1,7 @@
 import { Logger } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import type { NestExpressApplication as INestExpressApplication } from "@nestjs/platform-express";
-import { json as expressJSON } from "express";
+import { json as expressJson } from "express";
 import { join } from "path";
 
 import { AppModule } from "./app.module";
@@ -16,17 +16,14 @@ async function bootstrapAsync() {
     const app = await NestFactory.create<INestExpressApplication>(AppModule);
 
     app.setBaseViewsDir(join(__dirname, "..", "views"));
-    app.setViewEngine("ejs");
-    app.use(expressJSON({ limit: "50mb" }));
+    app.setViewEngine("pug");
+    app.use(expressJson({ limit: "50mb" }));
 
-    const configService = app.get(ConfigService);
+    const config = app.get(ConfigService).config;
 
-    await app.listen(configService.config.server.port, configService.config.server.hostname);
+    await app.listen(config.server.port, config.server.hostname);
 
-    Logger.log(
-        `${packageInfo.name} is listening on ${configService.config.server.hostname}:${configService.config.server.port}`,
-        "Bootstrap",
-    );
+    Logger.log(`${packageInfo.name} is listening on ${config.server.hostname}:${config.server.port}`, "Bootstrap");
 }
 
 bootstrapAsync().catch((e) => {

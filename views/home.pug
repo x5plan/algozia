@@ -1,0 +1,52 @@
+extends common/layout
+
+block prepend title
+  - this.title = "首页";
+
+block append head
+  +import-bundle-script("hitokoto.min.js")
+
+  style.
+    #hitokoto-container .content {
+      font-size: 1em;
+      line-height: 1.5em;
+    }
+    #hitokoto-container .from {
+      font-size: 0.9em;
+      color: #666;
+      text-align: right;
+      margin-top: 1em;
+    }
+
+  script.
+    window.createHitokoto("#hitokoto-container");
+
+block content
+  .padding
+    .ui.three.column.grid
+      //- The left column
+      .eleven.wide.column
+        h4.ui.top.attached.block.header
+          i.ui.info.icon
+          | 公告
+        .ui.bottom.attached.segment
+          table.ui.very.basic.table
+            thead
+              tr
+                th 标题
+                th 时间
+            tbody
+            //- TODO: add announcement
+
+        //- TODO: add more widgets
+
+      //- The right column
+      .right.floated.five.wide.column
+        //- TODO: add more widgets
+
+        h4.ui.top.attached.block.header
+          i.ui.quote.left.icon
+          | 一言（ヒトコト）
+        #hitokoto-container.ui.bottom.attached.center.aligned.segment
+
+        //- TODO: add more widgets

@@ -5,10 +5,11 @@ import { readFileSync } from "fs";
 import { load as loadYaml } from "js-yaml";
 
 import { AppConfig } from "./config.schema";
+import { IAppConfig } from "./config.type";
 
 @Injectable()
 export class ConfigService {
-    public readonly config: AppConfig;
+    public readonly config: IAppConfig;
 
     constructor() {
         const configFilePath = process.env.TYWZOJ_WEB_CONFIG || "./config.yaml";

@@ -1,0 +1,11 @@
+mixin import-package-script(file)
+  script(src=`${app.cdnUrl}packages/${file}`)
+
+mixin import-package-style(file)
+  link(rel="stylesheet", href=`${app.cdnUrl}packages/${file}`)
+
+mixin import-module-script(file)
+  script(src=`${app.cdnUrl}modules/${file}`)
+
+mixin import-bundle-script(file)
+  script(src=`${app.cdnUrl}bundle/${file}`)

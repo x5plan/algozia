@@ -21,7 +21,7 @@
     {
       "files": [
         "*.html",
-        "*.ejs"
+        "*.pug"
       ],
       "options": {
         "tabWidth": 2
@@ -29,6 +29,6 @@
     }
   ],
   "plugins": [
-    "prettier-plugin-ejs"
+    "@prettier/plugin-pug"
   ]
 }
