@@ -1,5 +1,7 @@
 import type { Response } from "express";
 
+import type { UserEntity } from "@/user/user.entity";
+
 import type { CE_Page } from "./page";
 
 export interface IViewApp {
@@ -11,7 +13,7 @@ export interface IViewApp {
 export interface IViewGlobal {
     app: IViewApp;
     activePage: CE_Page;
-    currentUser?: unknown;
+    currentUser?: UserEntity; // set in AuthMiddleware
 }
 
 export type IResponseWithLocals = Response<unknown, IViewGlobal>;

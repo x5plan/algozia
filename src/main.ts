@@ -1,6 +1,7 @@
-import { Logger } from "@nestjs/common";
+import { Logger, ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import type { NestExpressApplication as INestExpressApplication } from "@nestjs/platform-express";
+import cookieParser from "cookie-parser";
 import { json as expressJson } from "express";
 import { join } from "path";
 
@@ -18,6 +19,16 @@ async function bootstrapAsync() {
     app.setBaseViewsDir(join(__dirname, "..", "views"));
     app.setViewEngine("pug");
     app.use(expressJson({ limit: "50mb" }));
+    app.use(cookieParser());
+
+    app.useGlobalPipes(
+        new ValidationPipe({
+            always: true,
+            transform: true,
+            whitelist: true,
+            forbidNonWhitelisted: true,
+        }),
+    );
 
     const config = app.get(ConfigService).config;
 

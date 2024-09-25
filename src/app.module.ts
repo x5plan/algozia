@@ -1,15 +1,26 @@
 import { forwardRef, MiddlewareConsumer, Module, NestModule, RequestMethod } from "@nestjs/common";
 
+import { AuthModule } from "@/auth/auth.module";
 import { ConfigModule } from "@/config/config.module";
 import { DatabaseModule } from "@/database/database.module";
+import { RedisModule } from "@/redis/redis.module";
+import { UserModule } from "@/user/user.module";
 
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
-import { RedisModule } from "./redis/redis.module";
 import { ViewMiddleware } from "./view.middleware";
 
 @Module({
-    imports: [ConfigModule, forwardRef(() => DatabaseModule), RedisModule],
+    imports: [
+        // Global modules
+        ConfigModule,
+
+        // Feature modules
+        forwardRef(() => AuthModule),
+        forwardRef(() => DatabaseModule),
+        forwardRef(() => RedisModule),
+        forwardRef(() => UserModule),
+    ],
     controllers: [AppController],
     providers: [AppService],
 })
