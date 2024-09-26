@@ -5,7 +5,7 @@ import { CE_Page } from "@/common/types/page";
 
 @Controller(CE_Page.Submission)
 export class SubmissionController {
-    @Get("/")
+    @Get()
     public getSubmissionList() {
         throw new AppDevelopingException();
     }

@@ -5,7 +5,7 @@ import { CE_Page } from "@/common/types/page";
 
 @Controller(CE_Page.Problem)
 export class ProblemController {
-    @Get("/")
+    @Get()
     public getProblemList() {
         throw new AppDevelopingException();
     }

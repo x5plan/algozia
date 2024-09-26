@@ -1,5 +1,5 @@
-mixin menu-item(text, icon, tag)
-  a.item(href=`/${tag}`, class=tag === activePage ? "active" : "")
+mixin menu-item(text, path, icon)
+  a.item(href=`/${path}`, class=path === activePage ? "active" : "")
     i(class=`${icon} icon`)
     | #{ text }
 
@@ -7,13 +7,13 @@ mixin menu-item(text, icon, tag)
   a.header.item(href="/", style="overflow: hidden")
     img(src=`${app.cdnUrl}assets/tywzoj.svg`, style="width: 140px")
 
-  +menu-item("首页", "home", "")
+  +menu-item("首页", "", "home")
   if currentUser
-    +menu-item("题库", "list", "problem")
-    +menu-item("作业", "book", "homework")
-    +menu-item("比赛", "calendar", "contest")
-    +menu-item("评测", "tasks", "submission")
-  //- +menu-item("/help", "帮助", "help circle", "help")
+    +menu-item("题库", "problem", "list")
+    +menu-item("作业", "homework", "book")
+    +menu-item("比赛", "contest", "calendar")
+    +menu-item("评测", "submission", "tasks")
+  //- +menu-item("帮助", "help", "help circle")
 
   .right.menu
     if currentUser
@@ -22,7 +22,7 @@ mixin menu-item(text, icon, tag)
           = currentUser.username
           i.dropdown.icon
           .menu
-            a.item(href=`/user/${currentUser.edit}/edit`)
+            a.item(href=`/user/${currentUser.id}/edit`)
               i.edit.icon
               | 修改资料
             a.item(href-post="/auth/logout") 

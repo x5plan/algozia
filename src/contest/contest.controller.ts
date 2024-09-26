@@ -5,7 +5,7 @@ import { CE_Page } from "@/common/types/page";
 
 @Controller(CE_Page.Contest)
 export class ContestController {
-    @Get("/")
+    @Get()
     public getContestList() {
         throw new AppDevelopingException();
     }

@@ -5,7 +5,7 @@ import { CE_Page } from "@/common/types/page";
 
 @Controller(CE_Page.Homework)
 export class HomeworkController {
-    @Get("/")
+    @Get()
     public getHomeworkList() {
         throw new AppDevelopingException();
     }
