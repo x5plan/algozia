@@ -76,7 +76,7 @@ export class AppConfig implements IAppConfig {
         protocols: ["http", "https"],
         require_protocol: true,
         require_host: true,
-        require_tld: true,
+        require_tld: false,
     })
     @IsOptional()
     public readonly cdnUrl?: string;

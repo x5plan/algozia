@@ -7,8 +7,9 @@ import { RedisModule } from "@/redis/redis.module";
 import { UserModule } from "@/user/user.module";
 
 import { AppController } from "./app.controller";
+import { AppExceptionFilter } from "./app.filter";
+import { AppMiddleware } from "./app.middleware";
 import { AppService } from "./app.service";
-import { ViewMiddleware } from "./view.middleware";
 
 @Module({
     imports: [
@@ -22,11 +23,11 @@ import { ViewMiddleware } from "./view.middleware";
         forwardRef(() => UserModule),
     ],
     controllers: [AppController],
-    providers: [AppService],
+    providers: [AppService, AppExceptionFilter],
 })
 export class AppModule implements NestModule {
     public configure(consumer: MiddlewareConsumer) {
-        consumer.apply(ViewMiddleware).forRoutes({
+        consumer.apply(AppMiddleware).forRoutes({
             path: "*",
             method: RequestMethod.ALL,
         });

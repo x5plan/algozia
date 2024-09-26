@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import type { Request, Response } from "express";
 import fs from "fs";
 import type { Redis } from "ioredis";
 import jwt from "jsonwebtoken";
@@ -31,6 +32,8 @@ export interface ISessionInfo extends ISessionInfoInternal {
     sessionId: number;
     lastAccessTime: number;
 }
+
+const cookieKey = "_session";
 
 @Injectable()
 export class AuthSessionService {
@@ -103,5 +106,17 @@ export class AuthSessionService {
                 ...JSON.parse(sessionInfo),
             }),
         );
+    }
+
+    public getCookieSessionKey(req: Request): string | undefined {
+        return req.cookies[cookieKey];
+    }
+
+    public setCookieSessionKey(res: Response, sessionKey: string): void {
+        res.cookie(cookieKey, sessionKey, { maxAge: 315360000, httpOnly: true });
+    }
+
+    public clearCookieSessionKey(res: Response): void {
+        res.clearCookie(cookieKey);
     }
 }

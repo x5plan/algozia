@@ -7,7 +7,7 @@ import { ConfigService } from "@/config/config.service";
 import { IResponseWithLocals, IViewApp, IViewGlobal } from "./common/types/view";
 
 @Injectable()
-export class ViewMiddleware implements NestMiddleware {
+export class AppMiddleware implements NestMiddleware {
     private readonly viewApp: IViewApp;
 
     constructor(private readonly configService: ConfigService) {

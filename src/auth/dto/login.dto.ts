@@ -1,7 +1,10 @@
 import { IsNotEmpty, IsString } from "class-validator";
 
-export class LoginPostRequestBodyDto {
+import { CE_ExceptionString } from "@/common/strings/exception";
+
+export class LoginRequestBodyDto {
     @IsString()
+    @IsNotEmpty()
     public username: string;
 
     @IsString()
@@ -9,12 +12,12 @@ export class LoginPostRequestBodyDto {
     public password: string;
 }
 
-export class LoginPostResponseDto {
-    public status: number;
+export class LoginResponseDto {
+    public error: CE_LoginPostResponseError | null;
+    public username: string;
 }
 
-export const enum CE_LoginPostResponseStatus {
-    Success = 0,
-    NoSuchUser = 1,
-    WrongPassword = 2,
+export const enum CE_LoginPostResponseError {
+    NoSuchUser = CE_ExceptionString.NoSuchUser,
+    WrongPassword = CE_ExceptionString.WrongPassword,
 }

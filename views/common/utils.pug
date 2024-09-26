@@ -1,11 +1,22 @@
-mixin import-package-script(file)
-  script(src=`${app.cdnUrl}packages/${file}`)
+mixin import-package-script(file, min = true)
+  script(src=`${app.cdnUrl}packages/${file}${min ? ".min" : ""}.js`)
 
-mixin import-package-style(file)
-  link(rel="stylesheet", href=`${app.cdnUrl}packages/${file}`)
+mixin import-package-style(file, min= true)
+  link(rel="stylesheet", href=`${app.cdnUrl}packages/${file}${min ? ".min" : ""}.css`)
 
 mixin import-module-script(file)
-  script(src=`${app.cdnUrl}modules/${file}`)
+  script(src=`${app.cdnUrl}modules/${file}.js`)
 
 mixin import-bundle-script(file)
-  script(src=`${app.cdnUrl}bundle/${file}`)
+  script(src=`${app.cdnUrl}bundle/${file}.js`)
+
+mixin use-validation(name)
+  +import-bundle-script(`validations/${name}`)
+
+mixin multi-line-text(text)
+  - const lines = text.split("\n");
+  - for (let i = 0; i < lines.length; i++) {
+    if i > 0
+      br
+    = lines[i]
+  - }

@@ -4,11 +4,29 @@ mixin menu-item(href, text, icon, activeTag)
     | #{ text }
 
 .ui.container
-  //- TODO: fix image size 
-  a.header.item(href="/")
-    img(src=`${app.cdnUrl}assets/tywzoj.svg`, style="height: 100%; width: auto")
+  a.header.item(href="/", style="overflow: hidden")
+    img(src=`${app.cdnUrl}assets/tywzoj.svg`, style="width: 140px")
 
   +menu-item("/", "首页", "home", "home")
-  +menu-item("/problems", "题库", "list", "problems")
-  +menu-item("/contests", "比赛", "calendar", "contest")
+  if currentUser
+    +menu-item("/problems", "题库", "list", "problems")
+    +menu-item("/contests", "比赛", "calendar", "contest")
   +menu-item("/help", "帮助", "help circle", "help")
+
+  .right.menu
+    if currentUser
+      a(style="color: inherit", href=`/user/${currentUser.id}`)
+        .ui.simple.dropdown.item
+          = currentUser.username
+          i.dropdown.icon
+          .menu
+            a.item(href=`/user/${currentUser.edit}/edit`)
+              i.edit.icon
+              | 修改资料
+            a.item(href-post="/auth/logout") 
+              i.sign.out.icon
+              | 登出
+    else
+      .item
+        a.ui.primary.button(href="/auth/login", style="margin-right: 0.5em") 登录
+        a.ui.button(href="/auth/register") 注册
