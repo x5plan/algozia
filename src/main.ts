@@ -1,10 +1,13 @@
-import { Logger } from "@nestjs/common";
+import { Logger, ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import type { NestExpressApplication as INestExpressApplication } from "@nestjs/platform-express";
+import cookieParser from "cookie-parser";
 import { json as expressJson } from "express";
 import { join } from "path";
 
+import { AppExceptionFilter } from "./app.filter";
 import { AppModule } from "./app.module";
+import { AppValidationException } from "./common/exceptions/app-validation.exception";
 import { ConfigService } from "./config/config.service";
 
 async function bootstrapAsync() {
@@ -18,6 +21,18 @@ async function bootstrapAsync() {
     app.setBaseViewsDir(join(__dirname, "..", "views"));
     app.setViewEngine("pug");
     app.use(expressJson({ limit: "50mb" }));
+    app.use(cookieParser());
+
+    app.useGlobalFilters(app.get(AppExceptionFilter));
+    app.useGlobalPipes(
+        new ValidationPipe({
+            always: true,
+            transform: true,
+            whitelist: true,
+            forbidNonWhitelisted: true,
+            exceptionFactory: (errors) => new AppValidationException(errors),
+        }),
+    );
 
     const config = app.get(ConfigService).config;
 

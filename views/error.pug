@@ -1,0 +1,18 @@
+extends common/layout
+
+block prepend title
+  - this.title = "错误";
+
+block content
+  .ui.negative.icon.message
+    i.remove.icon
+    .content
+      .header(style="margin-bottom: 10px")= message
+      if description
+        p
+          +multi-line-text(description)
+      p
+        each text, url in urls
+          a(href=url, style="margin-right: 5px")= text
+        if showBack
+          a(href="javascript:history.go(-1)") 返回上一页

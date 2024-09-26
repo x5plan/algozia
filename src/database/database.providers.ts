@@ -8,6 +8,7 @@ export const databaseProviders = [
         useFactory: (configService: ConfigService) => ({
             host: configService.config.database.hostname,
             port: configService.config.database.port,
+            type: configService.config.database.type,
             username: configService.config.database.username,
             password: configService.config.database.password,
             database: configService.config.database.database,

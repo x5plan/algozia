@@ -3,7 +3,7 @@ import { IsIn, IsIP, IsNotEmpty, IsNotEmptyObject, IsOptional, IsString, IsUrl, 
 
 import { IsHostname, IsPortNumber } from "@/common/validators";
 
-import { IAppConfig, IDatabaseConfig, IServerConfig } from "./config.type";
+import { IAppConfig, IDatabaseConfig, ISecurityConfig, IServerConfig } from "./config.type";
 
 class ServerConfig implements IServerConfig {
     @IsIP()
@@ -38,6 +38,12 @@ class DatabaseConfig implements IDatabaseConfig {
     public readonly type: "mysql" | "mariadb";
 }
 
+class SecurityConfig implements ISecurityConfig {
+    @IsString()
+    @IsNotEmpty()
+    public readonly sessionSecret: string;
+}
+
 export class AppConfig implements IAppConfig {
     @IsString()
     @IsNotEmpty()
@@ -61,11 +67,16 @@ export class AppConfig implements IAppConfig {
     })
     public readonly redis: string;
 
+    @Type(() => SecurityConfig)
+    @ValidateNested()
+    @IsNotEmptyObject()
+    public readonly security: ISecurityConfig;
+
     @IsUrl({
         protocols: ["http", "https"],
         require_protocol: true,
         require_host: true,
-        require_tld: true,
+        require_tld: false,
     })
     @IsOptional()
     public readonly cdnUrl?: string;

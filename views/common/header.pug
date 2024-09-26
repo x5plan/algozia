@@ -1,14 +1,34 @@
-mixin menu-item(href, text, icon, activeTag)
-  a.item(href=href, class=activeTag === activePage ? "active" : "")
+mixin menu-item(text, path, icon)
+  a.item(href=`/${path}`, class=path === activePage ? "active" : "")
     i(class=`${icon} icon`)
     | #{ text }
 
 .ui.container
-  //- TODO: fix image size 
-  a.header.item(href="/")
-    img(src=`${app.cdnUrl}assets/tywzoj.svg`, style="height: 100%; width: auto")
+  a.header.item(href="/", style="overflow: hidden")
+    img(src=`${app.cdnUrl}assets/tywzoj.svg`, style="width: 140px")
 
-  +menu-item("/", "首页", "home", "home")
-  +menu-item("/problems", "题库", "list", "problems")
-  +menu-item("/contests", "比赛", "calendar", "contest")
-  +menu-item("/help", "帮助", "help circle", "help")
+  +menu-item("首页", "", "home")
+  if currentUser
+    +menu-item("题库", "problem", "list")
+    +menu-item("作业", "homework", "book")
+    +menu-item("比赛", "contest", "calendar")
+    +menu-item("评测", "submission", "tasks")
+  //- +menu-item("帮助", "help", "help circle")
+
+  .right.menu
+    if currentUser
+      a(style="color: inherit", href=`/user/${currentUser.id}`)
+        .ui.simple.dropdown.item
+          = currentUser.username
+          i.dropdown.icon
+          .menu
+            a.item(href=`/user/${currentUser.id}/edit`)
+              i.edit.icon
+              | 修改资料
+            a.item(href-post="/auth/logout") 
+              i.sign.out.icon
+              | 登出
+    else
+      .item
+        a.ui.primary.button(href="/auth/login", style="margin-right: 0.5em") 登录
+        a.ui.button(href="/auth/register") 注册

@@ -18,9 +18,8 @@
         },
         "editor.formatOnSave": true,
         "editor.defaultFormatter": "esbenp.prettier-vscode",
-        "cSpell.words": [
-            "TYWZOJ"
-        ],
+        "cSpell.words": ["typeorm", "TYWZOJ"],
+        "editor.detectIndentation": true,
     },
     "extensions": {
         "recommendations": [

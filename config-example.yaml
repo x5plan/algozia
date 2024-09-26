@@ -14,4 +14,7 @@ database:
 
 redis: redis://127.0.0.1:6379
 
+security:
+  sessionSecret: # do not leak this secret
+
 cdnUrl: https://cdn.tywzoj.example/
