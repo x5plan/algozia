@@ -1,0 +1,177 @@
+extends common/layout
+
+block prepend title
+  - this.title = "帮助";
+
+block content
+  .padding
+    h1.ui.center.aligned.header 帮助
+    div
+      h2.ui.header 评测
+      p
+        | C++ 使用
+        code clang++
+        | 或
+        code g++
+        | 编译，命令形如 &nbsp;
+        code clang++/g++ source_file.cpp -o exec_file -O2 -lm -DONLINE_JUDGE -mx32 -std=c++20
+        | （对于 C++ 17、C++ 14 和 C++ 11，替换命令中的
+        code -std=
+        | 参数）；
+        br
+        | C 使用
+        code clang
+        | 或
+        code gcc
+        | 编译，命令为 &nbsp;
+        code clang/gcc source_file.c -o exec_file -O2 -lm -DONLINE_JUDGE -mx32 -std=c17
+        | ；
+        br
+        | C++ NOI 使用
+        code g++
+        | 编译，命令形如 &nbsp;
+        code g++ source_file.cpp -o exec_file -lm -DONLINE_JUDGE -mx32 -std=c++14
+        | ；
+        br
+        | C NOI 使用
+        code gcc
+        | 编译，命令形如 &nbsp;
+        code gcc source_file.c -o exec_file -lm -DONLINE_JUDGE -mx32 -std=c11
+        | ；
+        br
+        | Python3 使用 CPython 解释运行，命令形如
+        code python3 source_file.py
+      p 请根据题目中的说明选择使用
+        strong 标准输入输出
+        | 或
+        strong 文件输入输出
+        | 。
+      h2.ui.header 个人资料
+      p 本站不提供头像存储服务，而是使用 Gravatar 进行头像显示。请使用邮箱注册 #{ " " }
+        a(href="https://zh-cn.wordpress.com/") WordPress.com #{ " " }
+        | ，登录 #{ " " }
+        a(href="https://cn.gravatar.com/") Gravatar #{ " " }
+        | 并上传头像。同样使用 Gravatar 的 OJ 有 Vijos、COGS、UOJ 等。
+      p 个性签名可以使用 Markdown 与 HTML，请不要在其中添加恶意代码。
+      h2.ui.header 添加题目
+      h3.ui.header 题面
+      p 在
+        a(href="/problem/0/edit") 添加题目页面
+        | 填写题面，题目内容使用 Markdown 与 TeX 公式。
+      h3.ui.header 测试数据
+      p 旧版的
+        code data_rule.txt
+        | 已经停止使用，新加入的题目请使用新的
+        code data.yml
+        | 配置文件。关于 YAML，详见
+        a(href="https://zh.wikipedia.org/wiki/YAML") YAML 的 Wikipedia 词条
+        | 。
+      p 对于传统和提交答案题目，
+        code data.yml
+        | 是可选的，系统会自动识别您的数据包，将每个
+        code .in
+        | 文件对应到
+        code .out
+        | 或
+        code .ans
+        | 文件，并将
+        code spj_
+        | 开头的文件作为 Special Judge（详见下文的「Special Judge」）。
+      h4 传统
+      p 对于传统题目，
+        code data.yml
+        | 的格式如下：
+        .ui.existing.segment
+        //-  TODO: highlight code 
+      h4 提交答案
+      p 对于提交答案题目，
+        code inputFile
+        | 和
+        code outputFile
+        | 可以省略，用
+        code userOutput
+        | 表示用户提交的答案文件名。
+        .ui.existing.segment
+        //-  TODO: highlight code
+      h4 交互
+      p 对于交互题目，需要加入以下内容：
+        .ui.existing.segment
+        //-  TODO: highlight code
+      p 交互器和选手程序同时运行，交互器的标准输入和标准输出连接了选手程序的标准输出和标准输入 —— 交互通过输入输出进行。
+      p 交互器运行时，其目录下会有
+        code input
+        | 文件，表示该测试点的输入文件。交互器运行结束后，需要将选手得分写入
+        code score.txt
+        | 文件中，并将提供给用户的额外信息输出到标准错误输出（
+        code stderr
+        | ）中。
+      p 如果您希望实现 NOI 试题风格的交互（选手通过函数调用与交互器交互），请编写一些头文件作为「附加源文件」并封装标准输入输出的交互。
+      h4 子任务
+      p 子任务是一组测试点的集合，一个子任务的分数由其包含的测试点的分数计算而来，具体的计算方式根据子任务类型而定：
+        ul
+        li
+          code sum
+          | ：测试点分数按百分比相加；
+        li
+          code mul
+          | ：测试点分数按百分比相乘；
+        li
+          code min
+          | ：取各测试点最低分。
+        h4 Special Judge
+      p Special Judge 用于
+        strong 传统
+        | 或
+        strong 提交答案
+        | 题目。
+      p 如果您没有编写
+        code data.yml
+        | ，请在数据包中添加
+        code spj_LANG.xxx
+        | ，其中
+        code xxx
+        | 为任意后缀名，
+        code LANG
+        | 为所用语言的简称。
+      p Special Judge 程序运行时，其目录下会有四个文件
+        code input
+        | 、
+        code user_out
+        | 、
+        code answer
+        | 、
+        code code
+        | ，分别对应该测试点的输入文件、用户输出、该测试点的输出文件、用户的代码（对于非提交答案题目）。
+        p Special Judge 程序运行完成后，应将该测试点的得分输出到标准输出（
+        code stdout
+        | ）中（范围为
+        code 0
+        | 到
+        code 100
+        | ，将自动折合为测试点分数），并将提供给用户的额外信息输出到标准错误输出（
+        code stderr
+        | ）中。
+      h4 语言简称
+      p 配置数据时，描述 Special Judge 或交互器的语言时使用语言的简称，它们是
+        code c
+        | 、
+        code cpp
+        | 、
+        code cpp17
+        | 、
+        code cpp14
+        | 、
+        code cpp11
+        | 、
+        code c-clang
+        | 、
+        code cpp-clang
+        | 、
+        code cpp17-clang
+        | 、
+        code cpp14-clang
+        | 、
+        code cpp11-clang
+        | 、
+        code python3
+        | 。
