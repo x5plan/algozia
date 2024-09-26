@@ -2,8 +2,6 @@ import type { Response } from "express";
 
 import type { UserEntity } from "@/user/user.entity";
 
-import type { CE_Page } from "./page";
-
 export interface IViewApp {
     appName: string;
     cdnUrl: string;
@@ -12,7 +10,7 @@ export interface IViewApp {
 
 export interface IViewGlobal {
     app: IViewApp;
-    activePage: CE_Page;
+    activePage: string;
     currentUser?: UserEntity; // set in AuthMiddleware
 }
 

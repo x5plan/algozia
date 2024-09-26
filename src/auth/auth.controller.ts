@@ -1,6 +1,8 @@
 import { Body, Controller, Get, Post, Redirect, Render, Req, Res } from "@nestjs/common";
 import { Response } from "express";
 
+import { AppDevelopingException } from "@/common/exceptions/app-developing.exception";
+import { CE_Page } from "@/common/types/page";
 import { ConfigService } from "@/config/config.service";
 import { UserService } from "@/user/user.service";
 
@@ -9,7 +11,7 @@ import { AuthService } from "./auth.service";
 import { AuthSessionService } from "./auth-session.service";
 import { CE_LoginPostResponseError, LoginRequestBodyDto, LoginResponseDto } from "./dto/login.dto";
 
-@Controller("auth")
+@Controller(CE_Page.Auth)
 export class AuthController {
     constructor(
         private readonly authService: AuthService,
@@ -73,6 +75,16 @@ export class AuthController {
             error: null,
             username,
         };
+    }
+
+    @Get("register")
+    public async getRegisterAsync(): Promise<void> {
+        throw new AppDevelopingException();
+    }
+
+    @Get("forgot")
+    public async getForgotAsync(): Promise<void> {
+        throw new AppDevelopingException();
     }
 
     @Post("logout")

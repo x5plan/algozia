@@ -2,8 +2,12 @@ import { forwardRef, MiddlewareConsumer, Module, NestModule, RequestMethod } fro
 
 import { AuthModule } from "@/auth/auth.module";
 import { ConfigModule } from "@/config/config.module";
+import { ContestModule } from "@/contest/contest.module";
 import { DatabaseModule } from "@/database/database.module";
+import { HomeworkModule } from "@/homework/homework.module";
+import { ProblemModule } from "@/problem/problem.module";
 import { RedisModule } from "@/redis/redis.module";
+import { SubmissionModule } from "@/submission/submission.module";
 import { UserModule } from "@/user/user.module";
 
 import { AppController } from "./app.controller";
@@ -15,11 +19,15 @@ import { AppService } from "./app.service";
     imports: [
         // Global modules
         ConfigModule,
+        forwardRef(() => DatabaseModule),
+        forwardRef(() => RedisModule),
 
         // Feature modules
         forwardRef(() => AuthModule),
-        forwardRef(() => DatabaseModule),
-        forwardRef(() => RedisModule),
+        forwardRef(() => ContestModule),
+        forwardRef(() => HomeworkModule),
+        forwardRef(() => ProblemModule),
+        forwardRef(() => SubmissionModule),
         forwardRef(() => UserModule),
     ],
     controllers: [AppController],

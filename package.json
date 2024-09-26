@@ -11,7 +11,7 @@
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
-    "format": "prettier --write \"src/**/*.{js,ts}\" \"views/**/*.ejs\"",
+    "format": "prettier --write \"src/**/*.{js,ts}\" \"views/**/*.pug\"",
     "lint": "eslint \"src/**/*.{js,ts}\"",
     "lint:fix": "eslint \"src/**/*.{js,ts}\" --fix"
   },

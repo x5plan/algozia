@@ -1,5 +1,5 @@
-mixin menu-item(href, text, icon, activeTag)
-  a.item(href=href, class=activeTag === activePage ? "active" : "")
+mixin menu-item(text, icon, tag)
+  a.item(href=`/${tag}`, class=tag === activePage ? "active" : "")
     i(class=`${icon} icon`)
     | #{ text }
 
@@ -7,11 +7,13 @@ mixin menu-item(href, text, icon, activeTag)
   a.header.item(href="/", style="overflow: hidden")
     img(src=`${app.cdnUrl}assets/tywzoj.svg`, style="width: 140px")
 
-  +menu-item("/", "首页", "home", "home")
+  +menu-item("首页", "home", "")
   if currentUser
-    +menu-item("/problems", "题库", "list", "problems")
-    +menu-item("/contests", "比赛", "calendar", "contest")
-  +menu-item("/help", "帮助", "help circle", "help")
+    +menu-item("题库", "list", "problem")
+    +menu-item("作业", "book", "homework")
+    +menu-item("比赛", "calendar", "contest")
+    +menu-item("评测", "tasks", "submission")
+  //- +menu-item("/help", "帮助", "help circle", "help")
 
   .right.menu
     if currentUser

@@ -15,8 +15,7 @@ mixin use-validation(name)
 
 mixin multi-line-text(text)
   - const lines = text.split("\n");
-  - for (let i = 0; i < lines.length; i++) {
+  - for (let i = 0; i < lines.length; i++)
     if i > 0
       br
     = lines[i]
-  - }
