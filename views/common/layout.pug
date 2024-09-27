@@ -1,4 +1,5 @@
 doctype html 
+include imports
 include utils
 html(lang="zh-CN", style="position: fixed; width: 100%; overflow: hidden")
   head
@@ -13,11 +14,6 @@ html(lang="zh-CN", style="position: fixed; width: 100%; overflow: hidden")
 
       +import-package-style("semantic-ui/semantic")
 
-      +import-package-script("jquery/jquery")
-      +import-package-script("semantic-ui/semantic")
-
-      +import-bundle-script("index")
-
   body(style="position: relative; margin-top: 49px; height: calc(100% - 49px); overflow-y: overlay")
     .ui.fixed.borderless.menu(style="position: fixed; height: 49px")
       include header
@@ -29,3 +25,8 @@ html(lang="zh-CN", style="position: fixed; width: 100%; overflow: hidden")
           span(style="color: #999") #{ app.appName } Powered by #{ " " }
             a(href="https://github.com/AntaresQAQ/tywzoj-web2", target="_blank") TYWZOJ2
             | .
+
+  block scripts
+    +import-package-script("jquery/jquery")
+    +import-package-script("semantic-ui/semantic")
+    +import-bundle-script("index")

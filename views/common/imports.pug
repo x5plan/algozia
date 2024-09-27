@@ -1,0 +1,54 @@
+- const __packagesSet = new Set();
+- const __bundlesSet = new Set();
+- let __markdownUtilLoaded = false;
+- let __highlightUtilLoaded = false;
+
+mixin import-package-script(file, min = true)
+  if !__packagesSet.has(file)
+    - __packagesSet.add(file);
+    script(src=`${app.cdnUrl}packages/${file}${min ? ".min" : ""}.js`)
+
+mixin import-package-script-lazy(file, onLoadCallback, min = true)
+  if !__packagesSet.has(file)
+    - __packagesSet.add(file);
+    script(src=`${app.cdnUrl}packages/${file}${min ? ".min" : ""}.js`, onload=`${onLoadCallback}()`, defer, async)
+
+mixin import-package-style(file, min= true)
+  link(rel="stylesheet", href=`${app.cdnUrl}packages/${file}${min ? ".min" : ""}.css`)
+
+mixin import-bundle-script(file)
+  if !__bundlesSet.has(file)
+    - __bundlesSet.add(file);
+    script(src=`${app.cdnUrl}bundle/${file}.js`)
+
+mixin import-validation(name)
+  +import-bundle-script(`validations/${name}`)
+
+mixin import-highlight-styles
+  +import-package-style("prismjs/themes/prism-tomorrow")
+
+mixin import-highlight-scripts
+  if !__highlightUtilLoaded
+    - __highlightUtilLoaded = true;
+    +import-package-script("prismjs/prism", false)
+    +import-package-script("prismjs/plugins/autoloader/prism-autoloader")
+    +import-package-script("dompurify/purify")
+    +import-bundle-script("highlight")
+
+mixin import-markdown-styles
+  +import-highlight-styles
+  +import-package-style("katex/katex")
+  link(rel="stylesheet", href=`${app.cdnUrl}/assets/markdown.css`)
+
+mixin import-markdown-scripts
+  if !__markdownUtilLoaded
+    - __markdownUtilLoaded = true;
+    +import-highlight-scripts
+    +import-bundle-script("markdown")
+    script.
+      const [__onMarkdownItLoaded] = window.MarkdownUtil.registerDepsOnLoad();
+      const [__onMarkdownItMathLoaded] = window.MarkdownUtil.registerDepsOnLoad();
+      const [__onKatexLoaded] = window.MarkdownUtil.registerDepsOnLoad();
+    +import-package-script-lazy("markdown-it/markdown-it", "__onMarkdownItLoaded")
+    +import-package-script-lazy("markdown-it-math/markdown-it-math", "__onMarkdownItMathLoaded")
+    +import-package-script-lazy("katex/katex", "__onKatexLoaded")

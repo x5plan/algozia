@@ -3,8 +3,8 @@ extends common/layout
 block prepend title
   - this.title = "登录";
 
-block append head
-  +use-validation("auth-login")
+block append scripts
+  +import-validation("auth-login")
 
 block content
   if error
