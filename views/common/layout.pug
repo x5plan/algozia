@@ -11,6 +11,7 @@ html(lang="zh-CN", style="position: fixed; width: 100%; overflow: hidden")
     block head
       link(rel="icon", href=`${app.cdnUrl}assets/icon.png`)
       link(rel="stylesheet", href=`${app.cdnUrl}fonts/fonts.css`)
+      link(rel="stylesheet", href=`${app.cdnUrl}assets/style.css`)
 
       +import-package-style("semantic-ui/semantic")
 
@@ -22,9 +23,8 @@ html(lang="zh-CN", style="position: fixed; width: 100%; overflow: hidden")
         block content
       .ui.vertical.footer.segment(style="margin-top: 15px; border-top: none")
         .ui.center.aligned.container
-          span(style="color: #999") #{ app.appName } Powered by #{ " " }
-            a(href="https://github.com/AntaresQAQ/tywzoj-web2", target="_blank") TYWZOJ2
-            | .
+          span(style="color: #999")= app.appName + " "
+            | Powered by #[a(href="https://github.com/AntaresQAQ/tywzoj-web2", target="_blank") TYWZOJ2].
 
   block scripts
     +import-package-script("jquery/jquery")
