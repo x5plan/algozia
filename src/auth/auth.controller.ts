@@ -1,9 +1,10 @@
 import { Body, Controller, Get, Post, Redirect, Render, Req, Res } from "@nestjs/common";
 import { Response } from "express";
 
-import { AppDevelopingException } from "@/common/exceptions/app-developing.exception";
+import { AppDevelopingException } from "@/common/exceptions/common.exception";
+import { CE_Permission } from "@/common/permission/permissions";
 import { CE_Page } from "@/common/types/page";
-import { ConfigService } from "@/config/config.service";
+import { PermissionService } from "@/permission/permission.service";
 import { UserService } from "@/user/user.service";
 
 import { IRequestWithSession } from "./auth.middleware";
@@ -17,14 +18,13 @@ export class AuthController {
         private readonly authService: AuthService,
         private readonly authSessionService: AuthSessionService,
         private readonly userService: UserService,
-        private readonly configService: ConfigService,
+        private readonly permissionService: PermissionService,
     ) {}
 
     @Get("login")
     @Render("auth-login")
     public async getLoginAsync(): Promise<LoginResponseDto> {
         return {
-            error: null,
             username: "",
         };
     }
@@ -65,6 +65,13 @@ export class AuthController {
             }
         }
 
+        if (!this.permissionService.checkCommonPermission(CE_Permission.AccessSite, user, true /* specificAllowed */)) {
+            return {
+                error: CE_LoginPostResponseError.PermissionDenied,
+                username,
+            };
+        }
+
         this.authSessionService.setCookieSessionKey(
             res,
             await this.authSessionService.newSessionAsync(user, req.ip!, req.headers["user-agent"]!),
@@ -72,7 +79,6 @@ export class AuthController {
 
         res.redirect("/");
         return {
-            error: null,
             username,
         };
     }

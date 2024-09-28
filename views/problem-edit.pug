@@ -1,0 +1,81 @@
+extends common/layout
+
+block prepend title
+  - this.title = isNewProblem ? "新建题目" : `${problem.title} - 编辑题目`;
+
+block append head
+  +import-markdown-styles
+
+block append scripts
+  +import-markdown-scripts
+  script.
+    $(".ui.dropdown").dropdown();
+    $(".ui.tabular.menu .item").tab();
+
+    function render(id) {
+      window.MarkdownUtil.renderSanitizedMarkdownAsync($(`#${id}`).val()).then((html) => {
+        $(`#pv-${id}`).html(html);
+      });
+    }
+
+    $("#preview-tab").click(function () {
+      $("#pv-title").text($("#title").val());
+      render("description");
+      render("input-format");
+      render("output-format");
+      render("samples");
+      render("limit-and-hint");
+    });
+
+block content
+  .padding
+    .ui.top.attached.tabular.menu
+      a.item.active(data-tab="edit") 编辑
+      a#preview-tab.item(data-tab="preview") 预览
+    .ui.bottom.attached.tab.segment.active(data-tab="edit")
+      form.ui.form(action=`/problem/${isNewProblem ? 0 : problem.id}/edit`, method="post")
+        .field
+          label(for="display-id") 题目 ID
+          input#display-id(name="displayId", type="text", value=problem.displayId, readonly)
+        .field
+          label(for="title") 标题
+          input#title(name="title", type="text", value=problem.title)
+        .field
+          label(for="description") 题目描述
+          textarea#description(name="description")= problem.description
+        .field
+          label(for="input-format") 输入格式
+          textarea#input-format(name="inputFormat")= problem.inputFormat
+        .field
+          label(for="output-format") 输出格式
+          textarea#output-format(name="outputFormat")= problem.outputFormat
+        .field
+          label(for="samples") 样例
+          textarea#samples(name="samples")= problem.samples
+        .field
+          label(for="limit-and-hint") 数据范围与提示
+          textarea#limit-and-hint(name="limitAndHint")= problem.limitAndHint
+        .field
+          label(for="visibility") 可见度
+          .ui.selection.dropdown
+            input#visibility(type="hidden", name="visibility", value=problem.visibility)
+            i.dropdown.icon
+            .default.text= visibilityStringMap[problem.visibility]
+            .class.menu
+              - for (const visibility in visibilityStringMap)
+                .item(data-value=visibility)= visibilityStringMap[visibility]
+
+        button.ui.primary.button(type="submit") 保存
+
+    .ui.bottom.attached.tab.segment(data-tab="preview")
+      h1#pv-title.ui.header
+      h2.ui.header 题目描述
+      #pv-description.font-content
+      h2.ui.header 输入格式
+      #pv-input-format.font-content
+      h2.ui.header 输出格式
+      #pv-output-format.font-content
+      h2.ui.header 样例
+      #pv-samples.font-content
+      h2.ui.header 数据范围与提示
+      #limit-and-hint.font-content
