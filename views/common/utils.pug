@@ -6,11 +6,12 @@ mixin multi-line-text(text)
     = lines[i]
 
 mixin render-markdown-to(content, id)
-  script.
-    $(() => {
-      window.MarkdownUtil.renderSanitizedMarkdownAsync(
-        !{app.utils.serialize(content)}
-      ).then((html) => {
-        $("##{id}").html(html);
+  if content
+    script.
+      $(() => {
+        window.MarkdownUtil.renderSanitizedMarkdownAsync(
+          !{app.utils.serialize(content)}
+        ).then((html) => {
+          $("##{id}").html(html);
+        });
       });
-    });

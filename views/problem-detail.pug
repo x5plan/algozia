@@ -8,17 +8,12 @@ block append head
 
 block append scripts
   +import-markdown-scripts
-  script.
-  if problem.description
-    +render-markdown-to(problem.description, "description")
-  if problem.inputFormat
-    +render-markdown-to(problem.inputFormat, "input-format")
-  if problem.outputFormat
-    +render-markdown-to(problem.outputFormat, "output-format")
-  if problem.samples
-    +render-markdown-to(problem.samples, "samples")
-  if problem.limitAndHint
-    +render-markdown-to(problem.limitAndHint, "limit-and-hint")
+
+  +render-markdown-to(problem.description, "description")
+  +render-markdown-to(problem.inputFormat, "input-format")
+  +render-markdown-to(problem.outputFormat, "output-format")
+  +render-markdown-to(problem.samples, "samples")
+  +render-markdown-to(problem.limitAndHint, "limit-and-hint")
 
   if isAllowedEdit
     script.
