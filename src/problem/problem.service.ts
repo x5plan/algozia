@@ -30,6 +30,10 @@ export class ProblemService {
         await this.problemRepository.save(problem);
     }
 
+    public async deleteProblemAsync(problem: ProblemEntity) {
+        await this.problemRepository.remove(problem);
+    }
+
     public async generateNewDisplayIdAsync() {
         const problems = await this.problemRepository.find({
             order: {

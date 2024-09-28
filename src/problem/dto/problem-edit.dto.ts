@@ -1,16 +1,10 @@
 import { Type } from "class-transformer";
-import { IsIn, IsNumber, IsString, Min } from "class-validator";
+import { IsIn, IsNumber, IsString } from "class-validator";
 
 import { CE_ExceptionString } from "@/common/strings/exception";
 
 import { CE_ProblemVisibility, IProblemEditable } from "../problem.type";
-
-export class ProblemEditRequestParamDto {
-    @Type(() => Number)
-    @IsNumber()
-    @Min(0)
-    public id: number;
-}
+import { IVisibilityStringMap } from "./problem-shared.dto";
 
 export class ProblemEditPostRequestBodyDto implements IProblemEditable {
     @Type(() => Number)
@@ -55,5 +49,3 @@ export class ProblemEditResponseDto {
 export const enum CE_ProblemEditResponseError {
     displayIdAlreadyExists = CE_ExceptionString.Problem_DisplayIdAlreadyExists,
 }
-
-export type IVisibilityStringMap = Record<CE_ProblemVisibility, string>;

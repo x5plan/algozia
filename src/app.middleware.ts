@@ -4,6 +4,7 @@ import type { Request } from "express";
 import { ConfigService } from "@/config/config.service";
 
 import { IResponseWithLocals, IViewApp, IViewGlobal } from "./common/types/view";
+import { ViewUtils } from "./common/utils/view";
 
 @Injectable()
 export class AppMiddleware implements NestMiddleware {
@@ -13,6 +14,7 @@ export class AppMiddleware implements NestMiddleware {
         this.viewApp = {
             appName: this.configService.config.appName,
             cdnUrl: this.parseCdnUrl(this.configService.config.cdnUrl),
+            utils: ViewUtils,
         };
     }
 

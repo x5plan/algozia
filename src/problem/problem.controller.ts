@@ -8,12 +8,9 @@ import { CE_ProblemVisibilityString } from "@/common/strings/problem";
 import { CE_Page } from "@/common/types/page";
 import { UserEntity } from "@/user/user.entity";
 
-import {
-    IVisibilityStringMap,
-    ProblemEditPostRequestBodyDto,
-    ProblemEditRequestParamDto,
-    ProblemEditResponseDto,
-} from "./dto/problem-edit.dto";
+import { ProblemDetailResponseDto } from "./dto/problem-detail.dto";
+import { ProblemEditPostRequestBodyDto, ProblemEditResponseDto } from "./dto/problem-edit.dto";
+import { IVisibilityLabelColorMap, IVisibilityStringMap, ProblemBasicRequestParamDto } from "./dto/problem-shared.dto";
 import { ProblemEntity } from "./problem.entity";
 import { ProblemService } from "./problem.service";
 import { CE_ProblemVisibility } from "./problem.type";
@@ -30,14 +27,39 @@ export class ProblemController {
 
     @Get(":id")
     @Render("problem-detail")
-    public getProblemDetail() {
-        return {};
+    public async getProblemDetailAsync(
+        @Param() param: ProblemBasicRequestParamDto,
+        @CurrentUser() currentUser: UserEntity | null,
+    ): Promise<ProblemDetailResponseDto> {
+        const { id } = param;
+
+        if (!currentUser) {
+            throw new AppLoginRequiredException(`/problem/${id}/edit`);
+        }
+
+        const problem = await this.problemService.findProblemByIdAsync(id);
+        if (!problem) {
+            throw new NoSuchProblemException();
+        }
+
+        if (!(await this.problemService.checkIsAllowedViewAsync(problem, currentUser))) {
+            throw new AppPermissionDeniedException();
+        }
+
+        return {
+            problem,
+            uploader: await problem.uploaderPromise,
+            isAllowedEdit: this.problemService.checkIsAllowedEdit(currentUser),
+            isAllowedSubmit: await this.problemService.checkIsAllowedSubmitAsync(problem, currentUser),
+            visibilityStringMap: getVisibilityStringMap(),
+            visibilityLabelColorMap: getVisibilityLabelColorMap(),
+        };
     }
 
     @Get(":id/edit")
     @Render("problem-edit")
     public async getProblemEditAsync(
-        @Param() param: ProblemEditRequestParamDto,
+        @Param() param: ProblemBasicRequestParamDto,
         @CurrentUser() currentUser: UserEntity | null,
     ): Promise<ProblemEditResponseDto> {
         const { id } = param;
@@ -82,7 +104,7 @@ export class ProblemController {
     @Post(":id/edit")
     @Render("problem-edit")
     public async postProblemEditAsync(
-        @Param() param: ProblemEditRequestParamDto,
+        @Param() param: ProblemBasicRequestParamDto,
         @Body() body: ProblemEditPostRequestBodyDto,
         @Res() res: Response,
         @CurrentUser() currentUser: UserEntity | null,
@@ -103,6 +125,7 @@ export class ProblemController {
         if (isNewProblem) {
             problem = new ProblemEntity();
             problem.uploadTime = new Date();
+            problem.uploaderId = currentUser.id;
         } else {
             const p = await this.problemService.findProblemByIdAsync(id);
             if (!p) {
@@ -135,6 +158,26 @@ export class ProblemController {
             visibilityStringMap: getVisibilityStringMap(),
         };
     }
+
+    @Post(":id/delete")
+    public async deleteProblemAsync(
+        @Param() param: ProblemBasicRequestParamDto,
+        @Res() res: Response,
+        @CurrentUser() currentUser: UserEntity | null,
+    ) {
+        if (!currentUser || !this.problemService.checkIsAllowedEdit(currentUser)) {
+            throw new AppPermissionDeniedException();
+        }
+
+        const problem = await this.problemService.findProblemByIdAsync(param.id);
+        if (!problem) {
+            throw new NoSuchProblemException();
+        }
+
+        await this.problemService.deleteProblemAsync(problem);
+
+        res.redirect("/problem");
+    }
 }
 
 function getVisibilityStringMap(): IVisibilityStringMap {
@@ -143,5 +186,14 @@ function getVisibilityStringMap(): IVisibilityStringMap {
         [CE_ProblemVisibility.Internal]: CE_ProblemVisibilityString.Internal,
         [CE_ProblemVisibility.Paid]: CE_ProblemVisibilityString.Paid,
         [CE_ProblemVisibility.Public]: CE_ProblemVisibilityString.Public,
+    };
+}
+
+function getVisibilityLabelColorMap(): IVisibilityLabelColorMap {
+    return {
+        [CE_ProblemVisibility.Private]: "red",
+        [CE_ProblemVisibility.Internal]: "violet",
+        [CE_ProblemVisibility.Paid]: "blue",
+        [CE_ProblemVisibility.Public]: "green",
     };
 }

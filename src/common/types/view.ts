@@ -2,10 +2,12 @@ import type { Response } from "express";
 
 import type { UserEntity } from "@/user/user.entity";
 
+import type { ViewUtils } from "../utils/view";
+
 export interface IViewApp {
     appName: string;
     cdnUrl: string;
-    utils?: unknown;
+    utils: ViewUtils;
 }
 
 export interface IViewGlobal {

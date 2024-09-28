@@ -4,3 +4,13 @@ mixin multi-line-text(text)
     if i > 0
       br
     = lines[i]
+
+mixin render-markdown-to(content, id)
+  script.
+    $(() => {
+      window.MarkdownUtil.renderSanitizedMarkdownAsync(
+        !{app.utils.serialize(content)}
+      ).then((html) => {
+        $("##{id}").html(html);
+      });
+    });
