@@ -1,6 +1,6 @@
 import { Controller, Get } from "@nestjs/common";
 
-import { AppDevelopingException } from "@/common/exceptions/app-developing.exception";
+import { AppDevelopingException } from "@/common/exceptions/common.exception";
 
 @Controller("user")
 export class UserController {

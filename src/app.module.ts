@@ -5,6 +5,7 @@ import { ConfigModule } from "@/config/config.module";
 import { ContestModule } from "@/contest/contest.module";
 import { DatabaseModule } from "@/database/database.module";
 import { HomeworkModule } from "@/homework/homework.module";
+import { PermissionModule } from "@/permission/permission.module";
 import { ProblemModule } from "@/problem/problem.module";
 import { RedisModule } from "@/redis/redis.module";
 import { SubmissionModule } from "@/submission/submission.module";
@@ -26,6 +27,7 @@ import { AppService } from "./app.service";
         forwardRef(() => AuthModule),
         forwardRef(() => ContestModule),
         forwardRef(() => HomeworkModule),
+        forwardRef(() => PermissionModule),
         forwardRef(() => ProblemModule),
         forwardRef(() => SubmissionModule),
         forwardRef(() => UserModule),

@@ -4,8 +4,6 @@ block prepend title
   - this.title = "首页";
 
 block append head
-  +import-bundle-script("hitokoto")
-
   style.
     #hitokoto-container .content {
       font-size: 1em;
@@ -18,6 +16,8 @@ block append head
       margin-top: 1em;
     }
 
+block append scripts
+  +import-bundle-script("hitokoto")
   script.
     window.createHitokoto("#hitokoto-container");
 

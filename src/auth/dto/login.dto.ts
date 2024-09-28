@@ -13,11 +13,12 @@ export class LoginRequestBodyDto {
 }
 
 export class LoginResponseDto {
-    public error: CE_LoginPostResponseError | null;
+    public error?: CE_LoginPostResponseError;
     public username: string;
 }
 
 export const enum CE_LoginPostResponseError {
     NoSuchUser = CE_ExceptionString.NoSuchUser,
-    WrongPassword = CE_ExceptionString.WrongPassword,
+    WrongPassword = CE_ExceptionString.Auth_WrongPassword,
+    PermissionDenied = CE_ExceptionString.PermissionDenied,
 }
