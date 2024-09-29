@@ -6,6 +6,7 @@ import { AppLoginRequiredException, AppPermissionDeniedException } from "@/commo
 import { NoSuchProblemException } from "@/common/exceptions/problem.exception";
 import { CE_ProblemVisibilityString } from "@/common/strings/problem";
 import { CE_Page } from "@/common/types/page";
+import { IResponse } from "@/common/types/response";
 import { UserEntity } from "@/user/user.entity";
 
 import { ProblemDetailResponseDto } from "./dto/problem-detail.dto";
@@ -102,13 +103,15 @@ export class ProblemController {
     }
 
     @Post(":id/edit")
-    @Render("problem-edit")
     public async postProblemEditAsync(
         @Param() param: ProblemBasicRequestParamDto,
         @Body() body: ProblemEditPostRequestBodyDto,
-        @Res() res: Response,
+        @Res() res: IResponse,
         @CurrentUser() currentUser: UserEntity | null,
-    ): Promise<ProblemEditResponseDto> {
+    ): Promise<void> {
+        const render = (options: ProblemEditResponseDto) => res.render("problem-edit", options);
+        const redirect = (id: number) => res.redirect(`/problem/${id}`);
+
         const { id } = param;
 
         if (!currentUser) {
@@ -137,26 +140,16 @@ export class ProblemController {
         const error = await this.problemService.editProblemAsync(problem, body);
 
         if (error) {
-            return {
+            return render({
                 error,
                 isNewProblem,
                 problem,
                 visibilityStringMap: getVisibilityStringMap(),
-            };
+            });
         }
 
-        try {
-            await this.problemService.updateProblemAsync(problem);
-            res.redirect(`/problem/${problem.id}`);
-        } catch (e) {
-            throw e;
-        }
-
-        return {
-            isNewProblem: false,
-            problem,
-            visibilityStringMap: getVisibilityStringMap(),
-        };
+        await this.problemService.updateProblemAsync(problem);
+        redirect(problem.id);
     }
 
     @Post(":id/delete")
