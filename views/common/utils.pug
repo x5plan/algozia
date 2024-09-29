@@ -5,6 +5,10 @@ mixin multi-line-text(text)
       br
     = lines[i]
 
+mixin markdown-loading
+  div(style="height: 80px")
+    .ui.primary.active.loader
+
 mixin render-markdown-to(content, id)
   if content
     script.

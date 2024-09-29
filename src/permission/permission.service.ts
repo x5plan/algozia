@@ -7,6 +7,7 @@ import { CE_UserLevel } from "@/common/permission/user-level";
 import { UserEntity } from "@/user/user.entity";
 
 import { PermissionEntity } from "./permission.entity";
+import { IGlobalViewPermissions } from "./permission.type";
 
 @Injectable()
 export class PermissionService {
@@ -43,7 +44,7 @@ export class PermissionService {
         sourceId: number,
     ) {
         if (!this.isSpecificUser(user)) {
-            return true;
+            return false;
         }
 
         const sourceIds = await this.findSpecificPermissionSourceIdsAsync(specificPermission, user);
@@ -60,5 +61,35 @@ export class PermissionService {
 
     public isSpecificUser(user: UserEntity) {
         return user.level === CE_UserLevel.Specific;
+    }
+
+    public async getGlobalViewPermissionsAsync(user: UserEntity | null): Promise<IGlobalViewPermissions> {
+        if (!user) {
+            return {
+                showProblem: false,
+                showContest: false,
+                showHomework: false,
+                showSubmission: false,
+            };
+        }
+
+        if (this.isSpecificUser(user)) {
+            const problemIds = await this.findSpecificPermissionSourceIdsAsync(CE_SpecificPermission.Problem, user);
+            const contestIds = await this.findSpecificPermissionSourceIdsAsync(CE_SpecificPermission.Contest, user);
+
+            return {
+                showProblem: problemIds.length > 0,
+                showContest: contestIds.length > 0,
+                showHomework: false,
+                showSubmission: problemIds.length > 0,
+            };
+        }
+
+        return {
+            showProblem: this.checkCommonPermission(CE_Permission.AccessProblem, user),
+            showContest: this.checkCommonPermission(CE_Permission.AccessContest, user),
+            showHomework: this.checkCommonPermission(CE_Permission.AccessHomework, user),
+            showSubmission: this.checkCommonPermission(CE_Permission.SubmitAnswer, user),
+        };
     }
 }

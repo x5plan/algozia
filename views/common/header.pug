@@ -8,10 +8,13 @@ mixin menu-item(text, path, icon)
     img(src=`${app.cdnUrl}assets/tywzoj.svg`, style="width: 140px")
 
   +menu-item("首页", "", "home")
-  if currentUser
+  if permissions.showProblem
     +menu-item("题库", "problem", "list")
+  if permissions.showHomework
     +menu-item("作业", "homework", "book")
+  if permissions.showContest
     +menu-item("比赛", "contest", "calendar")
+  if permissions.showSubmission
     +menu-item("评测", "submission", "tasks")
   //- +menu-item("帮助", "help", "help circle")
 
@@ -30,5 +33,5 @@ mixin menu-item(text, path, icon)
               | 登出
     else
       .item
-        a.ui.primary.button(href="/auth/login", style="margin-right: 0.5em") 登录
-        a.ui.button(href="/auth/register") 注册
+        a.ui.primary.button(href="/auth/login") 登录
+        a.ui.button(href="/auth/register", style="margin-left: 0.5em") 注册

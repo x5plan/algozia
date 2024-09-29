@@ -4,10 +4,10 @@ import { Response } from "express";
 import { AppDevelopingException } from "@/common/exceptions/common.exception";
 import { CE_Permission } from "@/common/permission/permissions";
 import { CE_Page } from "@/common/types/page";
+import { IRequest } from "@/common/types/request";
 import { PermissionService } from "@/permission/permission.service";
 import { UserService } from "@/user/user.service";
 
-import { IRequestWithSession } from "./auth.middleware";
 import { AuthService } from "./auth.service";
 import { AuthSessionService } from "./auth-session.service";
 import { CE_LoginPostResponseError, LoginRequestBodyDto, LoginResponseDto } from "./dto/login.dto";
@@ -32,7 +32,7 @@ export class AuthController {
     @Post("login")
     @Render("auth-login")
     public async postLoginAsync(
-        @Req() req: IRequestWithSession,
+        @Req() req: IRequest,
         @Res() res: Response,
         @Body() body: LoginRequestBodyDto,
     ): Promise<LoginResponseDto> {
@@ -95,7 +95,7 @@ export class AuthController {
 
     @Post("logout")
     @Redirect("/")
-    public async postLogoutAsync(@Req() req: IRequestWithSession, @Res() res: Response): Promise<void> {
+    public async postLogoutAsync(@Req() req: IRequest, @Res() res: Response): Promise<void> {
         if (req.session?.sessionKey) {
             await this.authSessionService.endSessionAsync(req.session.sessionKey);
         }

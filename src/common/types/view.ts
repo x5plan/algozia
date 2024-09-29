@@ -1,5 +1,4 @@
-import type { Response } from "express";
-
+import type { IGlobalViewPermissions } from "@/permission/permission.type";
 import type { UserEntity } from "@/user/user.entity";
 
 import type { ViewUtils } from "../utils/view";
@@ -13,7 +12,6 @@ export interface IViewApp {
 export interface IViewGlobal {
     app: IViewApp;
     activePage: string;
-    currentUser?: UserEntity; // set in AuthMiddleware
+    currentUser: UserEntity | null;
+    permissions: IGlobalViewPermissions;
 }
-
-export type IResponseWithLocals = Response<unknown, IViewGlobal>;

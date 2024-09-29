@@ -60,40 +60,52 @@ export class ProblemService {
         problem.inputFormat = body.inputFormat;
         problem.outputFormat = body.outputFormat;
         problem.samples = body.samples;
+        problem.limitAndHint = body.limitAndHint;
         problem.visibility = body.visibility;
 
         return null;
     }
 
     public async checkIsAllowedViewAsync(problem: ProblemEntity, user: UserEntity) {
+        // If the user has permission to edit the problem, they are allowed to view it.
         if (this.checkIsAllowedEdit(user)) {
             return true;
         }
 
-        if (
-            !(await this.permissionService.checkSpecificPermissionAsync(
+        // If the user is a specific permission user,
+        // and they don't have the specific permission to view the problem,
+        // they are not allowed to view the problem.
+        if (this.permissionService.isSpecificUser(user)) {
+            return await this.permissionService.checkSpecificPermissionAsync(
                 CE_SpecificPermission.Problem,
                 user,
                 problem.id,
-            ))
-        ) {
+            );
+        }
+
+        // If the user is a common permission user,
+        // and they don't have the common permission to view the problem,
+        // they are not allowed to view the problem.
+        if (!this.permissionService.checkCommonPermission(CE_Permission.AccessProblem, user)) {
             return false;
         }
 
-        if (
-            !this.permissionService.checkCommonPermission(CE_Permission.AccessProblem, user, true /* specificAllowed */)
-        ) {
-            return false;
-        }
-
+        // If the user's level is lower than the problem's visibility level,
+        // they are not allowed to view the problem.
         return problem.visibility >= user.level;
     }
 
     public async checkIsAllowedSubmitAsync(problem: ProblemEntity, user: UserEntity) {
+        // If the user is not allowed to view the problem,
+        // they are not allowed to submit answers.
         if (!(await this.checkIsAllowedViewAsync(problem, user))) {
             return false;
         }
 
+        // If specific permission users are allowed to view the problem,
+        // they are allowed to submit answers. So set specificAllowed to true.
+        // The common permission users are not allowed to submit answers by default,
+        // unless they have the SubmitAnswer permission.
         return this.permissionService.checkCommonPermission(
             CE_Permission.SubmitAnswer,
             user,
@@ -102,6 +114,8 @@ export class ProblemService {
     }
 
     public checkIsAllowedEdit(user: UserEntity) {
+        // If the user is not allowed to manage problems,
+        // they are not allowed to edit problems.
         return this.permissionService.checkCommonPermission(CE_Permission.ManageProblem, user);
     }
 }
