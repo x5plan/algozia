@@ -41,14 +41,14 @@ export class PermissionService {
     public async checkSpecificPermissionAsync(
         specificPermission: CE_SpecificPermission,
         user: UserEntity,
-        sourceId: number,
+        sourceId?: number,
     ) {
         if (!this.isSpecificUser(user)) {
             return false;
         }
 
         const sourceIds = await this.findSpecificPermissionSourceIdsAsync(specificPermission, user);
-        return sourceIds.includes(sourceId);
+        return sourceId ? sourceIds.includes(sourceId) : sourceIds.length > 0;
     }
 
     public checkCommonPermission(permission: CE_Permission, user: UserEntity, specificAllowed = false) {
@@ -74,14 +74,14 @@ export class PermissionService {
         }
 
         if (this.isSpecificUser(user)) {
-            const problemIds = await this.findSpecificPermissionSourceIdsAsync(CE_SpecificPermission.Problem, user);
-            const contestIds = await this.findSpecificPermissionSourceIdsAsync(CE_SpecificPermission.Contest, user);
+            const problemPermission = await this.checkSpecificPermissionAsync(CE_SpecificPermission.Problem, user);
+            const contestPermission = await this.checkSpecificPermissionAsync(CE_SpecificPermission.Contest, user);
 
             return {
-                showProblem: problemIds.length > 0,
-                showContest: contestIds.length > 0,
+                showProblem: problemPermission,
+                showContest: contestPermission,
                 showHomework: false,
-                showSubmission: problemIds.length > 0,
+                showSubmission: problemPermission,
             };
         }
 

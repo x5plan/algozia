@@ -1,14 +1,9 @@
 import { Type } from "class-transformer";
-import { IsNumber, Min } from "class-validator";
-
-import type { CE_ProblemVisibility } from "../problem.type";
+import { IsInt, Min } from "class-validator";
 
 export class ProblemBasicRequestParamDto {
     @Type(() => Number)
-    @IsNumber()
+    @IsInt()
     @Min(0)
-    public id: number;
+    public readonly id: number;
 }
-
-export type IVisibilityStringMap = Record<CE_ProblemVisibility, string>;
-export type IVisibilityLabelColorMap = Record<CE_ProblemVisibility, string>;

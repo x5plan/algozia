@@ -1,0 +1,64 @@
+- const makePageUrl = (page) => viewUtils.makeUrl({ query: { page } });
+mixin pagination-full
+  if pageCount > 1
+    div(style="text-align: center")
+      .ui.pagination.menu(style="box-shadow: none")
+        if currentPage === 1
+          .icon.disabled.item #[i.left.chevron.icon]
+        else
+          a.icon.item(href=makePageUrl(currentPage - 1)) #[i.left.chevron.icon]
+
+        - let leftCnt = currentPage - 2;
+        - let rightCnt = pageCount - currentPage;
+        - let omitLeft = false, omitRight = false;
+        - if (leftCnt + rightCnt > 13) { // 13 total buttons
+          - if (leftCnt <= 6) { // (13 -  1 current button) / 2
+            - rightCnt = 11 - leftCnt; // 13 total buttons - 1 current button - 1 omitted button
+            - omitRight = true;
+          - } else if (rightCnt <= 6) {
+            - leftCnt = 11 - rightCnt; // ditto
+            - omitLeft = true;
+          - } else {
+            - rightCnt = leftCnt = 5; // 6 - 1, "1" is for the omitted button
+            - omitLeft = omitRight = true;
+          - }
+        - }
+
+        if currentPage !== 1
+          a.item(href=makePageUrl(1)) 1
+
+        if omitLeft
+          .item #[i.ellipsis.horizontal.icon(style="margin: 0")]
+
+        - for(let i = currentPage - leftCnt; i <= currentPage - 1; i++)
+          a.item(href=makePageUrl(i))= i
+
+        a.active.item(href=makePageUrl(currentPage))= currentPage
+
+        - for(let i = currentPage + 1; i <= currentPage + rightCnt - 1; i++)
+          a.item(href=makePageUrl(i))= i
+
+        if omitRight
+          .item #[i.ellipsis.horizontal.icon(style="margin: 0")]
+
+        if currentPage !== pageCount
+          a.item(href=makePageUrl(pageCount))= pageCount
+
+        if currentPage === pageCount
+          .icon.disabled.item #[i.right.chevron.icon]
+        else
+          a.icon.item(href=makePageUrl(currentPage + 1)) #[i.right.chevron.icon]
+
+mixin pagination-light
+  if pageCount > 1
+    div(style="text-align: center")
+      .ui.pagination.menu(style="box-shadow: none")
+        if currentPage === 1
+          .icon.disabled.item #[i.left.chevron.icon]
+        else
+          a.icon.item(href=makePageUrl(currentPage - 1)) #[i.left.chevron.icon]
+
+        if currentPage === pageCount
+          .icon.disabled.item #[i.right.chevron.icon]
+        else
+          a.icon.item(href=makePageUrl(currentPage + 1)) #[i.right.chevron.icon]

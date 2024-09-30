@@ -3,11 +3,14 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
 import { CE_Permission, CE_SpecificPermission } from "@/common/permission/permissions";
+import { CE_Order } from "@/common/types/order";
+import { ConfigService } from "@/config/config.service";
 import { PermissionService } from "@/permission/permission.service";
 import { UserEntity } from "@/user/user.entity";
 
 import { CE_ProblemEditResponseError, type ProblemEditPostRequestBodyDto } from "./dto/problem-edit.dto";
 import { ProblemEntity } from "./problem.entity";
+import { CE_ProblemVisibility } from "./problem.type";
 
 @Injectable()
 export class ProblemService {
@@ -16,6 +19,7 @@ export class ProblemService {
         private readonly problemRepository: Repository<ProblemEntity>,
         @Inject(forwardRef(() => PermissionService))
         private readonly permissionService: PermissionService,
+        private readonly configService: ConfigService,
     ) {}
 
     public async findProblemByIdAsync(id: number) {
@@ -24,6 +28,50 @@ export class ProblemService {
 
     public async findProblemByDisplayIdAsync(displayId: number) {
         return await this.problemRepository.findOne({ where: { displayId } });
+    }
+
+    public async findProblemListAndCountAsync(
+        page: number,
+        sortBy: "displayId",
+        order: CE_Order,
+        keyword: string,
+        user: UserEntity,
+    ): Promise<{
+        problems: ProblemEntity[];
+        count: number;
+    }> {
+        const takeCount = this.configService.config.pagination.problem;
+
+        const qb = this.problemRepository.createQueryBuilder("problem");
+
+        if (this.permissionService.isSpecificUser(user)) {
+            const specificProblemIds = await this.permissionService.findSpecificPermissionSourceIdsAsync(
+                CE_SpecificPermission.Problem,
+                user,
+            );
+
+            qb.where("problem.id IN (:...specificProblemIds)", { specificProblemIds });
+        } else {
+            qb.where("problem.visibility <= :level", { level: user.level });
+        }
+
+        if (keyword) {
+            qb.andWhere((subQb) => {
+                subQb.where("problem.title LIKE :keyword", { keyword: `%${keyword}%` });
+
+                if (Number.isInteger(Number(keyword))) {
+                    subQb.orWhere("problemSub.displayId = :displayId", { displayId: Number(keyword) });
+                }
+            });
+        }
+
+        qb.orderBy(`problem.${sortBy}`, order)
+            .skip((page - 1) * takeCount)
+            .take(takeCount);
+
+        const [problems, count] = await qb.getManyAndCount();
+
+        return { problems, count };
     }
 
     public async updateProblemAsync(problem: ProblemEntity) {
@@ -61,6 +109,10 @@ export class ProblemService {
         problem.outputFormat = body.outputFormat;
         problem.samples = body.samples;
         problem.limitAndHint = body.limitAndHint;
+
+        if (problem.visibility === CE_ProblemVisibility.Private && body.visibility !== CE_ProblemVisibility.Private) {
+            problem.publicTime = new Date();
+        }
         problem.visibility = body.visibility;
 
         return null;

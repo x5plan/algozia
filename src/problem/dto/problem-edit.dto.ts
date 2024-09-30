@@ -4,27 +4,26 @@ import { IsIn, IsNumber, IsString } from "class-validator";
 import { CE_ExceptionString } from "@/common/strings/exception";
 
 import { CE_ProblemVisibility, IProblemEditable } from "../problem.type";
-import { IVisibilityStringMap } from "./problem-shared.dto";
 
 export class ProblemEditPostRequestBodyDto implements IProblemEditable {
     @Type(() => Number)
     @IsNumber()
-    public displayId: number;
+    public readonly displayId: number;
 
     @IsString()
-    public title: string;
+    public readonly title: string;
 
     @IsString()
-    public description: string;
+    public readonly description: string;
 
     @IsString()
-    public inputFormat: string;
+    public readonly inputFormat: string;
 
     @IsString()
-    public outputFormat: string;
+    public readonly outputFormat: string;
 
     @IsString()
-    public samples: string;
+    public readonly samples: string;
 
     @Type(() => Number)
     @IsIn([
@@ -33,17 +32,16 @@ export class ProblemEditPostRequestBodyDto implements IProblemEditable {
         CE_ProblemVisibility.Paid,
         CE_ProblemVisibility.Public,
     ])
-    public visibility: CE_ProblemVisibility;
+    public readonly visibility: CE_ProblemVisibility;
 
     @IsString()
-    public limitAndHint: string;
+    public readonly limitAndHint: string;
 }
 
 export class ProblemEditResponseDto {
     public error?: CE_ProblemEditResponseError;
     public isNewProblem: boolean;
     public problem: IProblemEditable;
-    public visibilityStringMap: IVisibilityStringMap;
 }
 
 export const enum CE_ProblemEditResponseError {

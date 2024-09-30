@@ -6,12 +6,12 @@ import type { ViewUtils } from "../utils/view";
 export interface IViewApp {
     appName: string;
     cdnUrl: string;
-    utils: ViewUtils;
 }
 
-export interface IViewGlobal {
+export type IViewGlobal<T extends object = object> = {
     app: IViewApp;
     activePage: string;
     currentUser: UserEntity | null;
     permissions: IGlobalViewPermissions;
-}
+    viewUtils: ViewUtils;
+} & T;

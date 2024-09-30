@@ -21,18 +21,12 @@ export class AppMiddleware implements NestMiddleware {
         this.viewApp = {
             appName: this.configService.config.appName,
             cdnUrl: this.parseCdnUrl(this.configService.config.cdnUrl),
-            utils: ViewUtils,
         };
     }
 
     public use(req: IRequest, res: IResponse, next: () => void) {
         this.getViewGlobalVarsAsync(req, res)
-            .then((viewGlobal) => {
-                res.locals = {
-                    ...res.locals,
-                    ...viewGlobal,
-                };
-            })
+            .then((viewGlobal) => Object.assign(res.locals, viewGlobal))
             .finally(() => next());
     }
 
@@ -43,8 +37,9 @@ export class AppMiddleware implements NestMiddleware {
         return {
             app: this.viewApp,
             activePage: req.path.split("/")[1],
-            currentUser,
+            currentUser: currentUser,
             permissions,
+            viewUtils: new ViewUtils(req, res),
         };
     }
 

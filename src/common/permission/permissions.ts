@@ -15,6 +15,7 @@ export const enum CE_Permission {
     // Special permissions
     // CreatePersonalProblem = CE_UserLevel.Paid,
     SubmitAnswer = CE_UserLevel.Paid,
+    Problem,
 }
 
 export enum CE_SpecificPermission {

@@ -18,3 +18,13 @@ security:
   sessionSecret: # do not leak this secret
 
 cdnUrl: https://cdn.tywzoj.example/
+
+pagination:
+  homePageRanklist: 10
+  homePageArticle: 10
+  problem: 50
+  contest: 20
+  homework: 20
+  submission: 50
+  ranklist: 20
+  article: 20

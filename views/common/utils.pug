@@ -14,8 +14,18 @@ mixin render-markdown-to(content, id)
     script.
       $(() => {
         window.MarkdownUtil.renderSanitizedMarkdownAsync(
-          !{app.utils.serialize(content)}
+          !{viewUtils.serialize(content)}
         ).then((html) => {
           $("##{id}").html(html);
         });
       });
+
+mixin sortable-table-title(item, text, defaultOrder = "ASC")
+  - const isCurrent = sortBy === item;
+  - const newOrder = isCurrent ? (order === "ASC" ? "DESC" : "ASC") : defaultOrder;
+  - const url = viewUtils.makeUrl({ query: { sortBy: item, order: newOrder } });
+  a.black-link(href=url)= text
+    if isCurrent
+    i.icon(class=order === "ASC" ? "angle up" : "angle down")
+
+include pagination

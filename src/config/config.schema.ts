@@ -1,9 +1,19 @@
 import { Type } from "class-transformer";
-import { IsIn, IsIP, IsNotEmpty, IsNotEmptyObject, IsOptional, IsString, IsUrl, ValidateNested } from "class-validator";
+import {
+    IsIn,
+    IsInt,
+    IsIP,
+    IsNotEmpty,
+    IsNotEmptyObject,
+    IsOptional,
+    IsString,
+    IsUrl,
+    ValidateNested,
+} from "class-validator";
 
 import { IsHostname, IsPortNumber } from "@/common/validators";
 
-import { IAppConfig, IDatabaseConfig, ISecurityConfig, IServerConfig } from "./config.type";
+import { IAppConfig, IDatabaseConfig, IPaginationConfig, ISecurityConfig, IServerConfig } from "./config.type";
 
 class ServerConfig implements IServerConfig {
     @IsIP()
@@ -44,6 +54,32 @@ class SecurityConfig implements ISecurityConfig {
     public readonly sessionSecret: string;
 }
 
+class PaginationConfig implements IPaginationConfig {
+    @IsInt()
+    public readonly homePageRanklist: number;
+
+    @IsInt()
+    public readonly homePageArticle: number;
+
+    @IsInt()
+    public readonly problem: number;
+
+    @IsInt()
+    public readonly contest: number;
+
+    @IsInt()
+    public readonly homework: number;
+
+    @IsInt()
+    public readonly submission: number;
+
+    @IsInt()
+    public readonly ranklist: number;
+
+    @IsInt()
+    public readonly article: number;
+}
+
 export class AppConfig implements IAppConfig {
     @IsString()
     @IsNotEmpty()
@@ -80,4 +116,9 @@ export class AppConfig implements IAppConfig {
     })
     @IsOptional()
     public readonly cdnUrl?: string;
+
+    @Type(() => PaginationConfig)
+    @ValidateNested()
+    @IsNotEmptyObject()
+    public readonly pagination: IPaginationConfig;
 }
