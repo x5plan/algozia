@@ -23,3 +23,15 @@ export interface IProblemEditable {
     limitAndHint: string;
     visibility: CE_ProblemVisibility;
 }
+
+export enum E_ProblemSortBy {
+    DisplayId = "displayId",
+}
+
+export type IVisibilityStringMap = Record<CE_ProblemVisibility, string>;
+export type IVisibilityLabelColorMap = Record<CE_ProblemVisibility, string>;
+
+export interface IProblemViewGlobal {
+    visibilityStringMap: IVisibilityStringMap;
+    visibilityLabelColorMap: IVisibilityLabelColorMap;
+}

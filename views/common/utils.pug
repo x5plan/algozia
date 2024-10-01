@@ -4,3 +4,28 @@ mixin multi-line-text(text)
     if i > 0
       br
     = lines[i]
+
+mixin markdown-loading
+  div(style="height: 80px")
+    .ui.primary.active.loader
+
+mixin render-markdown-to(content, id)
+  if content
+    script.
+      $(() => {
+        window.MarkdownUtil.renderSanitizedMarkdownAsync(
+          !{viewUtils.serialize(content)}
+        ).then((html) => {
+          $("##{id}").html(html);
+        });
+      });
+
+mixin sortable-table-title(item, text, defaultOrder = "ASC")
+  - const isCurrent = sortBy === item;
+  - const newOrder = isCurrent ? (order === "ASC" ? "DESC" : "ASC") : defaultOrder;
+  - const url = viewUtils.makeUrl({ query: { sortBy: item, order: newOrder } });
+  a.black-link(href=url)= text
+    if isCurrent
+    i.icon(class=order === "ASC" ? "angle up" : "angle down")
+
+include pagination

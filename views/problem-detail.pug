@@ -1,7 +1,7 @@
 extends common/layout
 
 block prepend title
-  - this.title = "题目详情";
+  - this.title = problem.title + " - 题目";
 
 block append head
   +import-markdown-styles
@@ -9,4 +9,93 @@ block append head
 block append scripts
   +import-markdown-scripts
 
+  +render-markdown-to(problem.description, "description")
+  +render-markdown-to(problem.inputFormat, "input-format")
+  +render-markdown-to(problem.outputFormat, "output-format")
+  +render-markdown-to(problem.samples, "samples")
+  +render-markdown-to(problem.limitAndHint, "limit-and-hint")
+
+  if isAllowedEdit
+    script.
+      $(() => {
+        $("#delete-button").click(() => {
+          $("#delete-confirmation").modal("show");
+        });
+      });
+
 block content
+  .ui.center.aligned.grid
+    .row
+      h1.ui.header ##{ problem.displayId }. #{ problem.title }
+
+    .row
+      if uploader
+        span.ui.label 上传者: #{ uploader.username }
+      span.ui.label(class=`${visibilityLabelColorMap[problem.visibility]}`) 
+        | #{ visibilityStringMap[problem.visibility] }
+
+  .ui.grid
+    .row
+      .column
+        .ui.buttons
+          if isAllowedSubmit
+            a.ui.small.primary.button(href="#submit_code") 提交
+          a.ui.small.positive.button(href=`/submissions?problemId=${problem.id}`) 提交记录
+        if isAllowedEdit
+          .ui.buttons.right.floated
+            a.ui.small.button(href=`/problem/${problem.id}/edit`) 编辑
+            a.ui.small.button(href=`/problem/${problem.id}/edit/judge`) 评测设置
+            a.ui.small.button(href=`/problem/${problem.id}/edit/data`) 管理数据
+            button#delete-button.ui.small.red.button 删除
+
+    if problem.description
+      .row
+        .column
+          h4.ui.top.attached.block.header 题目描述
+          #description.ui.bottom.attached.segment.font-content
+            +markdown-loading
+
+    if problem.inputFormat
+      .row
+        .column
+          h4.ui.top.attached.block.header 输入格式
+          #input-format.ui.bottom.attached.segment.font-content
+            +markdown-loading
+
+    if problem.outputFormat
+      .row
+        .column
+          h4.ui.top.attached.block.header 输出格式
+          #output-format.ui.bottom.attached.segment.font-content
+            +markdown-loading
+
+    if problem.samples
+      .row
+        .column
+          h4.ui.top.attached.block.header 样例
+          #samples.ui.bottom.attached.segment.font-content
+            +markdown-loading
+
+    if problem.limitAndHint
+      .row
+        .column
+          h4.ui.top.attached.block.header 数据范围与提示
+          #limit-and-hint.ui.bottom.attached.segment.font-content
+            +markdown-loading
+
+  if isAllowedEdit
+    #delete-confirmation.ui.basic.modal
+      .ui.icon.header
+        i.trash.icon
+        p(style="margin-top: 15px") 删除题目
+      .content
+        p 确认删除此题目吗？提交记录、讨论以及测试数据将一并删除，#[strong 这个操作不可逆]。
+        p 删除题目导致的修改用户提交、通过数量可能会耗费一些时间。
+        p #[strong 警告：删除比赛中的题目会导致系统错乱！请确认没有比赛使用此题目。]
+      .actions
+        button.ui.red.basic.cancel.button
+          i.remove.icon
+          | 取消
+        a.ui.green.ok.inverted.button(href-post=`/problem/${problem.id}/delete`)
+          i.checkmark.icon
+          | 确定

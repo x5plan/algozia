@@ -4,10 +4,11 @@ import { Response } from "express";
 import { AppDevelopingException } from "@/common/exceptions/common.exception";
 import { CE_Permission } from "@/common/permission/permissions";
 import { CE_Page } from "@/common/types/page";
+import { IRequest } from "@/common/types/request";
+import { IResponse } from "@/common/types/response";
 import { PermissionService } from "@/permission/permission.service";
 import { UserService } from "@/user/user.service";
 
-import { IRequestWithSession } from "./auth.middleware";
 import { AuthService } from "./auth.service";
 import { AuthSessionService } from "./auth-session.service";
 import { CE_LoginPostResponseError, LoginRequestBodyDto, LoginResponseDto } from "./dto/login.dto";
@@ -32,44 +33,46 @@ export class AuthController {
     @Post("login")
     @Render("auth-login")
     public async postLoginAsync(
-        @Req() req: IRequestWithSession,
-        @Res() res: Response,
+        @Req() req: IRequest,
+        @Res() res: IResponse,
         @Body() body: LoginRequestBodyDto,
-    ): Promise<LoginResponseDto> {
+    ): Promise<void> {
+        const render = (options: LoginResponseDto) => res.render("auth-login", options);
+        const redirect = () => res.redirect("/");
         const { username, password } = body;
 
         const user = await this.userService.findUserByUsernameAsync(username);
 
         if (!user) {
-            return {
+            return render({
                 error: CE_LoginPostResponseError.NoSuchUser,
                 username,
-            };
+            });
         }
 
         const auth = await user.authPromise;
 
         if (auth.legacyPassword) {
             if (!(await this.authService.migratePasswordAsync(auth, password))) {
-                return {
+                return render({
                     error: CE_LoginPostResponseError.WrongPassword,
                     username,
-                };
+                });
             }
         } else {
             if (!(await this.authService.checkPasswordAsync(auth, password))) {
-                return {
+                return render({
                     error: CE_LoginPostResponseError.WrongPassword,
                     username,
-                };
+                });
             }
         }
 
         if (!this.permissionService.checkCommonPermission(CE_Permission.AccessSite, user, true /* specificAllowed */)) {
-            return {
+            return render({
                 error: CE_LoginPostResponseError.PermissionDenied,
                 username,
-            };
+            });
         }
 
         this.authSessionService.setCookieSessionKey(
@@ -77,10 +80,7 @@ export class AuthController {
             await this.authSessionService.newSessionAsync(user, req.ip!, req.headers["user-agent"]!),
         );
 
-        res.redirect("/");
-        return {
-            username,
-        };
+        return redirect();
     }
 
     @Get("register")
@@ -95,7 +95,7 @@ export class AuthController {
 
     @Post("logout")
     @Redirect("/")
-    public async postLogoutAsync(@Req() req: IRequestWithSession, @Res() res: Response): Promise<void> {
+    public async postLogoutAsync(@Req() req: IRequest, @Res() res: Response): Promise<void> {
         if (req.session?.sessionKey) {
             await this.authSessionService.endSessionAsync(req.session.sessionKey);
         }

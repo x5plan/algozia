@@ -16,6 +16,17 @@ export interface ISecurityConfig {
     readonly sessionSecret: string;
 }
 
+export interface IPaginationConfig {
+    readonly homePageRanklist: number;
+    readonly homePageArticle: number;
+    readonly problem: number;
+    readonly contest: number;
+    readonly homework: number;
+    readonly submission: number;
+    readonly ranklist: number;
+    readonly article: number;
+}
+
 export interface IAppConfig {
     readonly appName: string;
     readonly server: IServerConfig;
@@ -23,4 +34,5 @@ export interface IAppConfig {
     readonly redis: string;
     readonly security: ISecurityConfig;
     readonly cdnUrl?: string;
+    readonly pagination: IPaginationConfig;
 }

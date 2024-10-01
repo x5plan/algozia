@@ -1,0 +1,35 @@
+extends common/layout
+
+block prepend title
+  - this.title = "题目";
+
+block content
+  .padding
+    .ui.grid
+
+  +pagination-full
+
+  table.ui.very.basic.center.aligned.table
+    thead
+      tr
+        th.one.wide
+          +sortable-table-title("displayId", "ID")
+        th.left.aligned 标题
+        th.two.wide 可见度
+        th.one.wide 通过
+        th.one.wide 提交
+        th.one.wide 通过率
+    tbody
+      each problem in problems
+        tr
+          td #[b= problem.displayId]
+          td.left.aligned
+            a(style="vertical-align: middle", href=`/problem/${problem.id}`)= problem.title
+          td
+            span.ui.label(class=`${visibilityLabelColorMap[problem.visibility]}`)
+              = visibilityStringMap[problem.visibility]
+          td 0
+          td 0
+          td 0%
+
+  +pagination-full

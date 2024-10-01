@@ -9,11 +9,13 @@ export const enum CE_Permission {
     // Access permissions
     AccessHomework = CE_UserLevel.Internal,
     AccessProblem = CE_UserLevel.General,
+    AccessContest = CE_UserLevel.General,
     AccessSite = CE_UserLevel.General,
 
     // Special permissions
     // CreatePersonalProblem = CE_UserLevel.Paid,
     SubmitAnswer = CE_UserLevel.Paid,
+    Problem,
 }
 
 export enum CE_SpecificPermission {

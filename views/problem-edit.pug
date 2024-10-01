@@ -70,6 +70,7 @@ block content
                 .item(data-value=visibility)= visibilityStringMap[visibility]
 
         button.ui.primary.button(type="submit") 保存
+        a.ui.button(href=isNewProblem ? "/problem" : `/problem/${problem.id}`) 取消
 
     .ui.bottom.attached.tab.segment(data-tab="preview")
       h1#pv-title.ui.header
@@ -82,4 +83,4 @@ block content
       h2.ui.header 样例
       #pv-samples.font-content
       h2.ui.header 数据范围与提示
-      #limit-and-hint.font-content
+      #pv-limit-and-hint.font-content

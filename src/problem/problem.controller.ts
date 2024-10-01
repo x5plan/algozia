@@ -1,43 +1,110 @@
-import { Body, Controller, Get, Param, Post, Render, Res } from "@nestjs/common";
-import type { Response } from "express";
+import { Body, Controller, Get, Param, Post, Query, Render, Req, Res } from "@nestjs/common";
 
 import { CurrentUser } from "@/common/decorators/user.decorator";
 import { AppLoginRequiredException, AppPermissionDeniedException } from "@/common/exceptions/common.exception";
 import { NoSuchProblemException } from "@/common/exceptions/problem.exception";
-import { CE_ProblemVisibilityString } from "@/common/strings/problem";
+import { CE_Permission, CE_SpecificPermission } from "@/common/permission/permissions";
+import { CE_Order } from "@/common/types/order";
 import { CE_Page } from "@/common/types/page";
+import { IRequest } from "@/common/types/request";
+import { IResponse } from "@/common/types/response";
+import { ConfigService } from "@/config/config.service";
+import { PermissionService } from "@/permission/permission.service";
 import { UserEntity } from "@/user/user.entity";
 
-import {
-    IVisibilityStringMap,
-    ProblemEditPostRequestBodyDto,
-    ProblemEditRequestParamDto,
-    ProblemEditResponseDto,
-} from "./dto/problem-edit.dto";
+import { ProblemDetailResponseDto } from "./dto/problem-detail.dto";
+import { ProblemEditPostRequestBodyDto, ProblemEditResponseDto } from "./dto/problem-edit.dto";
+import { ProblemListGetRequestQueryDto, ProblemListGetResponseDto } from "./dto/problem-list.dto";
+import { ProblemBasicRequestParamDto } from "./dto/problem-shared.dto";
 import { ProblemEntity } from "./problem.entity";
 import { ProblemService } from "./problem.service";
 import { CE_ProblemVisibility } from "./problem.type";
 
 @Controller(CE_Page.Problem)
 export class ProblemController {
-    constructor(private readonly problemService: ProblemService) {}
+    constructor(
+        private readonly problemService: ProblemService,
+        private readonly permissionService: PermissionService,
+        private readonly configService: ConfigService,
+    ) {}
 
     @Get()
-    @Render("problem")
-    public getProblemList() {
-        return {};
+    @Render("problem-list")
+    public async getProblemListAsync(
+        @Req() req: IRequest,
+        @Query() query: ProblemListGetRequestQueryDto,
+        @CurrentUser() currentUser: UserEntity | null,
+    ): Promise<ProblemListGetResponseDto> {
+        const { page = 1, sortBy = "displayId", order = CE_Order.Asc, keyword = "" } = query;
+
+        if (!currentUser) {
+            throw new AppLoginRequiredException(req.url);
+        }
+
+        if (this.permissionService.isSpecificUser(currentUser)) {
+            if (
+                !(await this.permissionService.checkSpecificPermissionAsync(CE_SpecificPermission.Problem, currentUser))
+            ) {
+                throw new AppPermissionDeniedException();
+            }
+        } else {
+            if (!this.permissionService.checkCommonPermission(CE_Permission.Problem, currentUser)) {
+                throw new AppPermissionDeniedException();
+            }
+        }
+
+        const { problems, count } = await this.problemService.findProblemListAndCountAsync(
+            page,
+            sortBy,
+            order,
+            keyword,
+            currentUser,
+        );
+
+        const pageCount = Math.max(Math.ceil(count / this.configService.config.pagination.problem), 1);
+
+        return {
+            problems,
+            pageCount,
+            currentPage: Math.min(page, pageCount),
+            sortBy,
+            order,
+        };
     }
 
     @Get(":id")
     @Render("problem-detail")
-    public getProblemDetail() {
-        return {};
+    public async getProblemDetailAsync(
+        @Param() param: ProblemBasicRequestParamDto,
+        @CurrentUser() currentUser: UserEntity | null,
+    ): Promise<ProblemDetailResponseDto> {
+        const { id } = param;
+
+        if (!currentUser) {
+            throw new AppLoginRequiredException(`/problem/${id}/edit`);
+        }
+
+        const problem = await this.problemService.findProblemByIdAsync(id);
+        if (!problem) {
+            throw new NoSuchProblemException();
+        }
+
+        if (!(await this.problemService.checkIsAllowedViewAsync(problem, currentUser))) {
+            throw new AppPermissionDeniedException();
+        }
+
+        return {
+            problem,
+            uploader: await problem.uploaderPromise,
+            isAllowedEdit: this.problemService.checkIsAllowedEdit(currentUser),
+            isAllowedSubmit: await this.problemService.checkIsAllowedSubmitAsync(problem, currentUser),
+        };
     }
 
     @Get(":id/edit")
     @Render("problem-edit")
     public async getProblemEditAsync(
-        @Param() param: ProblemEditRequestParamDto,
+        @Param() param: ProblemBasicRequestParamDto,
         @CurrentUser() currentUser: UserEntity | null,
     ): Promise<ProblemEditResponseDto> {
         const { id } = param;
@@ -63,7 +130,6 @@ export class ProblemController {
                     limitAndHint: "",
                     visibility: CE_ProblemVisibility.Private,
                 },
-                visibilityStringMap: getVisibilityStringMap(),
             };
         } else {
             const problem = await this.problemService.findProblemByIdAsync(id);
@@ -74,19 +140,20 @@ export class ProblemController {
             return {
                 isNewProblem: false,
                 problem,
-                visibilityStringMap: getVisibilityStringMap(),
             };
         }
     }
 
     @Post(":id/edit")
-    @Render("problem-edit")
     public async postProblemEditAsync(
-        @Param() param: ProblemEditRequestParamDto,
+        @Param() param: ProblemBasicRequestParamDto,
         @Body() body: ProblemEditPostRequestBodyDto,
-        @Res() res: Response,
+        @Res() res: IResponse,
         @CurrentUser() currentUser: UserEntity | null,
-    ): Promise<ProblemEditResponseDto> {
+    ): Promise<void> {
+        const render = (options: ProblemEditResponseDto) => res.render("problem-edit", options);
+        const redirect = (id: number) => res.redirect(`/problem/${id}`);
+
         const { id } = param;
 
         if (!currentUser) {
@@ -103,6 +170,7 @@ export class ProblemController {
         if (isNewProblem) {
             problem = new ProblemEntity();
             problem.uploadTime = new Date();
+            problem.uploaderId = currentUser.id;
         } else {
             const p = await this.problemService.findProblemByIdAsync(id);
             if (!p) {
@@ -114,34 +182,34 @@ export class ProblemController {
         const error = await this.problemService.editProblemAsync(problem, body);
 
         if (error) {
-            return {
+            return render({
                 error,
                 isNewProblem,
                 problem,
-                visibilityStringMap: getVisibilityStringMap(),
-            };
+            });
         }
 
-        try {
-            await this.problemService.updateProblemAsync(problem);
-            res.redirect(`/problem/${problem.id}`);
-        } catch (e) {
-            throw e;
-        }
-
-        return {
-            isNewProblem: false,
-            problem,
-            visibilityStringMap: getVisibilityStringMap(),
-        };
+        await this.problemService.updateProblemAsync(problem);
+        redirect(problem.id);
     }
-}
 
-function getVisibilityStringMap(): IVisibilityStringMap {
-    return {
-        [CE_ProblemVisibility.Private]: CE_ProblemVisibilityString.Private,
-        [CE_ProblemVisibility.Internal]: CE_ProblemVisibilityString.Internal,
-        [CE_ProblemVisibility.Paid]: CE_ProblemVisibilityString.Paid,
-        [CE_ProblemVisibility.Public]: CE_ProblemVisibilityString.Public,
-    };
+    @Post(":id/delete")
+    public async deleteProblemAsync(
+        @Param() param: ProblemBasicRequestParamDto,
+        @Res() res: IResponse,
+        @CurrentUser() currentUser: UserEntity | null,
+    ) {
+        if (!currentUser || !this.problemService.checkIsAllowedEdit(currentUser)) {
+            throw new AppPermissionDeniedException();
+        }
+
+        const problem = await this.problemService.findProblemByIdAsync(param.id);
+        if (!problem) {
+            throw new NoSuchProblemException();
+        }
+
+        await this.problemService.deleteProblemAsync(problem);
+
+        res.redirect("/problem");
+    }
 }
