@@ -84,9 +84,8 @@ export class AuthController {
     }
 
     @Get("register")
-    public async getRegisterAsync(): Promise<void> {
-        throw new AppDevelopingException();
-    }
+    @Render("auth-register")
+    public async getRegisterAsync(): Promise<void> {}
 
     @Get("forgot")
     public async getForgotAsync(): Promise<void> {

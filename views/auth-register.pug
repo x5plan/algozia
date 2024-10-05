@@ -1,0 +1,27 @@
+extends common/layout
+
+block prepend title
+  - this.title = "注册";
+
+block append scripts
+  +import-validation("auth-register")
+
+block content
+  .padding
+    h1 注册
+  if error
+    #error.ui.error.message= error
+  form.ui.form
+    .field
+      label(for="username") 用户名
+      input#username(name="username", type="text", value=username)
+    .field
+      label(for="email") 邮箱
+      input#email(name="email", type="email", value=email)
+    .field
+      label(for="password") 密码
+      input#password(name="password", type="password")
+    .field
+      label(for="password-confirm") 确认密码
+      input#password-confirm(type="password")
+    button.ui.primary.button(type="submit") 注册
