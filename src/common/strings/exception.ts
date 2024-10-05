@@ -15,4 +15,7 @@ export const enum CE_ExceptionString {
 
     // Problem
     Problem_DisplayIdAlreadyExists = "题目编号已存在",
+    Problem_InvalidFileIOName = "无效的文件IO名称",
+    Problem_InvalidTimeOrMemoryLimit = "无效的时间或内存限制",
+    Problem_InvalidProbelemType = "已有提交的题目不允许在提交答案和非提交答案之间更改",
 }

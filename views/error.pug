@@ -12,7 +12,7 @@ block content
         p
           +multi-line-text(description)
       p
-        each text, url in urls
-          a(href=url, style="margin-right: 5px")= text
+        each url in urls
+          a(href=url.href, style="margin-right: 5px")= url.text
         if showBack
           a(href="javascript:history.go(-1)") 返回上一页

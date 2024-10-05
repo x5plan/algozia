@@ -1,7 +1,7 @@
-import { Body, Controller, Get, Post, Redirect, Render, Req, Res } from "@nestjs/common";
+import { Body, Controller, Get, Post, Query, Redirect, Render, Req, Res } from "@nestjs/common";
 import { Response } from "express";
 
-import { AppDevelopingException } from "@/common/exceptions/common.exception";
+import { AppDevelopingException } from "@/common/exceptions/common";
 import { CE_Permission } from "@/common/permission/permissions";
 import { CE_Page } from "@/common/types/page";
 import { IRequest } from "@/common/types/request";
@@ -11,7 +11,12 @@ import { UserService } from "@/user/user.service";
 
 import { AuthService } from "./auth.service";
 import { AuthSessionService } from "./auth-session.service";
-import { CE_LoginPostResponseError, LoginRequestBodyDto, LoginResponseDto } from "./dto/login.dto";
+import {
+    CE_LoginPostResponseError,
+    LoginRequestBodyDto,
+    LoginRequestQueryDto,
+    LoginResponseDto,
+} from "./dto/login.dto";
 
 @Controller(CE_Page.Auth)
 export class AuthController {
@@ -35,10 +40,11 @@ export class AuthController {
     public async postLoginAsync(
         @Req() req: IRequest,
         @Res() res: IResponse,
+        @Query() query: LoginRequestQueryDto,
         @Body() body: LoginRequestBodyDto,
     ): Promise<void> {
         const render = (options: LoginResponseDto) => res.render("auth-login", options);
-        const redirect = () => res.redirect("/");
+        const redirect = () => res.redirect(query.redirect || "/");
         const { username, password } = body;
 
         const user = await this.userService.findUserByUsernameAsync(username);

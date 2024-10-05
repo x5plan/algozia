@@ -1,7 +1,7 @@
 import type { ArgumentsHost, ExceptionFilter } from "@nestjs/common";
 import { Catch } from "@nestjs/common";
 
-import { AppHttpException } from "@/common/exceptions/common.exception";
+import { AppHttpException } from "@/common/exceptions/common";
 import { IResponse } from "@/common/types/response";
 
 @Catch(AppHttpException)

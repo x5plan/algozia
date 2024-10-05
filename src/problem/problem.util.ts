@@ -1,6 +1,7 @@
-import { CE_ProblemVisibilityString } from "@/common/strings/problem";
+import { CE_ProblemTypeString, CE_ProblemVisibilityString } from "@/common/strings/problem";
 
-import type { IVisibilityLabelColorMap, IVisibilityStringMap } from "./problem.type";
+import type { IProblemTypeStringMap, IVisibilityLabelColorMap, IVisibilityStringMap } from "./problem.type";
+import { E_ProblemType } from "./problem.type";
 import { CE_ProblemVisibility } from "./problem.type";
 
 export function getVisibilityStringMap(): IVisibilityStringMap {
@@ -18,5 +19,13 @@ export function getVisibilityLabelColorMap(): IVisibilityLabelColorMap {
         [CE_ProblemVisibility.Internal]: "violet",
         [CE_ProblemVisibility.Paid]: "blue",
         [CE_ProblemVisibility.Public]: "green",
+    };
+}
+
+export function getProblemTypeStringMap(): IProblemTypeStringMap {
+    return {
+        [E_ProblemType.Traditional]: CE_ProblemTypeString.Traditional,
+        [E_ProblemType.Interaction]: CE_ProblemTypeString.Interaction,
+        [E_ProblemType.SubmitAnswer]: CE_ProblemTypeString.SubmitAnswer,
     };
 }

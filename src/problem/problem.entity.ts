@@ -1,8 +1,9 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 
 import { UserEntity } from "@/user/user.entity";
 
 import { CE_ProblemVisibility, IProblemEditable } from "./problem.type";
+import { ProblemJudgeInfoEntity } from "./problem-judge-info.entity";
 
 @Entity("problem")
 export class ProblemEntity implements IProblemEditable {
@@ -46,4 +47,7 @@ export class ProblemEntity implements IProblemEditable {
 
     @Column({ name: "uploader_id", nullable: true })
     public uploaderId: number | null;
+
+    @OneToOne(() => ProblemJudgeInfoEntity, (judgeInfo) => judgeInfo.problemPromise)
+    public judgeInfoPromise: Promise<ProblemJudgeInfoEntity | null>;
 }

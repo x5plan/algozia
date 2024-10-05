@@ -14,7 +14,7 @@ block content
       .column(style="max-width: 450px")
         h2.ui.image.header
           .content(style="margin-bottom: 10px") 登录
-        form#login-form.ui.large.form(method="post", action="/auth/login")
+        form#login-form.ui.large.form(method="post", action=viewUtils.makeUrl({}))
           .ui.existing.segment
             .field
               .ui.left.icon.input

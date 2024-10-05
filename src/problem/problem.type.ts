@@ -24,14 +24,25 @@ export interface IProblemEditable {
     visibility: CE_ProblemVisibility;
 }
 
+export interface IProblemJudgeInfoEditable {
+    type: E_ProblemType;
+    timeLimit?: number;
+    memoryLimit?: number;
+    fileIO?: boolean;
+    inputFileName?: string;
+    outputFileName?: string;
+}
+
 export enum E_ProblemSortBy {
     DisplayId = "displayId",
 }
 
+export type IProblemTypeStringMap = Record<E_ProblemType, string>;
 export type IVisibilityStringMap = Record<CE_ProblemVisibility, string>;
 export type IVisibilityLabelColorMap = Record<CE_ProblemVisibility, string>;
 
 export interface IProblemViewGlobal {
+    problemTypeStringMap: IProblemTypeStringMap;
     visibilityStringMap: IVisibilityStringMap;
     visibilityLabelColorMap: IVisibilityLabelColorMap;
 }
