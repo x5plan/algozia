@@ -33,7 +33,7 @@ export interface ISessionInfo extends ISessionInfoInternal {
     lastAccessTime: number;
 }
 
-const cookieKey = "_session";
+const SESSION_COOKIE_KEY = "_session";
 
 @Injectable()
 export class AuthSessionService {
@@ -109,14 +109,14 @@ export class AuthSessionService {
     }
 
     public getCookieSessionKey(req: Request): string | undefined {
-        return req.cookies[cookieKey];
+        return req.cookies[SESSION_COOKIE_KEY];
     }
 
     public setCookieSessionKey(res: Response, sessionKey: string): void {
-        res.cookie(cookieKey, sessionKey, { maxAge: 315360000, httpOnly: true });
+        res.cookie(SESSION_COOKIE_KEY, sessionKey, { maxAge: 315360000, httpOnly: true });
     }
 
     public clearCookieSessionKey(res: Response): void {
-        res.clearCookie(cookieKey);
+        res.clearCookie(SESSION_COOKIE_KEY);
     }
 }
