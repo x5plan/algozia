@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query, Render, Req, Res } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Query, Redirect, Render, Req, Res } from "@nestjs/common";
 
 import { CurrentUser } from "@/common/decorators/user.decorator";
 import { AppLoginRequiredException, AppPermissionDeniedException } from "@/common/exceptions/common";
@@ -98,7 +98,7 @@ export class ProblemController {
 
         return {
             problem,
-            uploader: await problem.uploaderPromise,
+            judgeInfo: await problem.judgeInfoPromise,
             isAllowedEdit: this.problemService.checkIsAllowedEdit(currentUser),
             isAllowedSubmit: await this.problemService.checkIsAllowedSubmitAsync(problem, currentUser),
         };
@@ -236,12 +236,12 @@ export class ProblemController {
     }
 
     @Post(":id/edit/judge")
-    @Render("problem-edit-judge")
+    @Redirect()
     public async postProblemEditJudgeAsync(
         @Param() param: ProblemBasicRequestParamDto,
         @Body() body: ProblemEditJudgePostRequestBodyDto,
         @CurrentUser() currentUser: UserEntity | null,
-    ): Promise<ProblemEditJudgeResponseDto> {
+    ) {
         const { id } = param;
 
         if (!currentUser) {
@@ -252,30 +252,22 @@ export class ProblemController {
             throw new AppPermissionDeniedException();
         }
 
-        return await this.problemService.lockProblemByIdAsync<ProblemEditJudgeResponseDto>(
-            id,
-            CE_LockType.Write,
-            async (problem) => {
-                if (!problem) throw new NoSuchProblemException();
+        return await this.problemService.lockProblemByIdAsync(id, CE_LockType.Write, async (problem) => {
+            if (!problem) throw new NoSuchProblemException();
 
-                let judgeInfo = await problem.judgeInfoPromise;
+            let judgeInfo = await problem.judgeInfoPromise;
 
-                if (!judgeInfo) {
-                    judgeInfo = new ProblemJudgeInfoEntity();
-                    judgeInfo.problemId = problem.id;
-                }
+            if (!judgeInfo) {
+                judgeInfo = new ProblemJudgeInfoEntity();
+                judgeInfo.problemId = problem.id;
+            }
 
-                this.problemService.editJudgeInfo(judgeInfo, body);
+            this.problemService.editJudgeInfo(judgeInfo, body);
 
-                await this.problemService.updateJudgeInfoAsync(judgeInfo);
+            await this.problemService.updateJudgeInfoAsync(judgeInfo);
 
-                return {
-                    hasSubmissions: false,
-                    problem,
-                    judgeInfo,
-                };
-            },
-        );
+            return { url: `/problem/${problem.id}` };
+        });
     }
 
     @Get(":id/edit/data")

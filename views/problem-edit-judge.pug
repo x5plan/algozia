@@ -42,10 +42,10 @@ block content
 
             .two.fields
               .field
-                label(for="time-limit") 时间限制
+                label(for="time-limit") 时间限制 (ms)
                 input#time-limit(name="timeLimit", type="number", value=judgeInfo.timeLimit)
               .field
-                label(for="memory-limit") 空间限制
+                label(for="memory-limit") 空间限制 (MiB)
                 input#memory-limit(name="memoryLimit", type="number", value=judgeInfo.memoryLimit)
 
             .inline.fields
@@ -53,11 +53,11 @@ block content
               .field
                 .ui.radio.checkbox(class=judgeInfo.fileIO ? "checked" : "")
                   input.hidden(type="radio", name="fileIO", value="false", tabindex="0", checked=!judgeInfo.fileIO)
-                  label 标准输入输出
+                  label 标准 IO
               .field
                 .ui.radio.checkbox(class=judgeInfo.fileIO ? "checked" : "")
                   input.hidden(type="radio", name="fileIO", value="true", tabindex="0", checked=judgeInfo.fileIO)
-                  label 文件输入输出
+                  label 文件 IO
             .field
               label(for="input-file") 输入文件名
               input#input-file(name="inputFileName", type="text", value=judgeInfo.inputFileName)
