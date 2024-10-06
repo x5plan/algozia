@@ -12,6 +12,16 @@ export interface IDatabaseConfig {
     readonly type: "mysql" | "mariadb";
 }
 
+export interface IMinIOConfig {
+    readonly endPoint: string;
+    readonly port: number;
+    readonly useSSL: boolean;
+    readonly publicUrlEndPoint?: string;
+    readonly accessKey: string;
+    readonly secretKey: string;
+    readonly bucket: string;
+}
+
 export interface ISecurityConfig {
     readonly sessionSecret: string;
 }
@@ -31,6 +41,7 @@ export interface IAppConfig {
     readonly appName: string;
     readonly server: IServerConfig;
     readonly database: IDatabaseConfig;
+    readonly minio: IMinIOConfig;
     readonly redis: string;
     readonly security: ISecurityConfig;
     readonly cdnUrl?: string;

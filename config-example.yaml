@@ -12,6 +12,15 @@ database:
   password: "123456"
   database: tywzoj
 
+minio:
+  endPoint: 127.0.0.1
+  port: 9000
+  useSSL: false
+  publicUrlEndPoint: https://minio.tywzoj.example/
+  accessKey: access key
+  secretKey: secret key
+  bucket: tywzoj
+
 redis: redis://127.0.0.1:6379
 
 security:
