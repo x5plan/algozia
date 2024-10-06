@@ -1,5 +1,6 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import { isInt } from "class-validator";
 import { Repository } from "typeorm";
 
 import {
@@ -72,8 +73,8 @@ export class ProblemService {
             qb.andWhere((subQb) => {
                 subQb.where("problem.title LIKE :keyword", { keyword: `%${keyword}%` });
 
-                if (Number.isInteger(Number(keyword))) {
-                    subQb.orWhere("problemSub.displayId = :displayId", { displayId: Number(keyword) });
+                if (isInt(Number(keyword))) {
+                    subQb.orWhere("problem.displayId = :displayId", { displayId: Number(keyword) });
                 }
             });
         }

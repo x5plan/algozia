@@ -4,8 +4,21 @@ block prepend title
   - this.title = "题目";
 
 block content
-  .padding
+  .padding(style="padding-bottom: 20px")
     .ui.grid
+      .row
+        .seven.wide.column
+          form(action=viewUtils.makeUrl({}), method="get")
+            .ui.search
+              .ui.left.icon.input(style="width: 100%")
+                input.prompt(type="text", value=keyword, placeholder="ID / 题目名 …", name="keyword")
+                i.search.icon
+              .results
+        .nine.wide.right.aligned.column
+          if allowedManageProblem
+            a.ui.labeled.icon.mini.green.button(href="/problem/0/edit") 
+              i.plus.icon
+              | 新建题目
 
   +pagination-full
 

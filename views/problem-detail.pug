@@ -26,26 +26,29 @@ block append scripts
 block content
   .ui.center.aligned.grid
     .row
-      h1.ui.header ##{ problem.displayId }. #{ problem.title } 
-        span.ui.mini.label(class=`${visibilityLabelColorMap[problem.visibility]}`) 
-          | #{ visibilityStringMap[problem.visibility] }
+      .column
+        h1.ui.header ##{ problem.displayId }. #{ problem.title } 
+          span.ui.mini.label(class=`${visibilityLabelColorMap[problem.visibility]}`) 
+            | #{ visibilityStringMap[problem.visibility] }
 
     if judgeInfo
       .row(style="padding-top: 0; padding-bottom: 5px")
-        span.ui.label 题目类型: #{ problemTypeStringMap[judgeInfo.type] }
-        if judgeInfo.type !== "submit-answer"
-          span.ui.label 时间限制: #{ judgeInfo.timeLimit } ms
-          span.ui.label 空间限制: #{ judgeInfo.memoryLimit } MiB
+        .column
+          span.ui.label 题目类型: #{ problemTypeStringMap[judgeInfo.type] }
+          if judgeInfo.type !== "submit-answer"
+            span.ui.label 时间限制: #{ judgeInfo.timeLimit } ms
+            span.ui.label 空间限制: #{ judgeInfo.memoryLimit } MiB
 
       if judgeInfo.type !== "interaction"
         .row(style="padding-top: 0; padding-bottom: 5px")
-          if judgeInfo.type === "traditional"
-            if judgeInfo.fileIO
-              span.ui.label 输入文件: #{ judgeInfo.inputFileName }
-              span.ui.label 输出文件: #{ judgeInfo.outputFileName }
-            else
-              span.ui.label 标准输入输出
-          span.ui.label 评测方式: #{ testcase ? (testcase.spj ? "Special Judge" : "文本比较") : "无测试数据" }
+          .column
+            if judgeInfo.type === "traditional"
+              if judgeInfo.fileIO
+                span.ui.label 输入文件: #{ judgeInfo.inputFileName }
+                span.ui.label 输出文件: #{ judgeInfo.outputFileName }
+              else
+                span.ui.label 标准输入输出
+            span.ui.label 评测方式: #{ testcase ? (testcase.spj ? "Special Judge" : "文本比较") : "无测试数据" }
 
   .ui.grid
     .row

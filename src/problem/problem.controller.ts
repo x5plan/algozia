@@ -66,12 +66,19 @@ export class ProblemController {
 
         const pageCount = Math.max(Math.ceil(count / this.configService.config.pagination.problem), 1);
 
+        const allowedManageProblem = this.permissionService.checkCommonPermission(
+            CE_Permission.ManageProblem,
+            currentUser,
+        );
+
         return {
             problems,
             pageCount,
+            keyword,
             currentPage: Math.min(page, pageCount),
             sortBy,
             order,
+            allowedManageProblem,
         };
     }
 
