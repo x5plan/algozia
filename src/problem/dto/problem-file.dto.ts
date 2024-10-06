@@ -9,7 +9,7 @@ export class ProblemFileResponseDto {
     public isAllowedEdit: boolean;
 }
 
-export class ProblemFileDownloadRequestParamDto extends ProblemBasicRequestParamDto {
+export class ProblemFileRequestParamDto extends ProblemBasicRequestParamDto {
     @IsUUID()
     public readonly fileId: string;
 }

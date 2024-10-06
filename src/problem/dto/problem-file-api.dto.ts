@@ -42,4 +42,5 @@ export const enum CE_ProblemFileUploadError {
     NoSuchProblem = CE_ExceptionString.NoSuchProblem,
     PermissionDenied = CE_ExceptionString.PermissionDenied,
     MinIOError = CE_ExceptionString.MinIOError,
+    Data = "Data",
 }

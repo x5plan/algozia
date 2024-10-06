@@ -78,7 +78,7 @@ block content
                     a.ui.tertiary.icon.tiny.button(href=`/problem/${problem.id}/file/${file.uuid}`, target="_blank")
                       i.download.icon
                     if isAllowedEdit
-                      button.ui.tertiary.icon.tiny.red.button
+                      a.ui.tertiary.icon.tiny.red.button(href-post=`/problem/${problem.id}/file/${file.uuid}/delete`)
                         i.trash.icon
       .row
         .fourteen.wide.right.aligned.column

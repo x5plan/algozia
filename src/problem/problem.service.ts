@@ -7,6 +7,7 @@ import {
     InvalidFileIONameException,
     InvalidProblemTypeException,
     InvalidTimeOrMemoryLimitException,
+    NoSuchProblemFileException,
 } from "@/common/exceptions/problem";
 import { CE_Permission, CE_SpecificPermission } from "@/common/permission/permissions";
 import { CE_Order } from "@/common/types/order";
@@ -128,7 +129,34 @@ export class ProblemService {
     }
 
     public async deleteProblemAsync(problem: ProblemEntity) {
-        await this.problemRepository.remove(problem);
+        let deleteFilesActually: (() => void) | undefined;
+        await this.dataSource.transaction("READ COMMITTED", async (entityManager) => {
+            const files = await entityManager.find(ProblemFileEntity, { where: { problemId: problem.id } });
+            if (files.length > 0) {
+                deleteFilesActually = await this.fileService.deleteFileAsync(
+                    files.map((file) => file.uuid),
+                    entityManager,
+                );
+            }
+            await entityManager.remove(files);
+            await entityManager.remove(problem);
+        });
+        deleteFilesActually?.();
+    }
+
+    public async deleteProblemFileAsync(problem: ProblemEntity, uuid: string) {
+        let deleteFileActually: (() => void) | undefined;
+        await this.dataSource.transaction("READ COMMITTED", async (entityManager) => {
+            const file = await entityManager.findOne(ProblemFileEntity, {
+                where: { problemId: problem.id, uuid },
+            });
+            if (!file) {
+                throw new NoSuchProblemFileException();
+            }
+            deleteFileActually = await this.fileService.deleteFileAsync(file.uuid, entityManager);
+            await entityManager.remove(file);
+        });
+        deleteFileActually?.();
     }
 
     public async generateNewDisplayIdAsync() {

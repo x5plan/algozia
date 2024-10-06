@@ -17,7 +17,7 @@ import { UserEntity } from "@/user/user.entity";
 import { ProblemDetailResponseDto } from "./dto/problem-detail.dto";
 import { ProblemEditPostRequestBodyDto, ProblemEditResponseDto } from "./dto/problem-edit.dto";
 import { ProblemEditJudgePostRequestBodyDto, ProblemEditJudgeResponseDto } from "./dto/problem-edit-judge.dto";
-import { ProblemFileDownloadRequestParamDto, ProblemFileItemDto, ProblemFileResponseDto } from "./dto/problem-file.dto";
+import { ProblemFileItemDto, ProblemFileRequestParamDto, ProblemFileResponseDto } from "./dto/problem-file.dto";
 import {
     CE_ProblemFileUploadError,
     ProblemReportFileUploadFinishedPostRequestBodyDto,
@@ -29,7 +29,7 @@ import { ProblemListGetRequestQueryDto, ProblemListGetResponseDto } from "./dto/
 import { ProblemBasicRequestParamDto } from "./dto/problem-shared.dto";
 import { ProblemEntity } from "./problem.entity";
 import { ProblemService } from "./problem.service";
-import { CE_ProblemVisibility, E_ProblemType } from "./problem.type";
+import { CE_ProblemVisibility, E_ProblemFileType, E_ProblemType } from "./problem.type";
 import { ProblemJudgeInfoEntity } from "./problem-judge-info.entity";
 
 @Controller(CE_Page.Problem)
@@ -340,7 +340,7 @@ export class ProblemController {
     @Get(":id/file/:fileId")
     @Redirect()
     public async getProblemFileDownloadAsync(
-        @Param() param: ProblemFileDownloadRequestParamDto,
+        @Param() param: ProblemFileRequestParamDto,
         @CurrentUser() currentUser: UserEntity | null,
     ) {
         const { id, fileId } = param;
@@ -362,6 +362,32 @@ export class ProblemController {
         const downloadUrl = await this.fileService.signDownloadUrlAsync(file.uuid, file.filename);
 
         return { url: downloadUrl };
+    }
+
+    @Post([":id/file/:fileId/delete", ":id/edit/data/:fileId/delete"])
+    @Redirect()
+    public async postProblemFileDeleteAsync(
+        @Req() req: IRequest,
+        @Param() param: ProblemFileRequestParamDto,
+        @CurrentUser() currentUser: UserEntity | null,
+    ) {
+        const { id, fileId } = param;
+        const isEditData = req.path.includes("edit/data");
+        const type = isEditData ? E_ProblemFileType.TestData : E_ProblemFileType.Additional;
+
+        if (!currentUser || !this.problemService.checkIsAllowedEdit(currentUser)) {
+            throw new AppPermissionDeniedException();
+        }
+
+        return await this.problemService.lockManageFileByProblemIdAsync(id, type, async (problem) => {
+            if (!problem) throw new NoSuchProblemException();
+
+            await this.problemService.deleteProblemFileAsync(problem, fileId);
+
+            return {
+                url: isEditData ? `/problem/${id}/edit/data` : `/problem/${id}/file`,
+            };
+        });
     }
 
     @Post(":id/delete")
