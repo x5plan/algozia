@@ -1,6 +1,12 @@
-import { IsNotEmpty, IsString } from "class-validator";
+import { IsNotEmpty, IsOptional, IsString } from "class-validator";
 
 import { CE_ExceptionString } from "@/common/strings/exception";
+
+export class LoginRequestQueryDto {
+    @IsString()
+    @IsOptional()
+    public redirect?: string;
+}
 
 export class LoginRequestBodyDto {
     @IsString()

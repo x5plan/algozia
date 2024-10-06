@@ -7,7 +7,7 @@ import { join } from "path";
 
 import { AppExceptionFilter } from "./app.filter";
 import { AppModule } from "./app.module";
-import { AppValidationException } from "./common/exceptions/common.exception";
+import { AppValidationException } from "./common/exceptions/common";
 import { ConfigService } from "./config/config.service";
 
 async function bootstrapAsync() {

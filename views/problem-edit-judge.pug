@@ -1,0 +1,71 @@
+extends common/layout
+
+block prepend title
+  - this.title = `${problem.title} - 评测设置`;
+
+block append scripts
+  +import-validation("problem-edit-judge")
+  script.
+    $(".ui.radio.checkbox").checkbox();
+
+mixin type-checkbox-item(value, disabled)
+  - const checked = judgeInfo.type === value;
+  .ui.radio.checkbox(class=checked ? "checked" : "", class=disabled ? "disabled" : "")
+    input.hidden(type="radio", name="type", value=value, tabindex="0", checked=checked, disabled=disabled)
+    label= problemTypeStringMap[value]
+
+block content
+  .padding
+    .ui.center.aligned.grid
+      .row
+        h1.ui.header ##{ problem.displayId }. #{ problem.title } - 评测设置
+
+      .row
+        .cloumn
+          p
+            strong 为了避免系统出错，已有提交的题目不允许在提交答案和非提交答案之间更改。
+          p 题目类型为“提交答案”时，时间限制、空间限制以及 IO 方式将被忽略。
+          p 题目类型为“提交答案”或“交互”时， IO 方式将被忽略。
+          p IO 方式为“标准输入输出”时，输入文件名和输出文件名将被忽略。
+
+      .row
+        .cloumn(style="width: 500px")
+          form#judge-info-form.ui.form(action=viewUtils.makeUrl({}), method="post")
+            .inline.fields
+              label 评测类型
+              .field
+                +type-checkbox-item("traditional", hasSubmissions && judgeInfo.type === "submit-answer")
+              .field
+                +type-checkbox-item("submit-answer", hasSubmissions && judgeInfo.type !== "submit-answer")
+              .field
+                +type-checkbox-item("interaction", hasSubmissions && judgeInfo.type === "submit-answer")
+
+            .two.fields
+              .field
+                label(for="time-limit") 时间限制 (ms)
+                input#time-limit(name="timeLimit", type="number", value=judgeInfo.timeLimit)
+              .field
+                label(for="memory-limit") 空间限制 (MiB)
+                input#memory-limit(name="memoryLimit", type="number", value=judgeInfo.memoryLimit)
+
+            .inline.fields
+              label IO 方式
+              .field
+                .ui.radio.checkbox(class=judgeInfo.fileIO ? "checked" : "")
+                  input.hidden(type="radio", name="fileIO", value="false", tabindex="0", checked=!judgeInfo.fileIO)
+                  label 标准 IO
+              .field
+                .ui.radio.checkbox(class=judgeInfo.fileIO ? "checked" : "")
+                  input.hidden(type="radio", name="fileIO", value="true", tabindex="0", checked=judgeInfo.fileIO)
+                  label 文件 IO
+            .field
+              label(for="input-file") 输入文件名
+              input#input-file(name="inputFileName", type="text", value=judgeInfo.inputFileName)
+            .field
+              label(for="output-file") 输出文件名
+              input#output-file(name="outputFileName", type="text", value=judgeInfo.outputFileName)
+
+            .ui.error.message
+
+            button.ui.primary.button(type="submit") 保存
+            a.ui.button(href=`/problem/${problem.id}`) 返回题目

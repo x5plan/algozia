@@ -1,3 +1,9 @@
+export const enum CE_ProblemTypeString {
+    Traditional = "传统",
+    Interaction = "交互",
+    SubmitAnswer = "提交答案",
+}
+
 export const enum CE_ProblemVisibilityString {
     Public = "公开",
     Paid = "付费",

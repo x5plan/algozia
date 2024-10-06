@@ -1,24 +1,38 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import { isInt } from "class-validator";
 import { Repository } from "typeorm";
 
+import {
+    InvalidFileIONameException,
+    InvalidProblemTypeException,
+    InvalidTimeOrMemoryLimitException,
+} from "@/common/exceptions/problem";
 import { CE_Permission, CE_SpecificPermission } from "@/common/permission/permissions";
 import { CE_Order } from "@/common/types/order";
 import { ConfigService } from "@/config/config.service";
 import { PermissionService } from "@/permission/permission.service";
+import { LockService } from "@/redis/lock.service";
+import { CE_LockType } from "@/redis/lock.type";
 import { UserEntity } from "@/user/user.entity";
 
 import { CE_ProblemEditResponseError, type ProblemEditPostRequestBodyDto } from "./dto/problem-edit.dto";
+import { ProblemEditJudgePostRequestBodyDto } from "./dto/problem-edit-judge.dto";
 import { ProblemEntity } from "./problem.entity";
-import { CE_ProblemVisibility } from "./problem.type";
+import { CE_ProblemVisibility, E_ProblemType } from "./problem.type";
+import { ProblemJudgeInfoEntity } from "./problem-judge-info.entity";
 
 @Injectable()
 export class ProblemService {
     constructor(
         @InjectRepository(ProblemEntity)
         private readonly problemRepository: Repository<ProblemEntity>,
+        @InjectRepository(ProblemJudgeInfoEntity)
+        private readonly problemJudgeInfoRepository: Repository<ProblemJudgeInfoEntity>,
         @Inject(forwardRef(() => PermissionService))
         private readonly permissionService: PermissionService,
+        @Inject(forwardRef(() => LockService))
+        private readonly lockService: LockService,
         private readonly configService: ConfigService,
     ) {}
 
@@ -59,8 +73,8 @@ export class ProblemService {
             qb.andWhere((subQb) => {
                 subQb.where("problem.title LIKE :keyword", { keyword: `%${keyword}%` });
 
-                if (Number.isInteger(Number(keyword))) {
-                    subQb.orWhere("problemSub.displayId = :displayId", { displayId: Number(keyword) });
+                if (isInt(Number(keyword))) {
+                    subQb.orWhere("problem.displayId = :displayId", { displayId: Number(keyword) });
                 }
             });
         }
@@ -76,6 +90,10 @@ export class ProblemService {
 
     public async updateProblemAsync(problem: ProblemEntity) {
         await this.problemRepository.save(problem);
+    }
+
+    public async updateJudgeInfoAsync(judgeInfo: ProblemJudgeInfoEntity) {
+        await this.problemJudgeInfoRepository.save(judgeInfo);
     }
 
     public async deleteProblemAsync(problem: ProblemEntity) {
@@ -116,6 +134,40 @@ export class ProblemService {
         problem.visibility = body.visibility;
 
         return null;
+    }
+
+    public editJudgeInfo(judgeInfo: ProblemJudgeInfoEntity, body: ProblemEditJudgePostRequestBodyDto) {
+        const hasSubmissions = false; // TODO: Check if the problem has submissions.
+
+        if (body.type === E_ProblemType.SubmitAnswer) {
+            if (hasSubmissions && judgeInfo.type !== E_ProblemType.SubmitAnswer) {
+                throw new InvalidProblemTypeException();
+            }
+        } else {
+            if (hasSubmissions && judgeInfo.type === E_ProblemType.SubmitAnswer) {
+                throw new InvalidProblemTypeException();
+            }
+
+            if (!body.timeLimit || !body.memoryLimit) throw new InvalidTimeOrMemoryLimitException();
+
+            judgeInfo.timeLimit = body.timeLimit;
+            judgeInfo.memoryLimit = body.memoryLimit;
+        }
+
+        judgeInfo.type = body.type;
+
+        if (body.type === E_ProblemType.Traditional) {
+            if (body.fileIO === undefined) throw new InvalidFileIONameException();
+
+            judgeInfo.fileIO = body.fileIO;
+
+            if (body.fileIO) {
+                if (!body.inputFileName || !body.outputFileName) throw new InvalidFileIONameException();
+
+                judgeInfo.inputFileName = body.inputFileName;
+                judgeInfo.outputFileName = body.outputFileName;
+            }
+        }
     }
 
     public async checkIsAllowedViewAsync(problem: ProblemEntity, user: UserEntity) {
@@ -169,5 +221,21 @@ export class ProblemService {
         // If the user is not allowed to manage problems,
         // they are not allowed to edit problems.
         return this.permissionService.checkCommonPermission(CE_Permission.ManageProblem, user);
+    }
+
+    /**
+     * Lock a problem by ID with Read/Write Lock.
+     * @param type "read" to ensure the problem exists while holding the lock, "write" is for deleting the problem.
+     */
+    public async lockProblemByIdAsync<T>(
+        id: number,
+        type: CE_LockType,
+        callbackAsync: (problem: ProblemEntity | null) => Promise<T>,
+    ): Promise<T> {
+        return await this.lockService.lockReadWriteAsync(
+            `AcquireProblem_${id}`,
+            type,
+            async () => await callbackAsync(await this.findProblemByIdAsync(id)),
+        );
     }
 }

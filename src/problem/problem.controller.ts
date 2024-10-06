@@ -1,8 +1,8 @@
-import { Body, Controller, Get, Param, Post, Query, Render, Req, Res } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Query, Redirect, Render, Req, Res } from "@nestjs/common";
 
 import { CurrentUser } from "@/common/decorators/user.decorator";
-import { AppLoginRequiredException, AppPermissionDeniedException } from "@/common/exceptions/common.exception";
-import { NoSuchProblemException } from "@/common/exceptions/problem.exception";
+import { AppLoginRequiredException, AppPermissionDeniedException } from "@/common/exceptions/common";
+import { NoSuchProblemException } from "@/common/exceptions/problem";
 import { CE_Permission, CE_SpecificPermission } from "@/common/permission/permissions";
 import { CE_Order } from "@/common/types/order";
 import { CE_Page } from "@/common/types/page";
@@ -10,15 +10,18 @@ import { IRequest } from "@/common/types/request";
 import { IResponse } from "@/common/types/response";
 import { ConfigService } from "@/config/config.service";
 import { PermissionService } from "@/permission/permission.service";
+import { CE_LockType } from "@/redis/lock.type";
 import { UserEntity } from "@/user/user.entity";
 
 import { ProblemDetailResponseDto } from "./dto/problem-detail.dto";
 import { ProblemEditPostRequestBodyDto, ProblemEditResponseDto } from "./dto/problem-edit.dto";
+import { ProblemEditJudgePostRequestBodyDto, ProblemEditJudgeResponseDto } from "./dto/problem-edit-judge.dto";
 import { ProblemListGetRequestQueryDto, ProblemListGetResponseDto } from "./dto/problem-list.dto";
 import { ProblemBasicRequestParamDto } from "./dto/problem-shared.dto";
 import { ProblemEntity } from "./problem.entity";
 import { ProblemService } from "./problem.service";
-import { CE_ProblemVisibility } from "./problem.type";
+import { CE_ProblemVisibility, E_ProblemType } from "./problem.type";
+import { ProblemJudgeInfoEntity } from "./problem-judge-info.entity";
 
 @Controller(CE_Page.Problem)
 export class ProblemController {
@@ -63,12 +66,19 @@ export class ProblemController {
 
         const pageCount = Math.max(Math.ceil(count / this.configService.config.pagination.problem), 1);
 
+        const allowedManageProblem = this.permissionService.checkCommonPermission(
+            CE_Permission.ManageProblem,
+            currentUser,
+        );
+
         return {
             problems,
             pageCount,
+            keyword,
             currentPage: Math.min(page, pageCount),
             sortBy,
             order,
+            allowedManageProblem,
         };
     }
 
@@ -81,7 +91,7 @@ export class ProblemController {
         const { id } = param;
 
         if (!currentUser) {
-            throw new AppLoginRequiredException(`/problem/${id}/edit`);
+            throw new AppLoginRequiredException(`/problem/${id}`);
         }
 
         const problem = await this.problemService.findProblemByIdAsync(id);
@@ -95,7 +105,7 @@ export class ProblemController {
 
         return {
             problem,
-            uploader: await problem.uploaderPromise,
+            judgeInfo: await problem.judgeInfoPromise,
             isAllowedEdit: this.problemService.checkIsAllowedEdit(currentUser),
             isAllowedSubmit: await this.problemService.checkIsAllowedSubmitAsync(problem, currentUser),
         };
@@ -191,6 +201,86 @@ export class ProblemController {
 
         await this.problemService.updateProblemAsync(problem);
         redirect(problem.id);
+    }
+
+    @Get(":id/edit/judge")
+    @Render("problem-edit-judge")
+    public async getProblemEditJudgeAsync(
+        @Param() param: ProblemBasicRequestParamDto,
+        @CurrentUser() currentUser: UserEntity | null,
+    ): Promise<ProblemEditJudgeResponseDto> {
+        const { id } = param;
+
+        if (!currentUser) {
+            throw new AppLoginRequiredException(`/problem/${id}/edit/judge`);
+        }
+
+        if (!this.problemService.checkIsAllowedEdit(currentUser)) {
+            throw new AppPermissionDeniedException();
+        }
+
+        const problem = await this.problemService.findProblemByIdAsync(id);
+
+        if (!problem) {
+            throw new NoSuchProblemException();
+        }
+
+        let judgeInfo = await problem.judgeInfoPromise;
+
+        if (!judgeInfo) {
+            judgeInfo = new ProblemJudgeInfoEntity();
+            judgeInfo.type = E_ProblemType.Traditional;
+            judgeInfo.timeLimit = 1000;
+            judgeInfo.memoryLimit = 256;
+            judgeInfo.fileIO = false;
+        }
+
+        return {
+            hasSubmissions: false,
+            problem,
+            judgeInfo,
+        };
+    }
+
+    @Post(":id/edit/judge")
+    @Redirect()
+    public async postProblemEditJudgeAsync(
+        @Param() param: ProblemBasicRequestParamDto,
+        @Body() body: ProblemEditJudgePostRequestBodyDto,
+        @CurrentUser() currentUser: UserEntity | null,
+    ) {
+        const { id } = param;
+
+        if (!currentUser) {
+            throw new AppLoginRequiredException(`/problem/${id}/edit/judge`);
+        }
+
+        if (!this.problemService.checkIsAllowedEdit(currentUser)) {
+            throw new AppPermissionDeniedException();
+        }
+
+        return await this.problemService.lockProblemByIdAsync(id, CE_LockType.Write, async (problem) => {
+            if (!problem) throw new NoSuchProblemException();
+
+            let judgeInfo = await problem.judgeInfoPromise;
+
+            if (!judgeInfo) {
+                judgeInfo = new ProblemJudgeInfoEntity();
+                judgeInfo.problemId = problem.id;
+            }
+
+            this.problemService.editJudgeInfo(judgeInfo, body);
+
+            await this.problemService.updateJudgeInfoAsync(judgeInfo);
+
+            return { url: `/problem/${problem.id}` };
+        });
+    }
+
+    @Get(":id/edit/data")
+    @Render("problem-edit-data")
+    public async getProblemEditDataAsync() {
+        return {};
     }
 
     @Post(":id/delete")
