@@ -1,5 +1,6 @@
 import { Type } from "class-transformer";
 import {
+    IsBoolean,
     IsIn,
     IsInt,
     IsIP,
@@ -13,7 +14,14 @@ import {
 
 import { IsHostname, IsPortNumber } from "@/common/validators";
 
-import { IAppConfig, IDatabaseConfig, IPaginationConfig, ISecurityConfig, IServerConfig } from "./config.type";
+import {
+    IAppConfig,
+    IDatabaseConfig,
+    IMinIOConfig,
+    IPaginationConfig,
+    ISecurityConfig,
+    IServerConfig,
+} from "./config.type";
 
 class ServerConfig implements IServerConfig {
     @IsIP()
@@ -46,6 +54,40 @@ class DatabaseConfig implements IDatabaseConfig {
 
     @IsIn(["mysql", "mariadb"])
     public readonly type: "mysql" | "mariadb";
+}
+
+class MinIOConfig implements IMinIOConfig {
+    @IsHostname({
+        require_tld: false,
+    })
+    public readonly endPoint: string;
+
+    @IsPortNumber()
+    public readonly port: number;
+
+    @IsBoolean()
+    public readonly useSSL: boolean;
+
+    @IsUrl({
+        protocols: ["http", "https"],
+        require_protocol: true,
+        require_host: true,
+        require_tld: false,
+    })
+    @IsOptional()
+    public readonly publicUrlEndPoint?: string;
+
+    @IsString()
+    @IsNotEmpty()
+    public readonly accessKey: string;
+
+    @IsString()
+    @IsNotEmpty()
+    public readonly secretKey: string;
+
+    @IsString()
+    @IsNotEmpty()
+    public readonly bucket: string;
 }
 
 class SecurityConfig implements ISecurityConfig {
@@ -94,6 +136,11 @@ export class AppConfig implements IAppConfig {
     @ValidateNested()
     @IsNotEmptyObject()
     public readonly database: IDatabaseConfig;
+
+    @Type(() => MinIOConfig)
+    @ValidateNested()
+    @IsNotEmptyObject()
+    public readonly minio: IMinIOConfig;
 
     @IsUrl({
         protocols: ["redis", "rediss", "redis-socket", "redis-sentinel"],

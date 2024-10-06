@@ -15,20 +15,19 @@ import { AppController } from "./app.controller";
 import { AppExceptionFilter } from "./app.filter";
 import { AppMiddleware } from "./app.middleware";
 import { AppService } from "./app.service";
+import { FileModule } from "./file/file.module";
 
 @Module({
     imports: [
-        // Global modules
         ConfigModule,
-        forwardRef(() => DatabaseModule),
-        forwardRef(() => RedisModule),
-
-        // Feature modules
         forwardRef(() => AuthModule),
         forwardRef(() => ContestModule),
+        forwardRef(() => DatabaseModule),
+        forwardRef(() => FileModule),
         forwardRef(() => HomeworkModule),
         forwardRef(() => PermissionModule),
         forwardRef(() => ProblemModule),
+        forwardRef(() => RedisModule),
         forwardRef(() => SubmissionModule),
         forwardRef(() => UserModule),
     ],

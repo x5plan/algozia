@@ -1,5 +1,6 @@
 import serialize from "serialize-javascript";
 
+import { defaultIcon, suffixIconMap } from "../const/file-icon-map";
 import type { IRequest } from "../types/request";
 import type { IResponse } from "../types/response";
 
@@ -37,5 +38,25 @@ export class ViewUtils {
         const url = path + (qs ? `?${qs}` : "");
 
         return serialize ? this.serialize(url) : url;
+    }
+
+    public formatFileSize(size: number, precision = 2): string {
+        const units = ["KiB", "MiB", "GiB", "TiB"];
+
+        let unit = "B";
+        for (const currUnit of units) {
+            if (size > 1024) {
+                size /= 1024;
+                unit = currUnit;
+            }
+        }
+
+        const fixed = size === Math.round(size) ? size.toString() : size.toFixed(precision);
+        return fixed + " " + unit;
+    }
+
+    public getFileIcon(filename: string) {
+        const ext = filename.split(".").pop();
+        return suffixIconMap[`.${ext}`] || defaultIcon;
     }
 }

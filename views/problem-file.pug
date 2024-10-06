@@ -1,0 +1,99 @@
+extends common/layout
+
+block prepend title
+  - this.title = `${problem.title} - 附加文件`;
+
+block append scripts
+  if isAllowedEdit
+    +import-bundle-script("file-upload")
+    script.
+      $(() => {
+        const uploadFile = async (file) => {
+          try {
+            const error = await window.FileUploadUtil.uploadProblemFileAsync(
+              file, "additional", !{ viewUtils.serialize(problem.id) }
+            );
+
+            if (error) {
+            $.toast({
+                class: 'error',
+                title: '上传失败',
+                message: error,
+              });
+            }
+
+            return !error;
+          } catch (e) {
+            $.toast({
+              class: 'error',
+              title: '服务器错误',
+              message: e.statusText || e.message,
+            });
+            return false;
+          }
+        };
+
+        const $uploadBtn = $("#upload-btn");
+        $uploadBtn.click(() => {
+          window.FileUploadUtil.openUploadDialog(async (files) => {
+            $("a, button").addClass("disabled");
+            $uploadBtn.addClass("loading");
+
+            let success = true;
+            for (const file of files) {
+              success &&= await uploadFile(file);
+            }
+            if (success) { 
+              window.location.reload()
+            } else {
+              $("a, button").removeClass("disabled");
+              $uploadBtn.removeClass("loading");
+            }
+          });
+        });
+      });
+
+block content
+  .padding
+    .ui.center.aligned.grid
+      .row
+        h1.ui.header ##{ problem.displayId }. #{ problem.title } - 附加文件
+
+      .row
+        .fourteen.wide.column
+          table.ui.teal.table
+            thead
+              tr
+                th 文件名
+                th.three.wide 大小
+                th.two.wide 操作
+            tbody
+              each file in files
+                tr
+                  td
+                    i.icon(class=`${viewUtils.getFileIcon(file.filename)}`)
+                    = file.filename
+                  td= viewUtils.formatFileSize(file.size)
+                  td
+                    a.ui.tertiary.icon.tiny.button(
+                      href=`/problem/${problem.id}/file/${file.uuid}`,
+                      target="_blank",
+                      title="下载"
+                    )
+                      i.download.icon
+                    if isAllowedEdit
+                      a.ui.tertiary.icon.tiny.red.button(
+                        tabindex="0",
+                        href-post=`/problem/${problem.id}/file/${file.uuid}/delete`,
+                        title="删除"
+                      )
+                        i.trash.icon
+      .row
+        .fourteen.wide.right.aligned.column
+          a.ui.labeled.icon.small.button(href=`/problem/${problem.id}`)
+            i.arrow.left.icon
+            | 返回题目
+          if isAllowedEdit
+            button#upload-btn.ui.labeled.icon.small.green.button
+              i.plus.icon
+              | 上传文件

@@ -21,7 +21,7 @@ block content
         h1.ui.header ##{ problem.displayId }. #{ problem.title } - 评测设置
 
       .row
-        .cloumn
+        .nine.wide.column
           p
             strong 为了避免系统出错，已有提交的题目不允许在提交答案和非提交答案之间更改。
           p 题目类型为“提交答案”时，时间限制、空间限制以及 IO 方式将被忽略。
@@ -29,7 +29,7 @@ block content
           p IO 方式为“标准输入输出”时，输入文件名和输出文件名将被忽略。
 
       .row
-        .cloumn(style="width: 500px")
+        .nine.wide.column
           form#judge-info-form.ui.form(action=viewUtils.makeUrl({}), method="post")
             .inline.fields
               label 评测类型

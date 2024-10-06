@@ -13,9 +13,9 @@ export class PermissionEntity {
     @PrimaryColumn({ name: "user_id" })
     public userId: number;
 
-    @Column({ name: "allowed_problem_ids", type: "json", default: "[]" })
+    @Column({ name: "allowed_problem_ids", type: "simple-array", nullable: false })
     public allowedProblemIds: number[];
 
-    @Column({ name: "allowed_contest_ids", type: "json", default: "[]" })
+    @Column({ name: "allowed_contest_ids", type: "simple-array", nullable: false })
     public allowedContestIds: number[];
 }
