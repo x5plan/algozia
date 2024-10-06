@@ -1,7 +1,7 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
+import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
 import { isInt } from "class-validator";
-import { Repository } from "typeorm";
+import { DataSource, Repository } from "typeorm";
 
 import {
     InvalidFileIONameException,
@@ -11,6 +11,8 @@ import {
 import { CE_Permission, CE_SpecificPermission } from "@/common/permission/permissions";
 import { CE_Order } from "@/common/types/order";
 import { ConfigService } from "@/config/config.service";
+import { FileService } from "@/file/file.service";
+import { CE_FileUploadError, ISignedUploadRequest } from "@/file/file.type";
 import { PermissionService } from "@/permission/permission.service";
 import { LockService } from "@/redis/lock.service";
 import { CE_LockType } from "@/redis/lock.type";
@@ -19,20 +21,27 @@ import { UserEntity } from "@/user/user.entity";
 import { CE_ProblemEditResponseError, type ProblemEditPostRequestBodyDto } from "./dto/problem-edit.dto";
 import { ProblemEditJudgePostRequestBodyDto } from "./dto/problem-edit-judge.dto";
 import { ProblemEntity } from "./problem.entity";
-import { CE_ProblemVisibility, E_ProblemType } from "./problem.type";
+import { CE_ProblemVisibility, E_ProblemFileType, E_ProblemType } from "./problem.type";
+import { ProblemFileEntity } from "./problem-file.entity";
 import { ProblemJudgeInfoEntity } from "./problem-judge-info.entity";
 
 @Injectable()
 export class ProblemService {
     constructor(
+        @InjectDataSource()
+        private readonly dataSource: DataSource,
         @InjectRepository(ProblemEntity)
         private readonly problemRepository: Repository<ProblemEntity>,
         @InjectRepository(ProblemJudgeInfoEntity)
         private readonly problemJudgeInfoRepository: Repository<ProblemJudgeInfoEntity>,
+        @InjectRepository(ProblemFileEntity)
+        private readonly problemFileRepository: Repository<ProblemFileEntity>,
         @Inject(forwardRef(() => PermissionService))
         private readonly permissionService: PermissionService,
         @Inject(forwardRef(() => LockService))
         private readonly lockService: LockService,
+        @Inject(forwardRef(() => FileService))
+        private readonly fileService: FileService,
         private readonly configService: ConfigService,
     ) {}
 
@@ -86,6 +95,28 @@ export class ProblemService {
         const [problems, count] = await qb.getManyAndCount();
 
         return { problems, count };
+    }
+
+    public async findProblemAdditionalFileByUUIDAsync(problem: ProblemEntity, uuid: string) {
+        return await this.problemFileRepository.findOne({
+            where: {
+                problemId: problem.id,
+                type: E_ProblemFileType.Additional,
+                uuid,
+            },
+        });
+    }
+
+    public async findProblemAdditionalFilesAsync(problem: ProblemEntity) {
+        return await this.problemFileRepository.find({
+            where: { problemId: problem.id, type: E_ProblemFileType.Additional },
+        });
+    }
+
+    public async countProblemAdditionalFilesAsync(problem: ProblemEntity) {
+        return await this.problemFileRepository.count({
+            where: { problemId: problem.id, type: E_ProblemFileType.Additional },
+        });
     }
 
     public async updateProblemAsync(problem: ProblemEntity) {
@@ -237,5 +268,64 @@ export class ProblemService {
             type,
             async () => await callbackAsync(await this.findProblemByIdAsync(id)),
         );
+    }
+
+    public async lockManageFileByProblemIdAsync<T>(
+        problemId: number,
+        type: E_ProblemFileType,
+        callbackAsync: (problem: ProblemEntity | null) => Promise<T>,
+    ): Promise<T> {
+        return await this.lockProblemByIdAsync(
+            problemId,
+            CE_LockType.Read,
+            async (problem) =>
+                await this.lockService.lockAsync(
+                    `ManageProblemFile_${type}_${problemId}`,
+                    async () => await callbackAsync(problem),
+                ),
+        );
+    }
+
+    /**
+     * Should be called under lockManageFileByProblemIdAsync.
+     */
+    public async addProblemFileAsync(
+        problem: ProblemEntity,
+        type: E_ProblemFileType,
+        filename: string,
+        signedUploadRequest: ISignedUploadRequest,
+    ): Promise<CE_FileUploadError | null> {
+        let deleteOldFileActually: (() => void) | undefined;
+
+        const result = await this.dataSource.transaction("REPEATABLE READ", async (entityManager) => {
+            const result = await this.fileService.reportUploadFinishedAsync(signedUploadRequest, entityManager);
+
+            if (result.error) return result.error;
+
+            const oldProblemFile = await entityManager.findOneBy(ProblemFileEntity, {
+                problemId: problem.id,
+                type,
+                filename,
+            });
+
+            if (oldProblemFile) {
+                deleteOldFileActually = await this.fileService.deleteFileAsync(oldProblemFile.uuid, entityManager);
+                oldProblemFile.uuid = signedUploadRequest.uuid;
+                await entityManager.save(ProblemFileEntity, oldProblemFile);
+            } else {
+                const problemFile = new ProblemFileEntity();
+                problemFile.problemId = problem.id;
+                problemFile.type = type;
+                problemFile.filename = filename;
+                problemFile.uuid = signedUploadRequest.uuid;
+                await entityManager.save(ProblemFileEntity, problemFile);
+            }
+
+            return null;
+        });
+
+        deleteOldFileActually?.();
+
+        return result;
     }
 }

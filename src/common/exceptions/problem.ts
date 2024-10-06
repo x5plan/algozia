@@ -26,3 +26,9 @@ export class InvalidProblemTypeException extends AppHttpException {
         super(CE_ExceptionString.Problem_InvalidProbelemType, HttpStatus.BAD_REQUEST);
     }
 }
+
+export class NoSuchProblemFileException extends AppHttpException {
+    constructor() {
+        super(CE_ExceptionString.Problem_NoSuchProblemFile, HttpStatus.NOT_FOUND);
+    }
+}

@@ -13,6 +13,11 @@ export const enum CE_ProblemVisibility {
     Private = CE_UserLevel.Manager,
 }
 
+export enum E_ProblemFileType {
+    TestData = "testdata",
+    Additional = "additional",
+}
+
 export interface IProblemEditable {
     displayId: number;
     title: string;

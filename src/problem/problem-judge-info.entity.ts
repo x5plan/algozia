@@ -31,4 +31,7 @@ export class ProblemJudgeInfoEntity implements ToEntity<IProblemJudgeInfoEditabl
 
     @Column({ name: "output_file_name", type: "text", nullable: true })
     public outputFileName: string | null;
+
+    @Column({ name: "testdata_config", type: "simple-json", nullable: true })
+    public testdataConfig: unknown | null;
 }

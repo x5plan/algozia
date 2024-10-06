@@ -6,6 +6,7 @@ import { CE_ProblemVisibility, IProblemEditable } from "./problem.type";
 import { ProblemJudgeInfoEntity } from "./problem-judge-info.entity";
 
 @Entity("problem")
+@Index(["displayId", "visibility"])
 export class ProblemEntity implements IProblemEditable {
     @PrimaryGeneratedColumn()
     public readonly id: number;

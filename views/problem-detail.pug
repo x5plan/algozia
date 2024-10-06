@@ -57,6 +57,8 @@ block content
           if isAllowedSubmit
             a.ui.small.primary.button(href="#submit_code") 提交
           a.ui.small.positive.button(href=`/submissions?problemId=${problem.id}`) 提交记录
+          if hasAdditionalFiles || isAllowedEdit
+            a.ui.small.teal.button(href=`/problem/${problem.id}/file`) 附加文件
         if isAllowedEdit
           .ui.buttons.right.floated
             a.ui.small.button(href=`/problem/${problem.id}/edit`) 编辑

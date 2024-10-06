@@ -1,7 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Client as MinioClient } from "minio";
-import { EntityManager, Repository } from "typeorm";
+import { EntityManager, In, Repository } from "typeorm";
 import { v4 as uuidv4 } from "uuid";
 
 import { encodeRFC5987ValueChars } from "@/common/utils/encode";
@@ -10,8 +10,8 @@ import { ConfigService } from "@/config/config.service";
 import { FileEntity } from "./file.entity";
 import { CE_FileUploadError, IFileUploadReportResult, ISignedUploadRequest } from "./file.type";
 
-const FILE_UPLOAD_EXPIRE_TIME = 10 * 60 * 1000; // 10 minutes upload expire time
-const FILE_DOWNLOAD_EXPIRE_TIME = 20 * 60 * 60 * 1000; // 20 hours download expire time
+const FILE_UPLOAD_EXPIRE_TIME = 10 * 60; // 10 minutes upload expire time
+const FILE_DOWNLOAD_EXPIRE_TIME = 20 * 60 * 60; // 20 hours download expire time
 
 @Injectable()
 export class FileService implements OnModuleInit {
@@ -71,6 +71,10 @@ export class FileService implements OnModuleInit {
         }
     }
 
+    public async findFileByUUIDAsync(uuid: string): Promise<FileEntity | null> {
+        return this.fileRepository.findOne({ where: { uuid } });
+    }
+
     public async fileExistsInMinioAsync(uuid: string): Promise<boolean> {
         try {
             await this.minioClient.statObject(this.bucket, uuid);
@@ -78,6 +82,31 @@ export class FileService implements OnModuleInit {
         } catch {
             return false;
         }
+    }
+
+    /**
+     * @return A function to run after transaction, to delete the file(s) in MinIO actually.
+     */
+    public async deleteFileAsync(uuid: string | string[], entityManager: EntityManager): Promise<() => void> {
+        if (typeof uuid === "string") {
+            await entityManager.delete(FileEntity, { uuid });
+
+            return () =>
+                this.minioClient.removeObject(this.bucket, uuid).catch((e) => {
+                    Logger.error(`Failed to delete file ${uuid}: ${e}`);
+                });
+        } else if (uuid.length > 0) {
+            await entityManager.delete(FileEntity, { uuid: In(uuid) });
+
+            return () =>
+                this.minioClient.removeObjects(this.bucket, uuid).catch((e) => {
+                    Logger.error(`Failed to delete file [${uuid}]: ${e}`);
+                });
+        }
+
+        return () => {
+            /* do nothing */
+        };
     }
 
     /**
@@ -95,7 +124,7 @@ export class FileService implements OnModuleInit {
         const policy = this.minioClient.newPostPolicy();
         policy.setBucket(this.bucket);
         policy.setKey(uuid);
-        policy.setExpires(new Date(Date.now() + FILE_UPLOAD_EXPIRE_TIME));
+        policy.setExpires(new Date(Date.now() + FILE_UPLOAD_EXPIRE_TIME * 1000));
         policy.setContentLengthRange(size, size);
         const policyResult = await this.minioClient.presignedPostPolicy(policy);
 
@@ -111,10 +140,10 @@ export class FileService implements OnModuleInit {
 
     public async reportUploadFinishedAsync(
         uploadRequest: ISignedUploadRequest,
-        transactionalEntityManager: EntityManager,
+        entityManager: EntityManager,
     ): Promise<IFileUploadReportResult> {
         if (
-            (await transactionalEntityManager.countBy(FileEntity, {
+            (await entityManager.countBy(FileEntity, {
                 uuid: uploadRequest.uuid,
             })) !== 0
         ) {
@@ -130,20 +159,12 @@ export class FileService implements OnModuleInit {
         file.size = uploadRequest.size;
         file.uploadTime = new Date();
 
-        await transactionalEntityManager.save(FileEntity, file);
+        await entityManager.save(FileEntity, file);
 
         return { file };
     }
 
-    public async signDownloadUrlAsync({
-        uuid,
-        downloadFilename,
-        replaceUrl = true,
-    }: {
-        uuid: string;
-        downloadFilename?: string;
-        replaceUrl?: boolean;
-    }): Promise<string> {
+    public async signDownloadUrlAsync(uuid: string, downloadFilename?: string, replaceUrl?: boolean): Promise<string> {
         const url = await this.minioClient.presignedGetObject(this.bucket, uuid, FILE_DOWNLOAD_EXPIRE_TIME, {
             ...(downloadFilename && {
                 "response-content-disposition": `attachment; filename="${encodeRFC5987ValueChars(downloadFilename)}"`,
