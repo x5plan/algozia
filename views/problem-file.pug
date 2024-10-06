@@ -75,10 +75,18 @@ block content
                     = file.filename
                   td= viewUtils.formatFileSize(file.size)
                   td
-                    a.ui.tertiary.icon.tiny.button(href=`/problem/${problem.id}/file/${file.uuid}`, target="_blank")
+                    a.ui.tertiary.icon.tiny.button(
+                      href=`/problem/${problem.id}/file/${file.uuid}`,
+                      target="_blank",
+                      title="下载"
+                    )
                       i.download.icon
                     if isAllowedEdit
-                      a.ui.tertiary.icon.tiny.red.button(href-post=`/problem/${problem.id}/file/${file.uuid}/delete`)
+                      a.ui.tertiary.icon.tiny.red.button(
+                        tabindex="0",
+                        href-post=`/problem/${problem.id}/file/${file.uuid}/delete`,
+                        title="删除"
+                      )
                         i.trash.icon
       .row
         .fourteen.wide.right.aligned.column
