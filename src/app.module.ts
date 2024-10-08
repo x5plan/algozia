@@ -16,6 +16,9 @@ import { AppExceptionFilter } from "./app.filter";
 import { AppMiddleware } from "./app.middleware";
 import { AppService } from "./app.service";
 import { FileModule } from "./file/file.module";
+import { ProblemTypeModule } from './problem-type/problem-type.module';
+import { JudgeModule } from './judge/judge.module';
+import { CodeLanguageModule } from './code-language/code-language.module';
 
 @Module({
     imports: [
@@ -30,6 +33,9 @@ import { FileModule } from "./file/file.module";
         forwardRef(() => RedisModule),
         forwardRef(() => SubmissionModule),
         forwardRef(() => UserModule),
+        ProblemTypeModule,
+        JudgeModule,
+        CodeLanguageModule,
     ],
     controllers: [AppController],
     providers: [AppService, AppExceptionFilter],
