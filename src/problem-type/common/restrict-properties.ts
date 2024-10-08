@@ -1,4 +1,7 @@
-export function restrictProperties<T extends object>(object: T, whiteListedProperties: (keyof T)[]): void {
+export function restrictProperties<T extends object>(
+    object: T | null | undefined,
+    whiteListedProperties: (keyof T)[],
+): void {
     if (!object) return;
 
     Object.keys(object).forEach((key) => {

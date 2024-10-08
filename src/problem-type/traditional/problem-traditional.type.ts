@@ -35,46 +35,48 @@ export interface IProblemJudgeInfoTraditional extends IProblemJudgeInfo {
      * Each subtask contains some testcases
      * null for detecting from testdata files automatically
      */
-    subtasks: {
-        /*
-         * The default time / memory limit
-         * One is ignored in a testcase if the it defined its own default
-         */
-        timeLimit?: number;
-        memoryLimit?: number;
-
-        testcases: {
-            inputFile: string;
-            outputFile: string;
-
-            // If one of these is null,
-            // the one's default of the subtask if exists, or of problem is used
-            timeLimit?: number;
-            memoryLimit?: number;
-
-            // The weight of this testcase in the subtask,
-            // which should add up to 100 for all testcases of this subtask
-            // Auto if not set
-            points?: number;
-        }[];
-
-        // Refer to https://cms.readthedocs.io/en/v1.4/Task%20types.html
-        scoringType: "Sum" | "GroupMin" | "GroupMul";
-
-        // The weight of this subtask in the problem,
-        // which should add up to 100 for all subtasks of this problem
-        // Auto if not set
-        points?: number;
-
-        // The IDs of subtasks this subtask depends
-        // A subtask will be skipped if one of it dependencies fails
-        dependencies?: number[];
-    }[];
+    subtasks: IProblemJudgeInfoTraditionalSubtask[] | null;
 
     checker: IChecker;
 
     // The map of files to be copied to the source code directory when compileing for each code language
     extraSourceFiles?: Partial<Record<E_CodeLanguage, Record<string, string>>>;
+}
+
+export interface IProblemJudgeInfoTraditionalSubtask {
+    /*
+     * The default time / memory limit
+     * One is ignored in a testcase if the it defined its own default
+     */
+    timeLimit?: number;
+    memoryLimit?: number;
+
+    testcases: {
+        inputFile: string;
+        outputFile: string;
+
+        // If one of these is null,
+        // the one's default of the subtask if exists, or of problem is used
+        timeLimit?: number;
+        memoryLimit?: number;
+
+        // The weight of this testcase in the subtask,
+        // which should add up to 100 for all testcases of this subtask
+        // Auto if not set
+        points?: number;
+    }[];
+
+    // Refer to https://cms.readthedocs.io/en/v1.4/Task%20types.html
+    scoringType: "Sum" | "GroupMin" | "GroupMul";
+
+    // The weight of this subtask in the problem,
+    // which should add up to 100 for all subtasks of this problem
+    // Auto if not set
+    points?: number;
+
+    // The IDs of subtasks this subtask depends
+    // A subtask will be skipped if one of it dependencies fails
+    dependencies?: number[];
 }
 
 export interface ISubmissionContentTraditional extends ISubmissionContent {

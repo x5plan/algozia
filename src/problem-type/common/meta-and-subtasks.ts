@@ -1,9 +1,12 @@
+import { isArray, isNumber, isString } from "class-validator";
 import toposort from "toposort";
 
+import { CE_JudgeInfoValidationMessage } from "@/common/strings/judge-info-validation-message";
+import { format } from "@/common/utils/format";
 import { isSafeInt, isValidFilename } from "@/common/validators";
 import type { ProblemFileEntity } from "@/problem/problem-file.entity";
 
-import type { IValidateCheckerResult } from "./checker";
+import type { IJudgeInfoValidationResult } from "../problem-type.type";
 import { restrictProperties } from "./restrict-properties";
 
 interface IJudgeInfoWithMetaAndSubtasks {
@@ -53,90 +56,138 @@ export function validateMetaAndSubtasks(
     judgeInfo: IJudgeInfoWithMetaAndSubtasks,
     testData: ProblemFileEntity[],
     options: IValidateMetaAndSubtasksOptions,
-): IValidateCheckerResult {
+): IJudgeInfoValidationResult {
     const validateTimeLimit = (
         timeLimit: number | undefined | null,
         scope: "TASK" | "SUBTASK" | "TESTCASE",
-        subtaskId?: number,
-        testcaseId?: number,
-    ): IValidateCheckerResult => {
+    ): IJudgeInfoValidationResult => {
         if (scope !== "TASK" && timeLimit == null) return { success: true };
         if (!isSafeInt(timeLimit) || timeLimit <= 0) {
-            throw [`INVALID_TIME_LIMIT_${scope}`, subtaskId + 1, testcaseId + 1];
+            return {
+                success: false,
+                message: CE_JudgeInfoValidationMessage.InvalidTimeLimitOnTaskOrCase,
+            };
         }
         if (options.hardTimeLimit != null && timeLimit > options.hardTimeLimit) {
-            throw [`TIME_LIMIT_TOO_LARGE_${scope}`, subtaskId + 1, testcaseId + 1, timeLimit];
+            return {
+                success: false,
+                message: format(CE_JudgeInfoValidationMessage.TimeLimitOnTaskOrCaseTooLarge, timeLimit),
+            };
         }
+
+        return { success: true };
     };
 
     const validateMemoryLimit = (
         memoryLimit: number | undefined | null,
         scope: "TASK" | "SUBTASK" | "TESTCASE",
-        subtaskId?: number,
-        testcaseId?: number,
-    ): IValidateCheckerResult => {
+    ): IJudgeInfoValidationResult => {
         if (scope !== "TASK" && memoryLimit == null) return { success: true };
         if (!isSafeInt(memoryLimit) || memoryLimit <= 0) {
-            throw [`INVALID_MEMORY_LIMIT_${scope}`, subtaskId + 1, testcaseId + 1];
+            return {
+                success: false,
+                message: CE_JudgeInfoValidationMessage.InvalidMemoryLimitOnTaskOrCase,
+            };
         }
         if (options.hardMemoryLimit != null && memoryLimit > options.hardMemoryLimit) {
-            throw [`MEMORY_LIMIT_TOO_LARGE_${scope}`, subtaskId + 1, testcaseId + 1, memoryLimit];
+            return {
+                success: false,
+                message: format(CE_JudgeInfoValidationMessage.MemoryLimitOnTaskOrCaseTooLarge, memoryLimit),
+            };
         }
+
+        return { success: true };
     };
 
+    let result: IJudgeInfoValidationResult;
+
     if (options.enableTimeMemoryLimit) {
-        validateTimeLimit(judgeInfo.timeLimit, "TASK");
-        validateMemoryLimit(judgeInfo.memoryLimit, "TASK");
+        result = validateTimeLimit(judgeInfo.timeLimit, "TASK");
+        if (!result.success) return result;
+        result = validateMemoryLimit(judgeInfo.memoryLimit, "TASK");
+        if (!result.success) return result;
     }
 
     if (options.enableFileIo && judgeInfo.fileIo) {
         if (typeof judgeInfo.fileIo.inputFilename !== "string" || !isValidFilename(judgeInfo.fileIo.inputFilename)) {
-            throw ["INVALID_FILEIO_FILENAME", judgeInfo.fileIo.inputFilename];
+            return {
+                success: false,
+                message: format(CE_JudgeInfoValidationMessage.InvalidFileIOFilename, judgeInfo.fileIo.inputFilename),
+            };
         }
         if (typeof judgeInfo.fileIo.outputFilename !== "string" || !isValidFilename(judgeInfo.fileIo.outputFilename)) {
-            throw ["INVALID_FILEIO_FILENAME", judgeInfo.fileIo.outputFilename];
+            return {
+                success: false,
+                message: format(CE_JudgeInfoValidationMessage.InvalidFileIOFilename, judgeInfo.fileIo.outputFilename),
+            };
         }
     }
-    if (judgeInfo.subtasks && !judgeInfo.subtasks.length) throw ["NO_TESTCASES"];
+
+    if (judgeInfo.subtasks && !judgeInfo.subtasks.length) {
+        return { success: false, message: CE_JudgeInfoValidationMessage.NoTestcases };
+    }
 
     // Used to check duplicated user output filenames
     const userOutputFilenames: [filename: string, subtaskIndex: number, testcaseIndex: number][] = [];
 
     // [A, B] means B depends on A
     const edges: [number, number][] = [];
-    (judgeInfo.subtasks || []).forEach((subtask, i) => {
+    const subtasks = judgeInfo.subtasks || [];
+    for (let i = 0; i < subtasks.length; i++) {
+        const subtask = subtasks[i];
         const { timeLimit, memoryLimit, scoringType, points, dependencies, testcases } = subtask;
 
         if (options.enableTimeMemoryLimit) {
-            if (timeLimit != null) validateTimeLimit(timeLimit, "SUBTASK", i);
-            if (memoryLimit != null) validateMemoryLimit(memoryLimit, "SUBTASK", i);
+            if (timeLimit != null) {
+                result = validateTimeLimit(timeLimit, "SUBTASK");
+                if (!result.success) return result;
+            }
+            if (memoryLimit != null) {
+                result = validateMemoryLimit(memoryLimit, "SUBTASK");
+                if (!result.success) return result;
+            }
         } else {
             delete subtask.timeLimit;
             delete subtask.memoryLimit;
         }
 
         if (!["Sum", "GroupMin", "GroupMul"].includes(scoringType)) {
-            throw ["INVALID_SCORING_TYPE", i + 1, scoringType];
+            return {
+                success: false,
+                message: format(CE_JudgeInfoValidationMessage.InvalidScoringType, scoringType),
+            };
         }
 
-        if (points != null && (typeof points !== "number" || points < 0 || points > 100)) {
-            throw ["INVALID_POINTS_SUBTASK", i + 1, points];
+        if (points != null && (isNumber(points) || points < 0 || points > 100)) {
+            return {
+                success: false,
+                message: format(CE_JudgeInfoValidationMessage.InvalidPointsSubtask, i + 1, points),
+            };
         }
 
-        if (Array.isArray(dependencies)) {
-            dependencies.forEach((dependency) => {
-                if (!Number.isSafeInteger(dependency) || dependency < 0 || dependency >= judgeInfo.subtasks.length) {
-                    throw ["INVALID_DEPENDENCY", i + 1, dependency];
+        if (isArray(dependencies)) {
+            for (const dependency of dependencies) {
+                if (!isSafeInt(dependency) || dependency < 0 || dependency >= subtasks.length) {
+                    return {
+                        success: false,
+                        message: CE_JudgeInfoValidationMessage.InvalidDependency,
+                    };
                 }
                 edges.push([dependency, i]);
-            });
+            }
         } else delete subtask.dependencies;
 
-        if (!Array.isArray(testcases) || testcases.length === 0) throw ["SUBTASK_HAS_NO_TESTCASES", i + 1];
+        if (!isArray(testcases) || testcases.length === 0) {
+            return {
+                success: false,
+                message: format(CE_JudgeInfoValidationMessage.NoTestcases, i + 1),
+            };
+        }
 
         restrictProperties(subtask, ["timeLimit", "memoryLimit", "scoringType", "points", "dependencies", "testcases"]);
 
-        testcases.forEach((testcase, j) => {
+        for (let j = 0; j < testcases.length; j++) {
+            const testcase = testcases[j];
             const { inputFile, outputFile, userOutputFilename, timeLimit, memoryLimit, points } = testcase;
 
             if (options.enableInputFile) {
@@ -146,7 +197,10 @@ export function validateMetaAndSubtasks(
                         (inputFile == null && options.enableInputFile === "optional")
                     )
                 ) {
-                    throw ["NO_SUCH_INPUT_FILE", i + 1, j + 1, inputFile];
+                    return {
+                        success: false,
+                        message: format(CE_JudgeInfoValidationMessage.NoSuchInputFile, inputFile || "null"),
+                    };
                 }
             } else delete testcase.inputFile;
 
@@ -157,47 +211,57 @@ export function validateMetaAndSubtasks(
                         (outputFile == null && options.enableOutputFile === "optional")
                     )
                 ) {
-                    throw ["NO_SUCH_OUTPUT_FILE", i + 1, j + 1, outputFile];
+                    return {
+                        success: false,
+                        message: format(CE_JudgeInfoValidationMessage.NoSuchOutputFile, outputFile || "null"),
+                    };
                 }
             } else delete testcase.outputFile;
 
             if (options.enableUserOutputFilename) {
                 if (
-                    (typeof userOutputFilename !== "string" && userOutputFilename != null) ||
+                    (!isString(userOutputFilename) && userOutputFilename != null) ||
                     (userOutputFilename && !isValidFilename(userOutputFilename))
                 ) {
-                    throw ["INVALID_USER_OUTPUT_FILENAME", i + 1, j + 1, userOutputFilename];
+                    return {
+                        success: false,
+                        message: format(CE_JudgeInfoValidationMessage.InvalidUserOutputFilename, userOutputFilename),
+                    };
                 }
 
                 const realUserOutputFilename = userOutputFilename || outputFile!;
-                const duplicateIndex = userOutputFilenames.findIndex(
-                    ([filename]) => filename === realUserOutputFilename,
-                );
-                if (duplicateIndex !== -1) {
-                    const [, duplicateSubtaskIndex, duplicateTestcaseIndex] = userOutputFilenames[duplicateIndex];
-                    throw [
-                        "DUPLICATE_USER_OUTPUT_FILENAME",
-                        i + 1,
-                        j + 1,
-                        realUserOutputFilename,
-                        duplicateSubtaskIndex + 1,
-                        duplicateTestcaseIndex + 1,
-                    ];
+                if (userOutputFilenames.findIndex(([filename]) => filename === realUserOutputFilename) !== -1) {
+                    return {
+                        success: false,
+                        message: format(
+                            CE_JudgeInfoValidationMessage.DuplicateUserOutputFilename,
+                            realUserOutputFilename,
+                        ),
+                    };
                 }
 
                 userOutputFilenames.push([realUserOutputFilename, i, j]);
             } else delete testcase.userOutputFilename;
 
             if (options.enableTimeMemoryLimit) {
-                if (timeLimit != null) validateTimeLimit(timeLimit, "TESTCASE", i, j);
-                if (memoryLimit != null) validateMemoryLimit(memoryLimit, "TESTCASE", i, j);
+                if (timeLimit != null) {
+                    result = validateTimeLimit(timeLimit, "TESTCASE");
+                    if (!result.success) return result;
+                }
+                if (memoryLimit != null) {
+                    result = validateMemoryLimit(memoryLimit, "TESTCASE");
+                    if (!result.success) return result;
+                }
             } else {
                 delete testcase.timeLimit;
                 delete testcase.memoryLimit;
             }
 
-            if (points != null && (typeof points !== "number" || points < 0 || points > 100)) {
-                throw ["INVALID_POINTS_TESTCASE", i + 1, j + 1, points];
+            if (points != null && (!isNumber(points) || points < 0 || points > 100)) {
+                return {
+                    success: false,
+                    message: format(CE_JudgeInfoValidationMessage.InvalidPointsTestcase, i + 1, j + 1, points),
+                };
             }
 
             restrictProperties(testcase, [
@@ -208,16 +272,22 @@ export function validateMetaAndSubtasks(
                 "memoryLimit",
                 "points",
             ]);
-        });
+        }
 
         const sum = testcases.reduce((s, { points }) => (points ? s + points : s), 0);
         if (sum > 100) {
-            throw ["POINTS_SUM_UP_TO_LARGER_THAN_100_TESTCASES", i + 1, sum];
+            return {
+                success: false,
+                message: format(CE_JudgeInfoValidationMessage.PointsSumUpToLargerThan100Testcases, i + 1),
+            };
         }
-    });
+    }
     const sum = (judgeInfo.subtasks || []).reduce((s, { points }) => (points ? s + points : s), 0);
     if (sum > 100) {
-        throw ["POINTS_SUM_UP_TO_LARGER_THAN_100_SUBTASKS", sum];
+        return {
+            success: false,
+            message: format(CE_JudgeInfoValidationMessage.PointsSumUpToLargerThan100Subtasks, sum),
+        };
     }
 
     try {
@@ -225,8 +295,11 @@ export function validateMetaAndSubtasks(
             (judgeInfo.subtasks || []).map((subtask, i) => i),
             edges,
         );
-    } catch (e) {
-        throw ["CYCLICAL_SUBTASK_DEPENDENCY"];
+    } catch {
+        return {
+            success: false,
+            message: CE_JudgeInfoValidationMessage.CyclicalSubtaskDependency,
+        };
     }
 
     if (
@@ -234,6 +307,11 @@ export function validateMetaAndSubtasks(
         judgeInfo.subtasks &&
         judgeInfo.subtasks.reduce((count, subtask) => count + subtask.testcases.length, 0) > options.testcaseLimit
     ) {
-        throw ["TOO_MANY_TESTCASES"];
+        return {
+            success: false,
+            message: CE_JudgeInfoValidationMessage.TooManyTestcases,
+        };
     }
+
+    return { success: true };
 }

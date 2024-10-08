@@ -7,7 +7,11 @@ import { ProblemFileEntity } from "@/problem/problem-file.entity";
 import { ISubmissionProgress } from "@/submission/submission.type";
 
 import { autoMatchInputToOutput } from "../common/auto-match-io";
-import { IProblemTypeServiceInterface } from "../problem-type.type";
+import { validateChecker } from "../common/checker";
+import { validateExtraSourceFiles } from "../common/extra-source-files";
+import { validateMetaAndSubtasks } from "../common/meta-and-subtasks";
+import { restrictProperties } from "../common/restrict-properties";
+import { IJudgeInfoValidationResult, IProblemTypeServiceInterface } from "../problem-type.type";
 import {
     IProblemJudgeInfoTraditional,
     ISubmissionContentTraditional,
@@ -29,7 +33,7 @@ export class ProblemTypeTraditionalService
         private codeLanguageService: CodeLanguageService,
     ) {}
 
-    public getDefaultJudgeInfo(): ProblemJudgeInfoTraditional {
+    public getDefaultJudgeInfo(): IProblemJudgeInfoTraditional {
         return {
             timeLimit: Math.min(1000, this.configService.config.resourceLimit.problemTimeLimit),
             memoryLimit: Math.min(512, this.configService.config.resourceLimit.problemTimeLimit),
@@ -66,8 +70,10 @@ export class ProblemTypeTraditionalService
         judgeInfo: IProblemJudgeInfoTraditional,
         testData: ProblemFileEntity[],
         ignoreLimits: boolean,
-    ): void {
-        validateMetaAndSubtasks(judgeInfo, testData, {
+    ): IJudgeInfoValidationResult {
+        let result: IJudgeInfoValidationResult;
+
+        result = validateMetaAndSubtasks(judgeInfo, testData, {
             enableTimeMemoryLimit: true,
             enableFileIo: true,
             enableInputFile: true,
@@ -78,14 +84,19 @@ export class ProblemTypeTraditionalService
             testcaseLimit: ignoreLimits ? null : this.configService.config.resourceLimit.problemTestcases,
         });
 
-        validateChecker(judgeInfo, testData, {
+        if (!result.success) return result;
+
+        result = validateChecker(judgeInfo, testData, {
             validateCompileAndRunOptions: (language, compileAndRunOptions) =>
                 this.codeLanguageService.validateCompileAndRunOptions(language, compileAndRunOptions).length === 0,
             hardTimeLimit: ignoreLimits ? null : this.configService.config.resourceLimit.problemTimeLimit,
             hardMemoryLimit: ignoreLimits ? null : this.configService.config.resourceLimit.problemMemoryLimit,
         });
 
-        validateExtraSourceFiles(judgeInfo, testData);
+        if (!result.success) return result;
+
+        result = validateExtraSourceFiles(judgeInfo, testData);
+        if (!result.success) return result;
 
         restrictProperties(judgeInfo, [
             "timeLimit",
@@ -96,7 +107,10 @@ export class ProblemTypeTraditionalService
             "checker",
             "extraSourceFiles",
         ]);
+
         restrictProperties(judgeInfo.fileIo, ["inputFilename", "outputFilename"]);
+
+        return { success: true };
     }
 
     public async validateSubmissionContentAsync(

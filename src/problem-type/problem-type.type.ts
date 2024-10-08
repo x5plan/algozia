@@ -5,6 +5,8 @@ import type { IProblemJudgeInfo } from "@/problem/problem.type";
 import type { ProblemFileEntity } from "@/problem/problem-file.entity";
 import type { ISubmissionContent, ISubmissionProgress, ISubmissionTestcaseResult } from "@/submission/submission.type";
 
+export type IJudgeInfoValidationResult = { success: true } | { success: false; message: string };
+
 export interface IProblemTypeServiceInterface<
     TJudgeInfo extends IProblemJudgeInfo,
     TSubmissionContent extends ISubmissionContent,
@@ -39,9 +41,12 @@ export interface IProblemTypeServiceInterface<
      * @param judgeInfo The preprocessed judge info to be sent to judge. Non-whitelisted properties will be removed.
      * @param testData The problem's testdata files.
      * @param ignoreLimits Ignore the limits in the config (e.g. the judge info is submitted by a privileged user).
-     * @throws An array of error info `[error, arg1, arg2, ...]` if failed.
      */
-    validateAndFilterJudgeInfo(judgeInfo: TJudgeInfo, testData: ProblemFileEntity[], ignoreLimits: boolean): void;
+    validateAndFilterJudgeInfo(
+        judgeInfo: TJudgeInfo,
+        testData: ProblemFileEntity[],
+        ignoreLimits: boolean,
+    ): IJudgeInfoValidationResult;
 
     /**
      * Validate a submission content submitted by user. Return the validation errors by class-validator.

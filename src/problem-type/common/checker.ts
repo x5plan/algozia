@@ -4,6 +4,7 @@ import { format } from "@/common/utils/format";
 import { isSafeInt } from "@/common/validators";
 import type { ProblemFileEntity } from "@/problem/problem-file.entity";
 
+import type { IJudgeInfoValidationResult } from "../problem-type.type";
 import { restrictProperties } from "./restrict-properties";
 
 interface ICheckerTypeIntegers {
@@ -62,17 +63,15 @@ export interface IValidateCheckerOptions {
     hardMemoryLimit?: number;
 }
 
-export type IValidateCheckerResult = { success: true } | { success: false; error: string };
-
 export function validateChecker(
     judgeInfo: IJudgeInfoWithChecker,
     testData: ProblemFileEntity[],
     options: IValidateCheckerOptions,
-): IValidateCheckerResult {
+): IJudgeInfoValidationResult {
     if (!judgeInfo.checker) {
         return {
             success: false,
-            error: CE_JudgeInfoValidationMessage.InvalidCheckerType,
+            message: CE_JudgeInfoValidationMessage.InvalidCheckerType,
         };
     }
 
@@ -85,7 +84,7 @@ export function validateChecker(
             if (!(Number.isSafeInteger(judgeInfo.checker.precision) && judgeInfo.checker.precision > 0)) {
                 return {
                     success: false,
-                    error: CE_JudgeInfoValidationMessage.InvalidCheckerOptions,
+                    message: CE_JudgeInfoValidationMessage.InvalidCheckerOptions,
                 };
             }
 
@@ -96,7 +95,7 @@ export function validateChecker(
             if (typeof judgeInfo.checker.caseSensitive !== "boolean") {
                 return {
                     success: false,
-                    error: CE_JudgeInfoValidationMessage.InvalidCheckerOptions,
+                    message: CE_JudgeInfoValidationMessage.InvalidCheckerOptions,
                 };
             }
 
@@ -112,25 +111,25 @@ export function validateChecker(
             if (!["testlib", "legacy", "lemon", "hustoj", "qduoj", "domjudge"].includes(checker.interface)) {
                 return {
                     success: false,
-                    error: CE_JudgeInfoValidationMessage.InvalidCheckerInterface,
+                    message: CE_JudgeInfoValidationMessage.InvalidCheckerInterface,
                 };
             }
             if (!Object.values(E_CodeLanguage).includes(checker.language)) {
                 return {
                     success: false,
-                    error: CE_JudgeInfoValidationMessage.InvalidCheckerLanguage,
+                    message: CE_JudgeInfoValidationMessage.InvalidCheckerLanguage,
                 };
             }
             if (!testData.some((file) => file.filename === checker.filename)) {
                 return {
                     success: false,
-                    error: format(CE_JudgeInfoValidationMessage.NoSuchCheckerFile, checker.filename),
+                    message: format(CE_JudgeInfoValidationMessage.NoSuchCheckerFile, checker.filename),
                 };
             }
             if (!options.validateCompileAndRunOptions(checker.language, checker.compileAndRunOptions)) {
                 return {
                     success: false,
-                    error: CE_JudgeInfoValidationMessage.InvalidCheckerCompileAndRunOptions,
+                    message: CE_JudgeInfoValidationMessage.InvalidCheckerCompileAndRunOptions,
                 };
             }
 
@@ -138,13 +137,13 @@ export function validateChecker(
             if (!isSafeInt(timeLimit) || timeLimit <= 0) {
                 return {
                     success: false,
-                    error: CE_JudgeInfoValidationMessage.InvalidCheckerTimeLimit,
+                    message: CE_JudgeInfoValidationMessage.InvalidCheckerTimeLimit,
                 };
             }
             if (options.hardTimeLimit != null && timeLimit > options.hardTimeLimit) {
                 return {
                     success: false,
-                    error: format(CE_JudgeInfoValidationMessage.CheckerTimeLimitTooLarge, timeLimit),
+                    message: format(CE_JudgeInfoValidationMessage.CheckerTimeLimitTooLarge, timeLimit),
                 };
             }
 
@@ -152,13 +151,13 @@ export function validateChecker(
             if (!isSafeInt(memoryLimit) || memoryLimit <= 0) {
                 return {
                     success: false,
-                    error: CE_JudgeInfoValidationMessage.InvalidCheckerMemoryLimit,
+                    message: CE_JudgeInfoValidationMessage.InvalidCheckerMemoryLimit,
                 };
             }
             if (options.hardMemoryLimit != null && memoryLimit > options.hardMemoryLimit) {
                 return {
                     success: false,
-                    error: format(CE_JudgeInfoValidationMessage.CheckerMemoryLimitTooLarge, memoryLimit),
+                    message: format(CE_JudgeInfoValidationMessage.CheckerMemoryLimitTooLarge, memoryLimit),
                 };
             }
 
@@ -177,7 +176,7 @@ export function validateChecker(
         default:
             return {
                 success: false,
-                error: CE_JudgeInfoValidationMessage.InvalidCheckerType,
+                message: CE_JudgeInfoValidationMessage.InvalidCheckerType,
             };
     }
 

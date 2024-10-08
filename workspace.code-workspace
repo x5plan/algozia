@@ -20,6 +20,7 @@
         "editor.defaultFormatter": "esbenp.prettier-vscode",
         "cSpell.words": [
             "testcase",
+            "Testcases",
             "testdata",
             "typeorm",
             "tywzoj"
