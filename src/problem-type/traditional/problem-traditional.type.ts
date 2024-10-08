@@ -6,7 +6,7 @@ import type {
     ISubmissionTestcaseResult,
 } from "@/submission/submission.type";
 
-import type { IChecker } from "../common/checker";
+import type { IChecker } from "../validators/checker";
 
 export interface IProblemJudgeInfoTraditional extends IProblemJudgeInfo {
     /*

@@ -4,8 +4,8 @@ import { format } from "@/common/utils/format";
 import { isSafeInt } from "@/common/validators";
 import type { ProblemFileEntity } from "@/problem/problem-file.entity";
 
+import { restrictProperties } from "../../common/utils/restrict-properties";
 import type { IJudgeInfoValidationResult } from "../problem-type.type";
-import { restrictProperties } from "./restrict-properties";
 
 interface ICheckerTypeIntegers {
     type: "integers";
