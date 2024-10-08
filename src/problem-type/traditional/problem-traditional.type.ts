@@ -35,7 +35,7 @@ export interface IProblemJudgeInfoTraditional extends IProblemJudgeInfo {
      * Each subtask contains some testcases
      * null for detecting from testdata files automatically
      */
-    subtasks: IProblemJudgeInfoTraditionalSubtask[] | null;
+    subtasks?: IProblemJudgeInfoTraditionalSubtask[];
 
     checker: IChecker;
 

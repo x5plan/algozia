@@ -2,7 +2,6 @@ import { Injectable } from "@nestjs/common";
 import { plainToClass } from "class-transformer";
 import { validate, ValidationError } from "class-validator";
 
-import { ConfigService } from "@/config/config.service";
 import { ProblemFileEntity } from "@/problem/problem-file.entity";
 import { ISubmissionProgress } from "@/submission/submission.type";
 
@@ -29,16 +28,15 @@ export class ProblemTypeTraditionalService
         >
 {
     constructor(
-        private configService: ConfigService,
-        private codeLanguageService: CodeLanguageService,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        private codeLanguageService: any, // TODO: Replace with CodeLanguage
     ) {}
 
     public getDefaultJudgeInfo(): IProblemJudgeInfoTraditional {
         return {
-            timeLimit: Math.min(1000, this.configService.config.resourceLimit.problemTimeLimit),
-            memoryLimit: Math.min(512, this.configService.config.resourceLimit.problemTimeLimit),
+            timeLimit: 1000,
+            memoryLimit: 512,
             runSamples: true,
-            subtasks: null,
             checker: {
                 type: "lines",
                 caseSensitive: false,
@@ -69,7 +67,6 @@ export class ProblemTypeTraditionalService
     public validateAndFilterJudgeInfo(
         judgeInfo: IProblemJudgeInfoTraditional,
         testData: ProblemFileEntity[],
-        ignoreLimits: boolean,
     ): IJudgeInfoValidationResult {
         let result: IJudgeInfoValidationResult;
 
@@ -79,9 +76,6 @@ export class ProblemTypeTraditionalService
             enableInputFile: true,
             enableOutputFile: true,
             enableUserOutputFilename: false,
-            hardTimeLimit: ignoreLimits ? null : this.configService.config.resourceLimit.problemTimeLimit,
-            hardMemoryLimit: ignoreLimits ? null : this.configService.config.resourceLimit.problemMemoryLimit,
-            testcaseLimit: ignoreLimits ? null : this.configService.config.resourceLimit.problemTestcases,
         });
 
         if (!result.success) return result;
@@ -89,8 +83,6 @@ export class ProblemTypeTraditionalService
         result = validateChecker(judgeInfo, testData, {
             validateCompileAndRunOptions: (language, compileAndRunOptions) =>
                 this.codeLanguageService.validateCompileAndRunOptions(language, compileAndRunOptions).length === 0,
-            hardTimeLimit: ignoreLimits ? null : this.configService.config.resourceLimit.problemTimeLimit,
-            hardMemoryLimit: ignoreLimits ? null : this.configService.config.resourceLimit.problemMemoryLimit,
         });
 
         if (!result.success) return result;

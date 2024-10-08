@@ -42,10 +42,6 @@ interface IJudgeInfoWithMetaAndSubtasks {
 
 interface IValidateMetaAndSubtasksOptions {
     enableTimeMemoryLimit: boolean;
-    hardTimeLimit?: number;
-    hardMemoryLimit?: number;
-    testcaseLimit?: number;
-
     enableFileIo: boolean;
     enableInputFile: boolean | "optional";
     enableOutputFile: boolean | "optional";
@@ -68,12 +64,6 @@ export function validateMetaAndSubtasks(
                 message: CE_JudgeInfoValidationMessage.InvalidTimeLimitOnTaskOrCase,
             };
         }
-        if (options.hardTimeLimit != null && timeLimit > options.hardTimeLimit) {
-            return {
-                success: false,
-                message: format(CE_JudgeInfoValidationMessage.TimeLimitOnTaskOrCaseTooLarge, timeLimit),
-            };
-        }
 
         return { success: true };
     };
@@ -87,12 +77,6 @@ export function validateMetaAndSubtasks(
             return {
                 success: false,
                 message: CE_JudgeInfoValidationMessage.InvalidMemoryLimitOnTaskOrCase,
-            };
-        }
-        if (options.hardMemoryLimit != null && memoryLimit > options.hardMemoryLimit) {
-            return {
-                success: false,
-                message: format(CE_JudgeInfoValidationMessage.MemoryLimitOnTaskOrCaseTooLarge, memoryLimit),
             };
         }
 
@@ -299,17 +283,6 @@ export function validateMetaAndSubtasks(
         return {
             success: false,
             message: CE_JudgeInfoValidationMessage.CyclicalSubtaskDependency,
-        };
-    }
-
-    if (
-        options.testcaseLimit != null &&
-        judgeInfo.subtasks &&
-        judgeInfo.subtasks.reduce((count, subtask) => count + subtask.testcases.length, 0) > options.testcaseLimit
-    ) {
-        return {
-            success: false,
-            message: CE_JudgeInfoValidationMessage.TooManyTestcases,
         };
     }
 
