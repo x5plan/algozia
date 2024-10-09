@@ -1,12 +1,12 @@
 import type { E_CodeLanguage } from "@/code-language/code-language.type";
-import type { IProblemJudgeInfo } from "@/problem/problem.type";
 import type {
     ISubmissionContent,
     ISubmissionResultOmissibleString,
     ISubmissionTestcaseResult,
 } from "@/submission/submission.type";
 
-import type { IChecker } from "../validators/checker";
+import type { IProblemJudgeInfo, IProblemJudgeInfoRequiredTestcase } from "./problem-type.type";
+import type { IChecker } from "./validators/checker";
 
 export interface IProblemJudgeInfoTraditional extends IProblemJudgeInfo {
     /*
@@ -51,20 +51,7 @@ export interface IProblemJudgeInfoTraditionalSubtask {
     timeLimit?: number;
     memoryLimit?: number;
 
-    testcases: {
-        inputFile: string;
-        outputFile: string;
-
-        // If one of these is null,
-        // the one's default of the subtask if exists, or of problem is used
-        timeLimit?: number;
-        memoryLimit?: number;
-
-        // The weight of this testcase in the subtask,
-        // which should add up to 100 for all testcases of this subtask
-        // Auto if not set
-        points?: number;
-    }[];
+    testcases: IProblemJudgeInfoTraditionalTestcase[];
 
     // Refer to https://cms.readthedocs.io/en/v1.4/Task%20types.html
     scoringType: "Sum" | "GroupMin" | "GroupMul";
@@ -77,6 +64,13 @@ export interface IProblemJudgeInfoTraditionalSubtask {
     // The IDs of subtasks this subtask depends
     // A subtask will be skipped if one of it dependencies fails
     dependencies?: number[];
+}
+
+export interface IProblemJudgeInfoTraditionalTestcase extends IProblemJudgeInfoRequiredTestcase {
+    // If one of these is null,
+    // the one's default of the subtask if exists, or of problem is used
+    timeLimit?: number;
+    memoryLimit?: number;
 }
 
 export interface ISubmissionContentTraditional extends ISubmissionContent {

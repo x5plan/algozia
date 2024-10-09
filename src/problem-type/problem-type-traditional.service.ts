@@ -5,18 +5,18 @@ import { validate, ValidationError } from "class-validator";
 import { ProblemFileEntity } from "@/problem/problem-file.entity";
 import { ISubmissionProgress } from "@/submission/submission.type";
 
-import { restrictProperties } from "../../common/utils/restrict-properties";
-import { IJudgeInfoValidationResult, IProblemTypeServiceInterface } from "../problem-type.type";
-import { autoMatchInputToOutput } from "../validators/auto-match-io";
-import { validateChecker } from "../validators/checker";
-import { validateExtraSourceFiles } from "../validators/extra-source-files";
-import { validateMetaAndSubtasks } from "../validators/meta-and-subtasks";
+import { restrictProperties } from "../common/utils/restrict-properties";
+import { IJudgeInfoValidationResult, IProblemTypeServiceInterface } from "./problem-type.type";
+import { autoMatchInputToOutput } from "./problem-type.utils";
 import {
     IProblemJudgeInfoTraditional,
     ISubmissionContentTraditional,
     ISubmissionTestcaseResultTraditional,
-} from "./problem-traditional.type";
-import { SubmissionContentTraditionalSchema } from "./submission-content.schema";
+} from "./problem-type-traditional.type";
+import { SubmissionContentTraditionalSchema } from "./submission-content-traditional.schema";
+import { validateChecker } from "./validators/checker";
+import { validateExtraSourceFiles } from "./validators/extra-source-files";
+import { validateMetaAndSubtasks } from "./validators/meta-and-subtasks";
 
 @Injectable()
 export class ProblemTypeTraditionalService

@@ -2,7 +2,7 @@ import { IsBoolean, IsEnum, IsObject, IsOptional, IsString, Length } from "class
 
 import { E_CodeLanguage } from "@/code-language/code-language.type";
 
-import { ISubmissionContentTraditional } from "./problem-traditional.type";
+import { ISubmissionContentTraditional } from "./problem-type-traditional.type";
 
 export class SubmissionContentTraditionalSchema implements ISubmissionContentTraditional {
     @IsString()

@@ -1,7 +1,6 @@
 import type { ValidationError } from "class-validator";
 
 import type { FileEntity } from "@/file/file.entity";
-import type { IProblemJudgeInfo } from "@/problem/problem.type";
 import type { ProblemFileEntity } from "@/problem/problem-file.entity";
 import type { ISubmissionContent, ISubmissionProgress, ISubmissionTestcaseResult } from "@/submission/submission.type";
 
@@ -40,13 +39,8 @@ export interface IProblemTypeServiceInterface<
      * Return if valid and throw an array of error info if invalid.
      * @param judgeInfo The preprocessed judge info to be sent to judge. Non-whitelisted properties will be removed.
      * @param testData The problem's testdata files.
-     * @param ignoreLimits Ignore the limits in the config (e.g. the judge info is submitted by a privileged user).
      */
-    validateAndFilterJudgeInfo(
-        judgeInfo: TJudgeInfo,
-        testData: ProblemFileEntity[],
-        ignoreLimits: boolean,
-    ): IJudgeInfoValidationResult;
+    validateAndFilterJudgeInfo(judgeInfo: TJudgeInfo, testData: ProblemFileEntity[]): IJudgeInfoValidationResult;
 
     /**
      * Validate a submission content submitted by user. Return the validation errors by class-validator.
@@ -65,7 +59,7 @@ export interface IProblemTypeServiceInterface<
         submissionContent: TSubmissionContent,
         file?: FileEntity,
     ): Promise<{
-        language: string;
+        language: string | null;
         answerSize: number;
     }>;
 
@@ -77,7 +71,38 @@ export interface IProblemTypeServiceInterface<
     getTimeAndMemoryUsedFromFinishedSubmissionProgress(
         submissionProgress: ISubmissionProgress<TSubmissionTestcaseResult>,
     ): {
-        timeUsed: number;
-        memoryUsed: number;
+        timeUsed: number | null;
+        memoryUsed: number | null;
     };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface IProblemJudgeInfo {}
+
+export interface IProblemJudgeInfoSubtask {
+    scoringType: "Sum" | "GroupMin" | "GroupMul";
+    testcases: IProblemJudgeInfoTestcase[];
+}
+
+export interface IProblemJudgeInfoTestcase {
+    inputFile?: string;
+    outputFile?: string;
+
+    // The weight of this testcase in the subtask,
+    // which should add up to 100 for all testcases of this subtask
+    // Auto if not set
+    points?: number;
+}
+
+export interface IProblemJudgeInfoOptionalInputTestcase extends IProblemJudgeInfoTestcase {
+    outputFile: string;
+}
+
+export interface IProblemJudgeInfoOptionalOutputTestcase extends IProblemJudgeInfoTestcase {
+    inputFile: string;
+}
+
+export interface IProblemJudgeInfoRequiredTestcase extends IProblemJudgeInfoTestcase {
+    inputFile: string;
+    outputFile: string;
 }

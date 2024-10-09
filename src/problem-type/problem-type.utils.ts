@@ -1,14 +1,24 @@
 import type { ProblemFileEntity } from "@/problem/problem-file.entity";
 
-export interface ISubtask {
-    scoringType: "Sum" | "GroupMin" | "GroupMul";
-    testcases: {
-        inputFile: string;
-        outputFile: string;
-    }[];
+import type {
+    IProblemJudgeInfoOptionalInputTestcase,
+    IProblemJudgeInfoOptionalOutputTestcase,
+    IProblemJudgeInfoRequiredTestcase,
+    IProblemJudgeInfoSubtask,
+    IProblemJudgeInfoTestcase,
+} from "./problem-type.type";
+
+interface IAutoMatchedProblemJudgeInfoSubtask<T extends IProblemJudgeInfoTestcase> extends IProblemJudgeInfoSubtask {
+    scoringType: "Sum";
+    testcases: T[];
 }
 
-export function autoMatchInputToOutput(testData: ProblemFileEntity[], outputOptional?: boolean): ISubtask[] {
+export function autoMatchInputToOutput<T extends boolean | undefined = undefined>(
+    testData: ProblemFileEntity[],
+    outputOptional?: T,
+): IAutoMatchedProblemJudgeInfoSubtask<
+    T extends true ? IProblemJudgeInfoOptionalOutputTestcase : IProblemJudgeInfoRequiredTestcase
+>[] {
     return [
         {
             scoringType: "Sum",
@@ -37,13 +47,19 @@ export function autoMatchInputToOutput(testData: ProblemFileEntity[], outputOpti
                 })
                 .map(([input, output]) => ({
                     inputFile: input.filename,
-                    outputFile: output?.filename ?? "",
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
+                    outputFile: output?.filename!, // I'm sure that it is not undefined when outputOptional is not true because of the filter above
                 })),
         },
     ];
 }
 
-export function autoMatchOutputToInput(testData: ProblemFileEntity[], inputOptional?: boolean): ISubtask[] {
+export function autoMatchOutputToInput<T extends boolean | undefined = undefined>(
+    testData: ProblemFileEntity[],
+    inputOptional?: T,
+): IAutoMatchedProblemJudgeInfoSubtask<
+    T extends true ? IProblemJudgeInfoOptionalInputTestcase : IProblemJudgeInfoRequiredTestcase
+>[] {
     return [
         {
             scoringType: "Sum",
@@ -71,7 +87,8 @@ export function autoMatchOutputToInput(testData: ProblemFileEntity[], inputOptio
                         : numbersA[firstNonEqualIndex] - numbersB[firstNonEqualIndex];
                 })
                 .map(([output, input]) => ({
-                    inputFile: input?.filename ?? "",
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
+                    inputFile: input?.filename!, // I'm sure that it is not undefined when inputOptional is not true because of the filter above
                     outputFile: output.filename,
                 })),
         },

@@ -51,6 +51,3 @@ export interface IProblemViewGlobal {
     visibilityStringMap: IVisibilityStringMap;
     visibilityLabelColorMap: IVisibilityLabelColorMap;
 }
-
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface IProblemJudgeInfo {}
