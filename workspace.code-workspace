@@ -19,8 +19,9 @@
         "editor.formatOnSave": true,
         "editor.defaultFormatter": "esbenp.prettier-vscode",
         "cSpell.words": [
+            "interactor",
             "testcase",
-            "Testcases",
+            "testcases",
             "testdata",
             "typeorm",
             "tywzoj"

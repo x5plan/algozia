@@ -7,9 +7,10 @@ import type {
     IProblemJudgeInfoSubtask,
     IProblemJudgeInfoTestcase,
 } from "./problem-type.type";
+import { E_ProblemJudgeInfoScoringType } from "./problem-type.type";
 
 interface IAutoMatchedProblemJudgeInfoSubtask<T extends IProblemJudgeInfoTestcase> extends IProblemJudgeInfoSubtask {
-    scoringType: "Sum";
+    scoringType: E_ProblemJudgeInfoScoringType.Sum;
     testcases: T[];
 }
 
@@ -21,7 +22,7 @@ export function autoMatchInputToOutput<T extends boolean | undefined = undefined
 >[] {
     return [
         {
-            scoringType: "Sum",
+            scoringType: E_ProblemJudgeInfoScoringType.Sum,
             testcases: testData
                 .filter((file) => file.filename.toLowerCase().endsWith(".in"))
                 .map<[ProblemFileEntity, ProblemFileEntity | undefined, number[]]>((input) => [
@@ -62,7 +63,7 @@ export function autoMatchOutputToInput<T extends boolean | undefined = undefined
 >[] {
     return [
         {
-            scoringType: "Sum",
+            scoringType: E_ProblemJudgeInfoScoringType.Sum,
             testcases: testData
                 .filter((file) =>
                     ((str: string) => str.endsWith(".out") || str.endsWith(".ans"))(file.filename.toLowerCase()),

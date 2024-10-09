@@ -1,5 +1,6 @@
 import { isArray, isNumber, isString } from "class-validator";
 import toposort from "toposort";
+import type { PartialDeep } from "type-fest";
 
 import { CE_JudgeInfoValidationMessage } from "@/common/strings/judge-info-validation-message";
 import { format } from "@/common/utils/format";
@@ -7,37 +8,35 @@ import { isSafeInt, isValidFilename } from "@/common/validators";
 import type { ProblemFileEntity } from "@/problem/problem-file.entity";
 
 import { restrictProperties } from "../../common/utils/restrict-properties";
-import type { IJudgeInfoValidationResult } from "../problem-type.type";
+import type { IProblemJudgeInfo, IProblemJudgeInfoSubtask, IProblemJudgeInfoTestcase } from "../problem-type.type";
+import type { IProblemJudgeInfoValidationResult } from "./type";
+import { isValidScoringType } from "./utils";
 
-interface IJudgeInfoWithMetaAndSubtasks {
+interface IProblemJudgeInfoForValidation extends PartialDeep<IProblemJudgeInfo, { recurseIntoArrays: true }> {
     timeLimit?: number;
     memoryLimit?: number;
 
     fileIo?: {
-        inputFilename: string;
-        outputFilename: string;
+        inputFilename?: string;
+        outputFilename?: string;
     };
 
-    runSamples?: boolean;
+    subtasks?: IProblemJudgeInfoSubtaskForValidation[] | null;
+}
 
-    subtasks?: {
-        timeLimit?: number;
-        memoryLimit?: number;
-        scoringType: "Sum" | "GroupMin" | "GroupMul";
-        points?: number;
-        dependencies?: number[];
+interface IProblemJudgeInfoSubtaskForValidation
+    extends PartialDeep<IProblemJudgeInfoSubtask, { recurseIntoArrays: true }> {
+    timeLimit?: number;
+    memoryLimit?: number;
 
-        testcases: {
-            inputFile?: string;
-            outputFile?: string;
+    testcases?: IProblemJudgeInfoTestcaseForValidation[];
+}
 
-            userOutputFilename?: string;
+interface IProblemJudgeInfoTestcaseForValidation extends PartialDeep<IProblemJudgeInfoTestcase> {
+    userOutputFilename?: string;
 
-            timeLimit?: number;
-            memoryLimit?: number;
-            points?: number;
-        }[];
-    }[];
+    timeLimit?: number;
+    memoryLimit?: number;
 }
 
 interface IValidateMetaAndSubtasksOptions {
@@ -49,14 +48,14 @@ interface IValidateMetaAndSubtasksOptions {
 }
 
 export function validateMetaAndSubtasks(
-    judgeInfo: IJudgeInfoWithMetaAndSubtasks,
+    judgeInfo: IProblemJudgeInfoForValidation,
     testData: ProblemFileEntity[],
     options: IValidateMetaAndSubtasksOptions,
-): IJudgeInfoValidationResult {
+): IProblemJudgeInfoValidationResult {
     const validateTimeLimit = (
         timeLimit: number | undefined | null,
         scope: "TASK" | "SUBTASK" | "TESTCASE",
-    ): IJudgeInfoValidationResult => {
+    ): IProblemJudgeInfoValidationResult => {
         if (scope !== "TASK" && timeLimit == null) return { success: true };
         if (!isSafeInt(timeLimit) || timeLimit <= 0) {
             return {
@@ -71,7 +70,7 @@ export function validateMetaAndSubtasks(
     const validateMemoryLimit = (
         memoryLimit: number | undefined | null,
         scope: "TASK" | "SUBTASK" | "TESTCASE",
-    ): IJudgeInfoValidationResult => {
+    ): IProblemJudgeInfoValidationResult => {
         if (scope !== "TASK" && memoryLimit == null) return { success: true };
         if (!isSafeInt(memoryLimit) || memoryLimit <= 0) {
             return {
@@ -83,7 +82,7 @@ export function validateMetaAndSubtasks(
         return { success: true };
     };
 
-    let result: IJudgeInfoValidationResult;
+    let result: IProblemJudgeInfoValidationResult;
 
     if (options.enableTimeMemoryLimit) {
         result = validateTimeLimit(judgeInfo.timeLimit, "TASK");
@@ -93,16 +92,22 @@ export function validateMetaAndSubtasks(
     }
 
     if (options.enableFileIo && judgeInfo.fileIo) {
-        if (typeof judgeInfo.fileIo.inputFilename !== "string" || !isValidFilename(judgeInfo.fileIo.inputFilename)) {
+        if (!isValidFilename(judgeInfo.fileIo.inputFilename)) {
             return {
                 success: false,
-                message: format(CE_JudgeInfoValidationMessage.InvalidFileIOFilename, judgeInfo.fileIo.inputFilename),
+                message: format(
+                    CE_JudgeInfoValidationMessage.InvalidFileIOFilename,
+                    judgeInfo.fileIo.inputFilename ?? "null",
+                ),
             };
         }
-        if (typeof judgeInfo.fileIo.outputFilename !== "string" || !isValidFilename(judgeInfo.fileIo.outputFilename)) {
+        if (!isValidFilename(judgeInfo.fileIo.outputFilename)) {
             return {
                 success: false,
-                message: format(CE_JudgeInfoValidationMessage.InvalidFileIOFilename, judgeInfo.fileIo.outputFilename),
+                message: format(
+                    CE_JudgeInfoValidationMessage.InvalidFileIOFilename,
+                    judgeInfo.fileIo.outputFilename ?? "null",
+                ),
             };
         }
     }
@@ -135,10 +140,10 @@ export function validateMetaAndSubtasks(
             delete subtask.memoryLimit;
         }
 
-        if (!["Sum", "GroupMin", "GroupMul"].includes(scoringType)) {
+        if (!isValidScoringType(scoringType)) {
             return {
                 success: false,
-                message: format(CE_JudgeInfoValidationMessage.InvalidScoringType, scoringType),
+                message: format(CE_JudgeInfoValidationMessage.InvalidScoringType, scoringType ?? "null"),
             };
         }
 
@@ -183,7 +188,7 @@ export function validateMetaAndSubtasks(
                 ) {
                     return {
                         success: false,
-                        message: format(CE_JudgeInfoValidationMessage.NoSuchInputFile, inputFile || "null"),
+                        message: format(CE_JudgeInfoValidationMessage.NoSuchInputFile, inputFile ?? "null"),
                     };
                 }
             } else delete testcase.inputFile;
@@ -197,7 +202,7 @@ export function validateMetaAndSubtasks(
                 ) {
                     return {
                         success: false,
-                        message: format(CE_JudgeInfoValidationMessage.NoSuchOutputFile, outputFile || "null"),
+                        message: format(CE_JudgeInfoValidationMessage.NoSuchOutputFile, outputFile ?? "null"),
                     };
                 }
             } else delete testcase.outputFile;

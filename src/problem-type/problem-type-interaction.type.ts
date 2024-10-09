@@ -7,12 +7,11 @@ import type {
 
 import type {
     IProblemJudgeInfo,
-    IProblemJudgeInfoChecker,
-    IProblemJudgeInfoRequiredTestcase,
+    IProblemJudgeInfoOptionalOutputTestcase,
     IProblemJudgeInfoSubtask,
 } from "./problem-type.type";
 
-export interface IProblemJudgeInfoTraditional extends IProblemJudgeInfo {
+export interface IProblemJudgeInfoInteraction extends IProblemJudgeInfo {
     /*
      * The default time / memory limit
      * One is ignored in a subtask if the it defined its own default
@@ -21,33 +20,20 @@ export interface IProblemJudgeInfoTraditional extends IProblemJudgeInfo {
     memoryLimit: number;
 
     /*
-     * Be null if not using file IO
-     */
-    fileIo?: {
-        inputFilename: string;
-        outputFilename: string;
-    };
-
-    /*
-     * If ture, samples in statement will be run before all subtasks
-     * If a submission failed on samples, all subtasks will be skipped
-     */
-    runSamples?: boolean;
-
-    /*
      * There could be multiple subtasks in a problem
      * Each subtask contains some testcases
      * null for detecting from testdata files automatically
      */
-    subtasks: IProblemJudgeInfoTraditionalSubtask[] | null;
+    subtasks: IProblemJudgeInfoInteractionSubtask[] | null;
 
-    checker: IProblemJudgeInfoChecker;
+    // The program to send command and data to user's program and outputs user's score
+    interactor: IProblemJudgeInfoInteractionInteractor | null;
 
-    // The map of files to be copied to the source code directory when compileing for each code language
+    // The map of files to be copied to the source code directory when compiling for each code language
     extraSourceFiles?: Partial<Record<E_CodeLanguage, Record<string, string>>>;
 }
 
-export interface IProblemJudgeInfoTraditionalSubtask extends IProblemJudgeInfoSubtask {
+export interface IProblemJudgeInfoInteractionSubtask extends IProblemJudgeInfoSubtask {
     /*
      * The default time / memory limit
      * One is ignored in a testcase if the it defined its own default
@@ -55,28 +41,37 @@ export interface IProblemJudgeInfoTraditionalSubtask extends IProblemJudgeInfoSu
     timeLimit?: number;
     memoryLimit?: number;
 
-    testcases: IProblemJudgeInfoTraditionalTestcase[];
+    testcases: IProblemJudgeInfoInteractionTestcase[];
 }
 
-export interface IProblemJudgeInfoTraditionalTestcase extends IProblemJudgeInfoRequiredTestcase {
+export interface IProblemJudgeInfoInteractionTestcase extends IProblemJudgeInfoOptionalOutputTestcase {
     // If one of these is null,
     // the one's default of the subtask if exists, or of problem is used
     timeLimit?: number;
     memoryLimit?: number;
 }
 
-export interface ISubmissionContentTraditional extends ISubmissionContent {
-    readonly language: E_CodeLanguage;
-    readonly code: string;
-    readonly compileAndRunOptions: unknown;
-    readonly skipSamples?: boolean;
+export enum E_ProblemJudgeInfoInteractionInteractorInterface {
+    stdio = "stdio",
+    shm = "shm",
 }
 
-// For subtasks and testcasese
-export enum E_SubmissionTestcaseStatusTraditional {
+export interface IProblemJudgeInfoInteractionInteractor {
+    // stdio: The interactor and user's program's stdin and stdout are connected with two pipes
+    // shm: A shared memory region is created for interactor and user's program's communication
+    interface: E_ProblemJudgeInfoInteractionInteractorInterface;
+    sharedMemorySize?: number;
+    language: E_CodeLanguage;
+    compileAndRunOptions: unknown;
+    filename: string;
+    timeLimit?: number;
+    memoryLimit?: number;
+}
+
+// For subtasks and testcases
+export enum E_SubmissionTestcaseStatusInteraction {
     SystemError = "SystemError",
 
-    FileError = "FileError",
     RuntimeError = "RuntimeError",
     TimeLimitExceeded = "TimeLimitExceeded",
     MemoryLimitExceeded = "MemoryLimitExceeded",
@@ -89,21 +84,25 @@ export enum E_SubmissionTestcaseStatusTraditional {
     JudgementFailed = "JudgementFailed",
 }
 
-export interface ISubmissionTestcaseResultTraditional extends ISubmissionTestcaseResult {
+export interface ISubmissionTestcaseResultInteraction extends ISubmissionTestcaseResult {
     testcaseInfo: {
         timeLimit: number;
         memoryLimit: number;
         inputFile: string;
-        outputFile: string;
     };
-    status: E_SubmissionTestcaseStatusTraditional;
+    status: E_SubmissionTestcaseStatusInteraction;
     score: number;
     time?: number;
     memory?: number;
     input?: ISubmissionResultOmissibleString;
-    output?: ISubmissionResultOmissibleString;
-    userOutput?: ISubmissionResultOmissibleString;
     userError?: ISubmissionResultOmissibleString;
-    checkerMessage?: ISubmissionResultOmissibleString;
+    interactorMessage?: ISubmissionResultOmissibleString;
     systemMessage?: ISubmissionResultOmissibleString;
+}
+
+export interface ISubmissionContentInteraction extends ISubmissionContent {
+    language: E_CodeLanguage;
+    code: string;
+    compileAndRunOptions: unknown;
+    skipSamples?: boolean;
 }

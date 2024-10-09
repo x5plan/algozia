@@ -1,4 +1,5 @@
 import { isString } from "class-validator";
+import type { PartialDeep } from "type-fest";
 
 import { E_CodeLanguage } from "@/code-language/code-language.type";
 import { CE_JudgeInfoValidationMessage } from "@/common/strings/judge-info-validation-message";
@@ -6,16 +7,17 @@ import { format } from "@/common/utils/format";
 import { isValidFilename } from "@/common/validators";
 import type { ProblemFileEntity } from "@/problem/problem-file.entity";
 
-import type { IJudgeInfoValidationResult } from "../problem-type.type";
+import type { IProblemJudgeInfo } from "../problem-type.type";
+import type { IProblemJudgeInfoValidationResult } from "./type";
 
-interface IJudgeInfoWithExtraSourceFiles {
+interface IProblemJudgeInfoForValidation extends PartialDeep<IProblemJudgeInfo, { recurseIntoArrays: true }> {
     extraSourceFiles?: Partial<Record<E_CodeLanguage, Record<string, string>>>;
 }
 
 export function validateExtraSourceFiles(
-    judgeInfo: IJudgeInfoWithExtraSourceFiles,
+    judgeInfo: IProblemJudgeInfoForValidation,
     testData: ProblemFileEntity[],
-): IJudgeInfoValidationResult {
+): IProblemJudgeInfoValidationResult {
     if (judgeInfo.extraSourceFiles) {
         if (typeof judgeInfo.extraSourceFiles !== "object") {
             return {

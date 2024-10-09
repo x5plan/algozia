@@ -1,10 +1,11 @@
 import type { ValidationError } from "class-validator";
 
+import type { E_CodeLanguage } from "@/code-language/code-language.type";
 import type { FileEntity } from "@/file/file.entity";
 import type { ProblemFileEntity } from "@/problem/problem-file.entity";
 import type { ISubmissionContent, ISubmissionProgress, ISubmissionTestcaseResult } from "@/submission/submission.type";
 
-export type IJudgeInfoValidationResult = { success: true } | { success: false; message: string };
+import type { IProblemJudgeInfoValidationResult } from "./validators/type";
 
 export interface IProblemTypeServiceInterface<
     TJudgeInfo extends IProblemJudgeInfo,
@@ -40,7 +41,7 @@ export interface IProblemTypeServiceInterface<
      * @param judgeInfo The preprocessed judge info to be sent to judge. Non-whitelisted properties will be removed.
      * @param testData The problem's testdata files.
      */
-    validateAndFilterJudgeInfo(judgeInfo: TJudgeInfo, testData: ProblemFileEntity[]): IJudgeInfoValidationResult;
+    validateAndFilterJudgeInfo(judgeInfo: TJudgeInfo, testData: ProblemFileEntity[]): IProblemJudgeInfoValidationResult;
 
     /**
      * Validate a submission content submitted by user. Return the validation errors by class-validator.
@@ -76,12 +77,35 @@ export interface IProblemTypeServiceInterface<
     };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface IProblemJudgeInfo {}
+export interface IProblemJudgeInfo {
+    /*
+     * There could be multiple subtasks in a problem
+     * Each subtask contains some testcases
+     * null for detecting from testdata files automatically
+     */
+    subtasks: IProblemJudgeInfoSubtask[] | null;
+}
+
+export enum E_ProblemJudgeInfoScoringType {
+    Sum = "Sum",
+    GroupMin = "GroupMin",
+    GroupMul = "GroupMul",
+}
 
 export interface IProblemJudgeInfoSubtask {
-    scoringType: "Sum" | "GroupMin" | "GroupMul";
+    // Refer to https://cms.readthedocs.io/en/v1.4/Task%20types.html
+    scoringType: E_ProblemJudgeInfoScoringType;
+
     testcases: IProblemJudgeInfoTestcase[];
+
+    // The weight of this subtask in the problem,
+    // which should add up to 100 for all subtasks of this problem
+    // Auto if not set
+    points?: number;
+
+    // The IDs of subtasks this subtask depends
+    // A subtask will be skipped if one of it dependencies fails
+    dependencies?: number[];
 }
 
 export interface IProblemJudgeInfoTestcase {
@@ -106,3 +130,55 @@ export interface IProblemJudgeInfoRequiredTestcase extends IProblemJudgeInfoTest
     inputFile: string;
     outputFile: string;
 }
+
+export interface IProblemJudgeInfoIntegersChecker {
+    type: "integers";
+}
+
+export interface IProblemJudgeInfoFloatsChecker {
+    type: "floats";
+    precision: number;
+}
+
+export interface IProblemJudgeInfoLinesChecker {
+    type: "lines";
+    caseSensitive: boolean;
+}
+
+export interface IProblemJudgeInfoBinaryChecker {
+    type: "binary";
+}
+
+export interface IProblemJudgeInfoCustomChecker {
+    type: "custom";
+    interface: E_ProblemJudgeInfoCustomCheckerInterface;
+    language: E_CodeLanguage;
+    compileAndRunOptions: unknown;
+    filename: string;
+    timeLimit?: number;
+    memoryLimit?: number;
+}
+
+export enum E_ProblemJudgeInfoCustomCheckerInterface {
+    Testlib = "testlib",
+    Legacy = "legacy",
+    Lemon = "lemon",
+    HustOJ = "hustoj",
+    QduOJ = "qduoj",
+    DomJudge = "domjudge",
+}
+
+// integers: check the equivalent of each integer in user's output and answer
+// floats:   check each float in user's output and answer
+//           allow output with relative or absolute error not exceeding [floats.precision].
+// lines:    check the equivalent of text in each line (separated by "\n"), maybe case-insensitive
+//           any space characters (space, \t, \r) in the end of a line will be ignored
+//           any empty lines in the end of file will be ignored
+// binary:   check if the user's output and answer files are equal in binary
+// custom:   use a custom program to check the user's output
+export type IProblemJudgeInfoChecker =
+    | IProblemJudgeInfoIntegersChecker
+    | IProblemJudgeInfoFloatsChecker
+    | IProblemJudgeInfoLinesChecker
+    | IProblemJudgeInfoBinaryChecker
+    | IProblemJudgeInfoCustomChecker;

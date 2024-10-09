@@ -32,5 +32,13 @@ export const enum CE_JudgeInfoValidationMessage {
     InvalidExtraSourceFilesLanguage = "非法的额外源文件语言",
     InvalidExtraSourceFilesDst = "非法的额外源文件目标: {0} ({1})",
     NoSuchExtraSourceFilesSrc = "找不到额外源文件: {0} ({1})",
+    InvalidInteractor = "非法的交互器",
+    InvalidInteractorInterface = "非法的交互器接口",
+    InvalidInteractorSharedMemorySize = "非法的交互器共享内存大小",
+    InvalidInteractorLanguage = "非法的交互器语言",
+    InvalidInteractorCompileAndRunOptions = "非法的交互器编译运行选项",
+    NoSuchInteractorFile = "找不到交互器文件: {0}",
+    InvalidInteractorTimeLimit = "非法的交互器时间限制",
+    InvalidInteractorMemoryLimit = "非法的交互器内存限制",
     Unknown = "未知错误",
 }

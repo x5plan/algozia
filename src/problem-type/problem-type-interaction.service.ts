@@ -2,46 +2,41 @@ import { Injectable } from "@nestjs/common";
 import { plainToClass } from "class-transformer";
 import { validate, ValidationError } from "class-validator";
 
+import { restrictProperties } from "@/common/utils/restrict-properties";
 import { ProblemFileEntity } from "@/problem/problem-file.entity";
 import { ISubmissionProgress } from "@/submission/submission.type";
 
-import { restrictProperties } from "../common/utils/restrict-properties";
 import { IProblemTypeServiceInterface } from "./problem-type.type";
 import { autoMatchInputToOutput } from "./problem-type.utils";
 import {
-    IProblemJudgeInfoTraditional,
-    ISubmissionContentTraditional,
-    ISubmissionTestcaseResultTraditional,
-} from "./problem-type-traditional.type";
-import { SubmissionContentTraditionalSchema } from "./submission-content.schema";
-import { validateChecker } from "./validators/checker";
+    IProblemJudgeInfoInteraction,
+    ISubmissionContentInteraction,
+    ISubmissionTestcaseResultInteraction,
+} from "./problem-type-interaction.type";
+import { SubmissionContentInteraction } from "./submission-content.schema";
 import { validateExtraSourceFiles } from "./validators/extra-source-files";
+import { validateInteractor } from "./validators/interactor";
 import { validateMetaAndSubtasks } from "./validators/meta-and-subtasks";
 import { IProblemJudgeInfoValidationResult } from "./validators/type";
 
 @Injectable()
-export class ProblemTypeTraditionalService
+export class ProblemTypeInteractionService
     implements
         IProblemTypeServiceInterface<
-            IProblemJudgeInfoTraditional,
-            ISubmissionContentTraditional,
-            ISubmissionTestcaseResultTraditional
+            IProblemJudgeInfoInteraction,
+            ISubmissionContentInteraction,
+            ISubmissionTestcaseResultInteraction
         >
 {
-    constructor(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        private codeLanguageService: any, // TODO: Replace with CodeLanguage
-    ) {}
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    constructor(private codeLanguageService: any) {}
 
-    public getDefaultJudgeInfo(): IProblemJudgeInfoTraditional {
+    public getDefaultJudgeInfo(): IProblemJudgeInfoInteraction {
         return {
             timeLimit: 1000,
             memoryLimit: 512,
             subtasks: null,
-            checker: {
-                type: "lines",
-                caseSensitive: false,
-            },
+            interactor: null,
         };
     }
 
@@ -54,19 +49,19 @@ export class ProblemTypeTraditionalService
     }
 
     public preprocessJudgeInfo(
-        judgeInfo: IProblemJudgeInfoTraditional,
+        judgeInfo: IProblemJudgeInfoInteraction,
         testData: ProblemFileEntity[],
-    ): IProblemJudgeInfoTraditional {
+    ): IProblemJudgeInfoInteraction {
         return Array.isArray(judgeInfo.subtasks)
             ? judgeInfo
             : {
                   ...judgeInfo,
-                  subtasks: autoMatchInputToOutput(testData),
+                  subtasks: autoMatchInputToOutput(testData, true),
               };
     }
 
     public validateAndFilterJudgeInfo(
-        judgeInfo: IProblemJudgeInfoTraditional,
+        judgeInfo: IProblemJudgeInfoInteraction,
         testData: ProblemFileEntity[],
     ): IProblemJudgeInfoValidationResult {
         let result: IProblemJudgeInfoValidationResult;
@@ -75,41 +70,29 @@ export class ProblemTypeTraditionalService
             enableTimeMemoryLimit: true,
             enableFileIo: true,
             enableInputFile: true,
-            enableOutputFile: true,
+            enableOutputFile: false,
             enableUserOutputFilename: false,
         });
-
         if (!result.success) return result;
 
-        result = validateChecker(judgeInfo, testData, {
+        result = validateInteractor(judgeInfo, testData, {
             validateCompileAndRunOptions: (language, compileAndRunOptions) =>
                 this.codeLanguageService.validateCompileAndRunOptions(language, compileAndRunOptions).length === 0,
         });
-
         if (!result.success) return result;
 
         result = validateExtraSourceFiles(judgeInfo, testData);
         if (!result.success) return result;
 
-        restrictProperties(judgeInfo, [
-            "timeLimit",
-            "memoryLimit",
-            "fileIo",
-            "runSamples",
-            "subtasks",
-            "checker",
-            "extraSourceFiles",
-        ]);
-
-        restrictProperties(judgeInfo.fileIo, ["inputFilename", "outputFilename"]);
+        restrictProperties(judgeInfo, ["timeLimit", "memoryLimit", "subtasks", "interactor", "extraSourceFiles"]);
 
         return { success: true };
     }
 
     public async validateSubmissionContentAsync(
-        submissionContent: ISubmissionContentTraditional,
+        submissionContent: ISubmissionContentInteraction,
     ): Promise<ValidationError[]> {
-        const errors = await validate(plainToClass(SubmissionContentTraditionalSchema, submissionContent), {
+        const errors = await validate(plainToClass(SubmissionContentInteraction, submissionContent), {
             whitelist: true,
             forbidNonWhitelisted: true,
         });
@@ -121,20 +104,19 @@ export class ProblemTypeTraditionalService
     }
 
     public async getCodeLanguageAndAnswerSizeFromSubmissionContentAndFileAsync(
-        submissionContent: ISubmissionContentTraditional,
+        submissionContent: ISubmissionContentInteraction,
     ) {
         return {
             language: submissionContent.language,
 
-            // string.length returns the number of charactars in the string
+            // string.length returns the number of characters in the string
             // Convert to a buffer to get the number of bytes
             answerSize: Buffer.from(submissionContent.code).length,
         };
     }
 
-    // Should called after validateAndFilterJudgeInfo
     public getTimeAndMemoryUsedFromFinishedSubmissionProgress(
-        submissionProgress: ISubmissionProgress<ISubmissionTestcaseResultTraditional>,
+        submissionProgress: ISubmissionProgress<ISubmissionTestcaseResultInteraction>,
     ) {
         const result = {
             timeUsed: 0,

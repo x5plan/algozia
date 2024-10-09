@@ -6,7 +6,7 @@ import { FileEntity } from "@/file/file.entity";
 import { ProblemFileEntity } from "@/problem/problem-file.entity";
 import { ISubmissionProgress } from "@/submission/submission.type";
 
-import { IJudgeInfoValidationResult, IProblemTypeServiceInterface } from "./problem-type.type";
+import { IProblemTypeServiceInterface } from "./problem-type.type";
 import { autoMatchOutputToInput } from "./problem-type.utils";
 import {
     IProblemJudgeInfoSubmitAnswer,
@@ -15,6 +15,7 @@ import {
 } from "./problem-type-submit-answer.type";
 import { validateChecker } from "./validators/checker";
 import { validateMetaAndSubtasks } from "./validators/meta-and-subtasks";
+import { IProblemJudgeInfoValidationResult } from "./validators/type";
 
 @Injectable()
 export class ProblemTypeSubmitAnswerService
@@ -30,6 +31,7 @@ export class ProblemTypeSubmitAnswerService
 
     public getDefaultJudgeInfo(): IProblemJudgeInfoSubmitAnswer {
         return {
+            subtasks: null,
             checker: {
                 type: "lines",
                 caseSensitive: false,
@@ -60,8 +62,8 @@ export class ProblemTypeSubmitAnswerService
     public validateAndFilterJudgeInfo(
         judgeInfo: IProblemJudgeInfoSubmitAnswer,
         testData: ProblemFileEntity[],
-    ): IJudgeInfoValidationResult {
-        let result: IJudgeInfoValidationResult;
+    ): IProblemJudgeInfoValidationResult {
+        let result: IProblemJudgeInfoValidationResult;
         result = validateMetaAndSubtasks(judgeInfo, testData, {
             enableTimeMemoryLimit: false,
             enableFileIo: false,
