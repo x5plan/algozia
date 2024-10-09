@@ -2,7 +2,11 @@ import { Body, Controller, Get, Logger, Param, Post, Query, Redirect, Render, Re
 
 import { CurrentUser } from "@/common/decorators/user.decorator";
 import { AppLoginRequiredException, AppPermissionDeniedException } from "@/common/exceptions/common";
-import { NoSuchProblemException, NoSuchProblemFileException } from "@/common/exceptions/problem";
+import {
+    NoSuchProblemException,
+    NoSuchProblemFileException,
+    TestDataRequiredException,
+} from "@/common/exceptions/problem";
 import { CE_Permission, CE_SpecificPermission } from "@/common/permission/permissions";
 import { CE_Order } from "@/common/types/order";
 import { CE_Page } from "@/common/types/page";
@@ -11,12 +15,17 @@ import { IResponse } from "@/common/types/response";
 import { ConfigService } from "@/config/config.service";
 import { FileService } from "@/file/file.service";
 import { PermissionService } from "@/permission/permission.service";
+import { ProblemTypeService } from "@/problem-type/problem-type.service";
 import { CE_LockType } from "@/redis/lock.type";
 import { UserEntity } from "@/user/user.entity";
 
 import { ProblemDetailResponseDto } from "./dto/problem-detail.dto";
 import { ProblemEditPostRequestBodyDto, ProblemEditResponseDto } from "./dto/problem-edit.dto";
-import { ProblemEditJudgePostRequestBodyDto, ProblemEditJudgeResponseDto } from "./dto/problem-edit-judge.dto";
+import {
+    ProblemEditJudgeGetRequestQueryDto,
+    ProblemEditJudgePostRequestBodyDto,
+    ProblemEditJudgeResponseDto,
+} from "./dto/problem-edit-judge.dto";
 import { ProblemFileItemDto, ProblemFileRequestParamDto, ProblemFileResponseDto } from "./dto/problem-file.dto";
 import {
     CE_ProblemFileUploadError,
@@ -36,6 +45,7 @@ import { ProblemJudgeInfoEntity } from "./problem-judge-info.entity";
 export class ProblemController {
     constructor(
         private readonly problemService: ProblemService,
+        private readonly problemTypeService: ProblemTypeService,
         private readonly permissionService: PermissionService,
         private readonly fileService: FileService,
         private readonly configService: ConfigService,
@@ -220,9 +230,11 @@ export class ProblemController {
     @Render("problem-edit-judge")
     public async getProblemEditJudgeAsync(
         @Param() param: ProblemBasicRequestParamDto,
+        @Query() query: ProblemEditJudgeGetRequestQueryDto,
         @CurrentUser() currentUser: UserEntity | null,
     ): Promise<ProblemEditJudgeResponseDto> {
         const { id } = param;
+        const { preprocess } = query;
 
         if (!currentUser) {
             throw new AppLoginRequiredException(`/problem/${id}/edit/judge`);
@@ -238,30 +250,44 @@ export class ProblemController {
             throw new NoSuchProblemException();
         }
 
+        const testDataFiles = await this.problemService.findProblemTestdataFilesAsync(problem);
+
+        if (testDataFiles.length <= 0) {
+            throw new TestDataRequiredException(problem.id);
+        }
+
         let judgeInfo = await problem.judgeInfoPromise;
 
         if (!judgeInfo) {
             judgeInfo = new ProblemJudgeInfoEntity();
+            judgeInfo.problemId = problem.id;
             judgeInfo.type = E_ProblemType.Traditional;
-            judgeInfo.timeLimit = 1000;
-            judgeInfo.memoryLimit = 256;
-            judgeInfo.fileIO = false;
+            judgeInfo.judgeInfo = this.problemTypeService.get(judgeInfo.type).defaultJudgeInfo;
+
+            if (preprocess) {
+                judgeInfo.judgeInfo = await this.problemService.getPreprocessedProblemJudgeInfoAsync(
+                    problem,
+                    judgeInfo,
+                    testDataFiles,
+                );
+            }
         }
 
         return {
             hasSubmissions: false,
             problem,
             judgeInfo,
+            problemFileNames: testDataFiles.map((file) => file.filename),
         };
     }
 
     @Post(":id/edit/judge")
-    @Redirect()
+    @Render("problem-edit-judge")
     public async postProblemEditJudgeAsync(
         @Param() param: ProblemBasicRequestParamDto,
         @Body() body: ProblemEditJudgePostRequestBodyDto,
         @CurrentUser() currentUser: UserEntity | null,
-    ) {
+    ): Promise<ProblemEditJudgeResponseDto> {
         const { id } = param;
 
         if (!currentUser) {
@@ -275,6 +301,12 @@ export class ProblemController {
         return await this.problemService.lockProblemByIdAsync(id, CE_LockType.Write, async (problem) => {
             if (!problem) throw new NoSuchProblemException();
 
+            const testDataFiles = await this.problemService.findProblemTestdataFilesAsync(problem);
+
+            if (testDataFiles.length <= 0) {
+                throw new TestDataRequiredException(problem.id);
+            }
+
             let judgeInfo = await problem.judgeInfoPromise;
 
             if (!judgeInfo) {
@@ -282,18 +314,17 @@ export class ProblemController {
                 judgeInfo.problemId = problem.id;
             }
 
-            this.problemService.editJudgeInfo(judgeInfo, body);
+            this.problemService.editProblemJudgeInfoAsync(judgeInfo, body, problem, testDataFiles);
 
             await this.problemService.updateJudgeInfoAsync(judgeInfo);
 
-            return { url: `/problem/${problem.id}` };
+            return {
+                hasSubmissions: false,
+                problem,
+                judgeInfo,
+                problemFileNames: testDataFiles.map((file) => file.filename),
+            };
         });
-    }
-
-    @Get(":id/edit/data")
-    @Render("problem-edit-data")
-    public async getProblemEditDataAsync() {
-        return {};
     }
 
     @Get(":id/file")
@@ -373,7 +404,7 @@ export class ProblemController {
     ) {
         const { id, fileId } = param;
         const isEditData = req.path.includes("edit/data");
-        const type = isEditData ? E_ProblemFileType.TestData : E_ProblemFileType.Additional;
+        const type = isEditData ? E_ProblemFileType.Testdata : E_ProblemFileType.Additional;
 
         if (!currentUser || !this.problemService.checkIsAllowedEdit(currentUser)) {
             throw new AppPermissionDeniedException();

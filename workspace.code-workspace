@@ -18,7 +18,14 @@
         },
         "editor.formatOnSave": true,
         "editor.defaultFormatter": "esbenp.prettier-vscode",
-        "cSpell.words": ["typeorm", "TYWZOJ"],
+        "cSpell.words": [
+            "interactor",
+            "testcase",
+            "testcases",
+            "testdata",
+            "typeorm",
+            "tywzoj"
+        ],
         "editor.detectIndentation": true,
     },
     "extensions": {

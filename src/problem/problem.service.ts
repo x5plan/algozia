@@ -4,19 +4,22 @@ import { isInt } from "class-validator";
 import { DataSource, Repository } from "typeorm";
 
 import {
-    InvalidFileIONameException,
+    InvalidProblemJudgeInfo,
     InvalidProblemTypeException,
-    InvalidTimeOrMemoryLimitException,
     NoSuchProblemFileException,
 } from "@/common/exceptions/problem";
 import { CE_Permission, CE_SpecificPermission } from "@/common/permission/permissions";
 import { CE_Order } from "@/common/types/order";
+import { format } from "@/common/utils/format";
 import { ConfigService } from "@/config/config.service";
 import { FileService } from "@/file/file.service";
 import { CE_FileUploadError, ISignedUploadRequest } from "@/file/file.type";
 import { PermissionService } from "@/permission/permission.service";
+import { ProblemTypeService } from "@/problem-type/problem-type.service";
+import { IProblemJudgeInfo } from "@/problem-type/problem-type.type";
 import { LockService } from "@/redis/lock.service";
 import { CE_LockType } from "@/redis/lock.type";
+import { RedisService } from "@/redis/redis.service";
 import { UserEntity } from "@/user/user.entity";
 
 import { CE_ProblemEditResponseError, type ProblemEditPostRequestBodyDto } from "./dto/problem-edit.dto";
@@ -25,6 +28,8 @@ import { ProblemEntity } from "./problem.entity";
 import { CE_ProblemVisibility, E_ProblemFileType, E_ProblemType } from "./problem.type";
 import { ProblemFileEntity } from "./problem-file.entity";
 import { ProblemJudgeInfoEntity } from "./problem-judge-info.entity";
+
+const REDIS_KEY_PROBLEM_PREPROCESSED_JUDGE_INFO = "problem-preprocessed-judge-info-and-submittable:{0}";
 
 @Injectable()
 export class ProblemService {
@@ -37,12 +42,15 @@ export class ProblemService {
         private readonly problemJudgeInfoRepository: Repository<ProblemJudgeInfoEntity>,
         @InjectRepository(ProblemFileEntity)
         private readonly problemFileRepository: Repository<ProblemFileEntity>,
+        @Inject(forwardRef(() => ProblemTypeService))
+        private readonly problemTypeService: ProblemTypeService,
         @Inject(forwardRef(() => PermissionService))
         private readonly permissionService: PermissionService,
         @Inject(forwardRef(() => LockService))
         private readonly lockService: LockService,
         @Inject(forwardRef(() => FileService))
         private readonly fileService: FileService,
+        private readonly redisService: RedisService,
         private readonly configService: ConfigService,
     ) {}
 
@@ -117,6 +125,12 @@ export class ProblemService {
     public async countProblemAdditionalFilesAsync(problem: ProblemEntity) {
         return await this.problemFileRepository.count({
             where: { problemId: problem.id, type: E_ProblemFileType.Additional },
+        });
+    }
+
+    public async findProblemTestdataFilesAsync(problem: ProblemEntity) {
+        return await this.problemFileRepository.find({
+            where: { problemId: problem.id, type: E_ProblemFileType.Testdata },
         });
     }
 
@@ -195,7 +209,12 @@ export class ProblemService {
         return null;
     }
 
-    public editJudgeInfo(judgeInfo: ProblemJudgeInfoEntity, body: ProblemEditJudgePostRequestBodyDto) {
+    public async editProblemJudgeInfoAsync(
+        judgeInfo: ProblemJudgeInfoEntity,
+        body: ProblemEditJudgePostRequestBodyDto,
+        problem: ProblemEntity,
+        testdataFiles?: ProblemFileEntity[],
+    ): Promise<void> {
         const hasSubmissions = false; // TODO: Check if the problem has submissions.
 
         if (body.type === E_ProblemType.SubmitAnswer) {
@@ -206,27 +225,22 @@ export class ProblemService {
             if (hasSubmissions && judgeInfo.type === E_ProblemType.SubmitAnswer) {
                 throw new InvalidProblemTypeException();
             }
-
-            if (!body.timeLimit || !body.memoryLimit) throw new InvalidTimeOrMemoryLimitException();
-
-            judgeInfo.timeLimit = body.timeLimit;
-            judgeInfo.memoryLimit = body.memoryLimit;
         }
 
         judgeInfo.type = body.type;
 
-        if (body.type === E_ProblemType.Traditional) {
-            if (body.fileIO === undefined) throw new InvalidFileIONameException();
+        const result = this.problemTypeService
+            .get(body.type)
+            .validateAndFilterJudgeInfo(
+                body.judgeInfo,
+                testdataFiles || (await this.findProblemTestdataFilesAsync(problem)),
+            );
 
-            judgeInfo.fileIO = body.fileIO;
-
-            if (body.fileIO) {
-                if (!body.inputFileName || !body.outputFileName) throw new InvalidFileIONameException();
-
-                judgeInfo.inputFileName = body.inputFileName;
-                judgeInfo.outputFileName = body.outputFileName;
-            }
+        if (!result.success) {
+            throw new InvalidProblemJudgeInfo(result.message);
         }
+
+        judgeInfo.judgeInfo = body.judgeInfo;
     }
 
     public async checkIsAllowedViewAsync(problem: ProblemEntity, user: UserEntity) {
@@ -355,5 +369,37 @@ export class ProblemService {
         deleteOldFileActually?.();
 
         return result;
+    }
+
+    /**
+     * Judge info needs to be preprocessed before sending to clients or judge clients.
+     * Currently preprocessing is detecting testcases from testdata files.
+     *
+     * The cache gets cleared when the testdata files or judge info changed.
+     */
+    public async getPreprocessedProblemJudgeInfoAsync(
+        problem: ProblemEntity,
+        problemJudgeInfo?: ProblemJudgeInfoEntity,
+        testDataFiles?: ProblemFileEntity[],
+    ): Promise<IProblemJudgeInfo> {
+        const key = format(REDIS_KEY_PROBLEM_PREPROCESSED_JUDGE_INFO, problem.id);
+        const cacheData = await this.redisService.cacheGetAsync(key);
+        const cachedResult: IProblemJudgeInfo | null = cacheData && JSON.parse(cacheData);
+        if (cachedResult) {
+            return cachedResult;
+        }
+
+        const judgeInfoEntity = problemJudgeInfo || (await problem.judgeInfoPromise);
+        const problemType = judgeInfoEntity ? judgeInfoEntity.type : E_ProblemType.Traditional;
+        const judgeInfo = judgeInfoEntity
+            ? judgeInfoEntity.judgeInfo
+            : this.problemTypeService.get(problemType).defaultJudgeInfo;
+
+        const preprocessed = this.problemTypeService
+            .get(problemType)
+            .preprocessJudgeInfo(judgeInfo, testDataFiles || (await this.findProblemTestdataFilesAsync(problem)));
+        await this.redisService.cacheSetAsync(key, JSON.stringify(preprocessed));
+
+        return preprocessed;
     }
 }

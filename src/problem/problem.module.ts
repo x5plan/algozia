@@ -3,6 +3,7 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 
 import { FileModule } from "@/file/file.module";
 import { PermissionModule } from "@/permission/permission.module";
+import { ProblemTypeModule } from "@/problem-type/problem-type.module";
 import { RedisModule } from "@/redis/redis.module";
 
 import { ProblemController } from "./problem.controller";
@@ -17,9 +18,10 @@ import { ProblemJudgeInfoEntity } from "./problem-judge-info.entity";
         TypeOrmModule.forFeature([ProblemEntity]),
         TypeOrmModule.forFeature([ProblemJudgeInfoEntity]),
         TypeOrmModule.forFeature([ProblemFileEntity]),
-        forwardRef(() => PermissionModule),
-        forwardRef(() => RedisModule),
         forwardRef(() => FileModule),
+        forwardRef(() => PermissionModule),
+        forwardRef(() => ProblemTypeModule),
+        forwardRef(() => RedisModule),
     ],
     controllers: [ProblemController],
     providers: [ProblemService],
