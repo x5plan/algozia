@@ -4,6 +4,8 @@ import Redis from "ioredis";
 
 import { ConfigService } from "@/config/config.service";
 
+const REDIS_CACHE_EXPIRE_TIME = 60 * 60 * 24 * 30; // 7 days
+
 @Injectable()
 export class RedisService implements OnModuleInit {
     private readonly client: Redis;
@@ -27,6 +29,18 @@ export class RedisService implements OnModuleInit {
         } catch (e) {
             throw new Error(`Could not connect to Redis service: ${e}`);
         }
+    }
+
+    public async cacheSetAsync(key: string, value: string): Promise<void> {
+        await this.client.setex(key, REDIS_CACHE_EXPIRE_TIME, value);
+    }
+
+    public async cacheGetAsync(key: string): Promise<string | null> {
+        return await this.client.get(key);
+    }
+
+    public async cacheDeleteAsync(key: string): Promise<void> {
+        await this.client.del(key);
     }
 
     public getClient(): Redis {

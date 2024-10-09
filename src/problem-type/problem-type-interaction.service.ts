@@ -31,7 +31,7 @@ export class ProblemTypeInteractionService
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(private codeLanguageService: any) {}
 
-    public getDefaultJudgeInfo(): IProblemJudgeInfoInteraction {
+    public get defaultJudgeInfo(): IProblemJudgeInfoInteraction {
         return {
             timeLimit: 1000,
             memoryLimit: 512,
@@ -40,11 +40,11 @@ export class ProblemTypeInteractionService
         };
     }
 
-    public shouldUploadAnswerFile(): boolean {
+    public get shouldUploadAnswerFile(): boolean {
         return false;
     }
 
-    public enableStatistics(): boolean {
+    public get enableStatistics(): boolean {
         return true;
     }
 

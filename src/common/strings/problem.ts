@@ -10,3 +10,7 @@ export const enum CE_ProblemVisibilityString {
     Internal = "内部",
     Private = "私有",
 }
+
+export const enum CE_ProblemCommonString {
+    UploadTestData = "上传测试数据",
+}

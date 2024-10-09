@@ -1,6 +1,7 @@
 import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from "typeorm";
 
 import { ToEntity } from "@/common/types/to-entity";
+import { IProblemJudgeInfo } from "@/problem-type/problem-type.type";
 
 import { ProblemEntity } from "./problem.entity";
 import { E_ProblemType, IProblemJudgeInfoEditable } from "./problem.type";
@@ -18,5 +19,5 @@ export class ProblemJudgeInfoEntity implements ToEntity<IProblemJudgeInfoEditabl
     public type: E_ProblemType;
 
     @Column({ type: "json" })
-    public judgeInfo: unknown;
+    public judgeInfo: IProblemJudgeInfo;
 }

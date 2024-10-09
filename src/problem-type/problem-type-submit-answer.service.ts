@@ -29,7 +29,7 @@ export class ProblemTypeSubmitAnswerService
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(private codeLanguageService: any) {}
 
-    public getDefaultJudgeInfo(): IProblemJudgeInfoSubmitAnswer {
+    public get defaultJudgeInfo(): IProblemJudgeInfoSubmitAnswer {
         return {
             subtasks: null,
             checker: {
@@ -39,11 +39,11 @@ export class ProblemTypeSubmitAnswerService
         };
     }
 
-    public shouldUploadAnswerFile(): boolean {
+    public get shouldUploadAnswerFile(): boolean {
         return true;
     }
 
-    public enableStatistics(): boolean {
+    public get enableStatistics(): boolean {
         return false;
     }
 

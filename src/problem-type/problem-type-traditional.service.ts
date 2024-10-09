@@ -33,7 +33,7 @@ export class ProblemTypeTraditionalService
         private codeLanguageService: any, // TODO: Replace with CodeLanguage
     ) {}
 
-    public getDefaultJudgeInfo(): IProblemJudgeInfoTraditional {
+    public get defaultJudgeInfo(): IProblemJudgeInfoTraditional {
         return {
             timeLimit: 1000,
             memoryLimit: 512,
@@ -45,11 +45,11 @@ export class ProblemTypeTraditionalService
         };
     }
 
-    public shouldUploadAnswerFile(): boolean {
+    public get shouldUploadAnswerFile(): boolean {
         return false;
     }
 
-    public enableStatistics(): boolean {
+    public get enableStatistics(): boolean {
         return true;
     }
 

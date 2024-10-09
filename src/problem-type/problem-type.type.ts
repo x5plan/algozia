@@ -15,17 +15,17 @@ export interface IProblemTypeServiceInterface<
     /**
      * Return the default judge info for a newly created problem.
      */
-    getDefaultJudgeInfo(): TJudgeInfo;
+    get defaultJudgeInfo(): TJudgeInfo;
 
     /**
      * Return if a submission of the problem contains a file.
      */
-    shouldUploadAnswerFile(): boolean;
+    get shouldUploadAnswerFile(): boolean;
 
     /**
      * Return if this type of problems have the submission statistics page
      */
-    enableStatistics(): boolean;
+    get enableStatistics(): boolean;
 
     /**
      * Preprocess judge info for judging, e.g. detect testcases automatically from test data when configured.

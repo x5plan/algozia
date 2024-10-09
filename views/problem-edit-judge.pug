@@ -40,31 +40,6 @@ block content
               .field
                 +type-checkbox-item("interaction", hasSubmissions && judgeInfo.type === "submit-answer")
 
-            .two.fields
-              .field
-                label(for="time-limit") 时间限制 (ms)
-                input#time-limit(name="timeLimit", type="number", value=judgeInfo.timeLimit)
-              .field
-                label(for="memory-limit") 空间限制 (MiB)
-                input#memory-limit(name="memoryLimit", type="number", value=judgeInfo.memoryLimit)
-
-            .inline.fields
-              label IO 方式
-              .field
-                .ui.radio.checkbox(class=judgeInfo.fileIO ? "checked" : "")
-                  input.hidden(type="radio", name="fileIO", value="false", tabindex="0", checked=!judgeInfo.fileIO)
-                  label 标准 IO
-              .field
-                .ui.radio.checkbox(class=judgeInfo.fileIO ? "checked" : "")
-                  input.hidden(type="radio", name="fileIO", value="true", tabindex="0", checked=judgeInfo.fileIO)
-                  label 文件 IO
-            .field
-              label(for="input-file") 输入文件名
-              input#input-file(name="inputFileName", type="text", value=judgeInfo.inputFileName)
-            .field
-              label(for="output-file") 输出文件名
-              input#output-file(name="outputFileName", type="text", value=judgeInfo.outputFileName)
-
             .ui.error.message
 
             button.ui.primary.button(type="submit") 保存

@@ -1,4 +1,5 @@
 import { CE_UserLevel } from "@/common/permission/user-level";
+import type { IProblemJudgeInfo } from "@/problem-type/problem-type.type";
 
 export enum E_ProblemType {
     Traditional = "traditional",
@@ -14,7 +15,7 @@ export const enum CE_ProblemVisibility {
 }
 
 export enum E_ProblemFileType {
-    TestData = "testdata",
+    Testdata = "testdata",
     Additional = "additional",
 }
 
@@ -31,11 +32,7 @@ export interface IProblemEditable {
 
 export interface IProblemJudgeInfoEditable {
     type: E_ProblemType;
-    timeLimit?: number;
-    memoryLimit?: number;
-    fileIO?: boolean;
-    inputFileName?: string;
-    outputFileName?: string;
+    judgeInfo: IProblemJudgeInfo;
 }
 
 export enum E_ProblemSortBy {
