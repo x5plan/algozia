@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { plainToClass } from "class-transformer";
 import { validate, ValidationError } from "class-validator";
 
+import { CodeLanguageService } from "@/code-language/code-language.service";
 import { ProblemFileEntity } from "@/problem/problem-file.entity";
 import { ISubmissionProgress } from "@/submission/submission.type";
 
@@ -28,10 +29,7 @@ export class ProblemTypeTraditionalService
             ISubmissionTestcaseResultTraditional
         >
 {
-    constructor(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        private codeLanguageService: any, // TODO: Replace with CodeLanguage
-    ) {}
+    constructor(private codeLanguageService: CodeLanguageService) {}
 
     public get defaultJudgeInfo(): IProblemJudgeInfoTraditional {
         return {
