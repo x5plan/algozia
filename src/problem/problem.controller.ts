@@ -37,8 +37,8 @@ import {
 import { ProblemListGetRequestQueryDto, ProblemListGetResponseDto } from "./dto/problem-list.dto";
 import { ProblemBasicRequestParamDto } from "./dto/problem-shared.dto";
 import { ProblemEntity } from "./problem.entity";
+import { E_ProblemFileType, E_ProblemSortBy, E_ProblemType, E_ProblemVisibility } from "./problem.enum";
 import { ProblemService } from "./problem.service";
-import { CE_ProblemVisibility, E_ProblemFileType, E_ProblemType } from "./problem.type";
 import { ProblemJudgeInfoEntity } from "./problem-judge-info.entity";
 
 @Controller(CE_Page.Problem)
@@ -58,7 +58,7 @@ export class ProblemController {
         @Query() query: ProblemListGetRequestQueryDto,
         @CurrentUser() currentUser: UserEntity | null,
     ): Promise<ProblemListGetResponseDto> {
-        const { page = 1, sortBy = "displayId", order = CE_Order.Asc, keyword = "" } = query;
+        const { page = 1, sortBy = E_ProblemSortBy.DisplayId, order = CE_Order.Asc, keyword = "" } = query;
 
         if (!currentUser) {
             throw new AppLoginRequiredException(req.url);
@@ -161,7 +161,7 @@ export class ProblemController {
                     outputFormat: "",
                     samples: "",
                     limitAndHint: "",
-                    visibility: CE_ProblemVisibility.Private,
+                    visibility: E_ProblemVisibility.Private,
                 },
             };
         } else {
@@ -314,7 +314,7 @@ export class ProblemController {
                 judgeInfo.problemId = problem.id;
             }
 
-            this.problemService.editProblemJudgeInfoAsync(judgeInfo, body, problem, testDataFiles);
+            await this.problemService.editProblemJudgeInfoAsync(judgeInfo, body, problem, testDataFiles);
 
             await this.problemService.updateJudgeInfoAsync(judgeInfo);
 
@@ -413,7 +413,7 @@ export class ProblemController {
         return await this.problemService.lockManageFileByProblemIdAsync(id, type, async (problem) => {
             if (!problem) throw new NoSuchProblemException();
 
-            await this.problemService.deleteProblemFileAsync(problem, fileId);
+            await this.problemService.removeProblemFileAsync(problem, fileId);
 
             return {
                 url: isEditData ? `/problem/${id}/edit/data` : `/problem/${id}/file`,

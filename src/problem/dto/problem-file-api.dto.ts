@@ -4,9 +4,10 @@ import { IsEnum, IsNumber, Length, ValidateNested } from "class-validator";
 import { CE_ExceptionString } from "@/common/strings/exception";
 import { IsValidFilename } from "@/common/validators/filename";
 import { SignedUploadRequestDto } from "@/file/dto/file-upload-request.dto";
-import { CE_FileUploadError, ISignedUploadRequest } from "@/file/file.type";
+import { ISignedUploadRequest } from "@/file/file.type";
+import { CE_FileUploadError } from "@/file/dto/file-upload-request.dto";
 
-import { E_ProblemFileType } from "../problem.type";
+import { E_ProblemFileType } from "../problem.enum";
 
 export class ProblemSignFileUploadRequestPostRequestBodyDto {
     @IsNumber()

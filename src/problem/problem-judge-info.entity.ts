@@ -4,7 +4,8 @@ import { ToEntity } from "@/common/types/to-entity";
 import { IProblemJudgeInfo } from "@/problem-type/problem-type.type";
 
 import { ProblemEntity } from "./problem.entity";
-import { E_ProblemType, IProblemJudgeInfoEditable } from "./problem.type";
+import { E_ProblemType } from "./problem.enum";
+import { IProblemJudgeInfoEditable } from "./problem.type";
 
 @Entity("problem_judge_info")
 export class ProblemJudgeInfoEntity implements ToEntity<IProblemJudgeInfoEditable> {

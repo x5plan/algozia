@@ -1,10 +1,11 @@
 import type { ValidationError } from "class-validator";
 
-import type { E_CodeLanguage } from "@/code-language/code-language.type";
+import type { E_CodeLanguage } from "@/code-language/code-language.enum";
 import type { FileEntity } from "@/file/file.entity";
 import type { ProblemFileEntity } from "@/problem/problem-file.entity";
 import type { ISubmissionContent, ISubmissionProgress, ISubmissionTestcaseResult } from "@/submission/submission.type";
 
+import type { E_ProblemJudgeInfoCustomCheckerInterface, E_ProblemJudgeInfoScoringType } from "./problem-type.enum";
 import type { IProblemJudgeInfoValidationResult } from "./validators/type";
 
 export interface IProblemTypeServiceInterface<
@@ -86,12 +87,6 @@ export interface IProblemJudgeInfo {
     subtasks: IProblemJudgeInfoSubtask[] | null;
 }
 
-export enum E_ProblemJudgeInfoScoringType {
-    Sum = "Sum",
-    GroupMin = "GroupMin",
-    GroupMul = "GroupMul",
-}
-
 export interface IProblemJudgeInfoSubtask {
     // Refer to https://cms.readthedocs.io/en/v1.4/Task%20types.html
     scoringType: E_ProblemJudgeInfoScoringType;
@@ -157,15 +152,6 @@ export interface IProblemJudgeInfoCustomChecker {
     filename: string;
     timeLimit?: number;
     memoryLimit?: number;
-}
-
-export enum E_ProblemJudgeInfoCustomCheckerInterface {
-    Testlib = "testlib",
-    Legacy = "legacy",
-    Lemon = "lemon",
-    HustOJ = "hustoj",
-    QduOJ = "qduoj",
-    DomJudge = "domjudge",
 }
 
 // integers: check the equivalent of each integer in user's output and answer

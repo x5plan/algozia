@@ -8,7 +8,8 @@ import { encodeRFC5987ValueChars } from "@/common/utils/encode";
 import { ConfigService } from "@/config/config.service";
 
 import { FileEntity } from "./file.entity";
-import { CE_FileUploadError, IFileUploadReportResult, ISignedUploadRequest } from "./file.type";
+import { IFileUploadReportResult, ISignedUploadRequest } from "./file.type";
+import { CE_FileUploadError } from "./dto/file-upload-request.dto";
 
 const FILE_UPLOAD_EXPIRE_TIME = 10 * 60; // 10 minutes upload expire time
 const FILE_DOWNLOAD_EXPIRE_TIME = 20 * 60 * 60; // 20 hours download expire time

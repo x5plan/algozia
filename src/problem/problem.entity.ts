@@ -2,7 +2,8 @@ import { Column, Entity, Index, JoinColumn, ManyToOne, OneToOne, PrimaryGenerate
 
 import { UserEntity } from "@/user/user.entity";
 
-import { CE_ProblemVisibility, IProblemEditable } from "./problem.type";
+import { E_ProblemVisibility } from "./problem.enum";
+import { IProblemEditable } from "./problem.type";
 import { ProblemJudgeInfoEntity } from "./problem-judge-info.entity";
 
 @Entity("problem")
@@ -33,8 +34,9 @@ export class ProblemEntity implements IProblemEditable {
     @Column({ name: "limit_and_hint", type: "text", nullable: false, default: "" })
     public limitAndHint: string;
 
-    @Column({ name: "visibility", type: "integer", nullable: false, default: CE_ProblemVisibility.Private })
-    public visibility: CE_ProblemVisibility;
+    // It may be add more visibility level so use integer instead of enum.
+    @Column({ name: "visibility", type: "integer", nullable: false, default: E_ProblemVisibility.Private })
+    public visibility: E_ProblemVisibility;
 
     @Column({ name: "upload_time", type: "datetime", nullable: false })
     public uploadTime: Date;

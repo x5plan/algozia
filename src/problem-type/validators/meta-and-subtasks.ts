@@ -1,5 +1,5 @@
 import { isArray, isNumber, isString } from "class-validator";
-import toposort from "toposort";
+import { array as topologicalSortArray } from "toposort";
 import type { PartialDeep } from "type-fest";
 
 import { CE_JudgeInfoValidationMessage } from "@/common/strings/judge-info-validation-message";
@@ -280,7 +280,7 @@ export function validateMetaAndSubtasks(
     }
 
     try {
-        toposort.array(
+        topologicalSortArray(
             (judgeInfo.subtasks || []).map((subtask, i) => i),
             edges,
         );

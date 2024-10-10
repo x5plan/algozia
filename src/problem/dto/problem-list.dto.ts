@@ -8,7 +8,7 @@ import { ISearchableQuery, ISearchableResponse } from "@/common/types/searchable
 import { ISortableQuery, ISortableResponse } from "@/common/types/sortable";
 
 import { ProblemEntity } from "../problem.entity";
-import { E_ProblemSortBy } from "../problem.type";
+import { E_ProblemSortBy } from "../problem.enum";
 
 export class ProblemListGetRequestQueryDto implements ISortableQuery, IPageableQuery, ISearchableQuery {
     @Type(() => Number)

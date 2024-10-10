@@ -1,6 +1,6 @@
 import { IsBoolean, IsEnum, IsObject, IsOptional, IsString, Length } from "class-validator";
 
-import { E_CodeLanguage } from "@/code-language/code-language.type";
+import { E_CodeLanguage } from "@/code-language/code-language.enum";
 
 import { ISubmissionContentInteraction } from "./problem-type-interaction.type";
 import { ISubmissionContentTraditional } from "./problem-type-traditional.type";

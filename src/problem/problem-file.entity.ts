@@ -1,7 +1,7 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
 import { ProblemEntity } from "./problem.entity";
-import { E_ProblemFileType } from "./problem.type";
+import { E_ProblemFileType } from "./problem.enum";
 
 @Entity("problem_file")
 @Index(["problemId", "type"])

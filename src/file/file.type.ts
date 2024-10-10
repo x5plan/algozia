@@ -1,5 +1,4 @@
-import { CE_ExceptionString } from "@/common/strings/exception";
-
+import type { CE_FileUploadError } from "./dto/file-upload-request.dto";
 import type { FileEntity } from "./file.entity";
 
 export interface ISignedUploadRequest {
@@ -14,9 +13,4 @@ export interface ISignedUploadRequest {
 export interface IFileUploadReportResult {
     error?: CE_FileUploadError;
     file?: FileEntity;
-}
-
-export const enum CE_FileUploadError {
-    FileUUIDExists = CE_ExceptionString.File_UUIDExists,
-    FileNotFound = CE_ExceptionString.File_NoSuchFile,
 }

@@ -1,5 +1,6 @@
 import type { ProblemFileEntity } from "@/problem/problem-file.entity";
 
+import { E_ProblemJudgeInfoScoringType } from "./problem-type.enum";
 import type {
     IProblemJudgeInfoOptionalInputTestcase,
     IProblemJudgeInfoOptionalOutputTestcase,
@@ -7,7 +8,6 @@ import type {
     IProblemJudgeInfoSubtask,
     IProblemJudgeInfoTestcase,
 } from "./problem-type.type";
-import { E_ProblemJudgeInfoScoringType } from "./problem-type.type";
 
 interface IAutoMatchedProblemJudgeInfoSubtask<T extends IProblemJudgeInfoTestcase> extends IProblemJudgeInfoSubtask {
     scoringType: E_ProblemJudgeInfoScoringType.Sum;

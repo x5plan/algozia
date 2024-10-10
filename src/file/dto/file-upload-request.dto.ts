@@ -1,5 +1,7 @@
 import { IsIn, IsNumber, IsOptional, IsString, IsUUID } from "class-validator";
 
+import { CE_ExceptionString } from "@/common/strings/exception";
+
 import { ISignedUploadRequest } from "../file.type";
 
 export class SignedUploadRequestDto implements ISignedUploadRequest {
@@ -23,4 +25,9 @@ export class SignedUploadRequestDto implements ISignedUploadRequest {
     @IsString()
     @IsOptional()
     public fileFieldName?: string;
+}
+
+export const enum CE_FileUploadError {
+    FileUUIDExists = CE_ExceptionString.File_UUIDExists,
+    FileNotFound = CE_ExceptionString.File_NoSuchFile,
 }

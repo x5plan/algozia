@@ -1,23 +1,6 @@
-import { CE_UserLevel } from "@/common/permission/user-level";
 import type { IProblemJudgeInfo } from "@/problem-type/problem-type.type";
 
-export enum E_ProblemType {
-    Traditional = "traditional",
-    SubmitAnswer = "submit-answer",
-    Interaction = "interaction",
-}
-
-export const enum CE_ProblemVisibility {
-    Public = CE_UserLevel.General,
-    Paid = CE_UserLevel.Paid,
-    Internal = CE_UserLevel.Internal,
-    Private = CE_UserLevel.Manager,
-}
-
-export enum E_ProblemFileType {
-    Testdata = "testdata",
-    Additional = "additional",
-}
+import type { E_ProblemType, E_ProblemVisibility } from "./problem.enum";
 
 export interface IProblemEditable {
     displayId: number;
@@ -27,7 +10,7 @@ export interface IProblemEditable {
     outputFormat: string;
     samples: string;
     limitAndHint: string;
-    visibility: CE_ProblemVisibility;
+    visibility: E_ProblemVisibility;
 }
 
 export interface IProblemJudgeInfoEditable {
@@ -35,13 +18,9 @@ export interface IProblemJudgeInfoEditable {
     judgeInfo: IProblemJudgeInfo;
 }
 
-export enum E_ProblemSortBy {
-    DisplayId = "displayId",
-}
-
 export type IProblemTypeStringMap = Record<E_ProblemType, string>;
-export type IVisibilityStringMap = Record<CE_ProblemVisibility, string>;
-export type IVisibilityLabelColorMap = Record<CE_ProblemVisibility, string>;
+export type IVisibilityStringMap = Record<E_ProblemVisibility, string>;
+export type IVisibilityLabelColorMap = Record<E_ProblemVisibility, string>;
 
 export interface IProblemViewGlobal {
     problemTypeStringMap: IProblemTypeStringMap;

@@ -13,7 +13,8 @@ import { CE_Order } from "@/common/types/order";
 import { format } from "@/common/utils/format";
 import { ConfigService } from "@/config/config.service";
 import { FileService } from "@/file/file.service";
-import { CE_FileUploadError, ISignedUploadRequest } from "@/file/file.type";
+import { ISignedUploadRequest } from "@/file/file.type";
+import { CE_FileUploadError } from "@/file/dto/file-upload-request.dto";
 import { PermissionService } from "@/permission/permission.service";
 import { ProblemTypeService } from "@/problem-type/problem-type.service";
 import { IProblemJudgeInfo } from "@/problem-type/problem-type.type";
@@ -25,7 +26,7 @@ import { UserEntity } from "@/user/user.entity";
 import { CE_ProblemEditResponseError, type ProblemEditPostRequestBodyDto } from "./dto/problem-edit.dto";
 import { ProblemEditJudgePostRequestBodyDto } from "./dto/problem-edit-judge.dto";
 import { ProblemEntity } from "./problem.entity";
-import { CE_ProblemVisibility, E_ProblemFileType, E_ProblemType } from "./problem.type";
+import { E_ProblemFileType, E_ProblemSortBy, E_ProblemType, E_ProblemVisibility } from "./problem.enum";
 import { ProblemFileEntity } from "./problem-file.entity";
 import { ProblemJudgeInfoEntity } from "./problem-judge-info.entity";
 
@@ -64,7 +65,7 @@ export class ProblemService {
 
     public async findProblemListAndCountAsync(
         page: number,
-        sortBy: "displayId",
+        sortBy: E_ProblemSortBy,
         order: CE_Order,
         keyword: string,
         user: UserEntity,
@@ -138,7 +139,15 @@ export class ProblemService {
         await this.problemRepository.save(problem);
     }
 
+    /**
+     * The cache gets cleared when the judge info changed.
+     *
+     * @param judgeInfo The judge info entity.
+     */
     public async updateJudgeInfoAsync(judgeInfo: ProblemJudgeInfoEntity) {
+        await this.redisService.cacheDeleteAsync(
+            format(REDIS_KEY_PROBLEM_PREPROCESSED_JUDGE_INFO, judgeInfo.problemId),
+        );
         await this.problemJudgeInfoRepository.save(judgeInfo);
     }
 
@@ -158,7 +167,61 @@ export class ProblemService {
         deleteFilesActually?.();
     }
 
-    public async deleteProblemFileAsync(problem: ProblemEntity, uuid: string) {
+    /**
+     * Should be called under lockManageFileByProblemIdAsync.
+     *
+     * @param problem The problem entity.
+     * @param type The type of the file.
+     * @param filename The filename of the file.
+     * @param signedUploadRequest The signed upload request.
+     * @returns The error message if there is an error, otherwise null.
+     */
+    public async addProblemFileAsync(
+        problem: ProblemEntity,
+        type: E_ProblemFileType,
+        filename: string,
+        signedUploadRequest: ISignedUploadRequest,
+    ): Promise<CE_FileUploadError | null> {
+        let deleteOldFileActually: (() => void) | undefined;
+
+        const result = await this.dataSource.transaction("REPEATABLE READ", async (entityManager) => {
+            const result = await this.fileService.reportUploadFinishedAsync(signedUploadRequest, entityManager);
+
+            if (result.error) return result.error;
+
+            const oldProblemFile = await entityManager.findOneBy(ProblemFileEntity, {
+                problemId: problem.id,
+                type,
+                filename,
+            });
+
+            if (oldProblemFile) {
+                deleteOldFileActually = await this.fileService.deleteFileAsync(oldProblemFile.uuid, entityManager);
+                oldProblemFile.uuid = signedUploadRequest.uuid;
+                await entityManager.save(ProblemFileEntity, oldProblemFile);
+            } else {
+                const problemFile = new ProblemFileEntity();
+                problemFile.problemId = problem.id;
+                problemFile.type = type;
+                problemFile.filename = filename;
+                problemFile.uuid = signedUploadRequest.uuid;
+                await entityManager.save(ProblemFileEntity, problemFile);
+            }
+
+            return null;
+        });
+
+        deleteOldFileActually?.();
+
+        return result;
+    }
+
+    /**
+     * Should be called under lockManageFileByProblemIdAsync.
+     * @param problem The problem entity.
+     * @param uuid The UUID of the file to remove.
+     */
+    public async removeProblemFileAsync(problem: ProblemEntity, uuid: string) {
         let deleteFileActually: (() => void) | undefined;
         await this.dataSource.transaction("READ COMMITTED", async (entityManager) => {
             const file = await entityManager.findOne(ProblemFileEntity, {
@@ -173,16 +236,13 @@ export class ProblemService {
         deleteFileActually?.();
     }
 
-    public async generateNewDisplayIdAsync() {
-        const problems = await this.problemRepository.find({
-            order: {
-                displayId: "DESC",
-            },
-            take: 1,
-        });
-        return problems.length > 0 ? problems[0].displayId + 1 : 1000;
-    }
-
+    /**
+     * Just edit the entity. Should manually save the changes to the database after calling this method.
+     *
+     * @param problem The problem entity to edit.
+     * @param body The request body.
+     * @returns The error message if there is an error, otherwise null.
+     */
     public async editProblemAsync(
         problem: ProblemEntity,
         body: ProblemEditPostRequestBodyDto,
@@ -201,7 +261,7 @@ export class ProblemService {
         problem.samples = body.samples;
         problem.limitAndHint = body.limitAndHint;
 
-        if (problem.visibility === CE_ProblemVisibility.Private && body.visibility !== CE_ProblemVisibility.Private) {
+        if (problem.visibility === E_ProblemVisibility.Private && body.visibility !== E_ProblemVisibility.Private) {
             problem.publicTime = new Date();
         }
         problem.visibility = body.visibility;
@@ -209,6 +269,16 @@ export class ProblemService {
         return null;
     }
 
+    /**
+     * Just edit the entity. Should manually save the changes to the database after calling this method.
+     *
+     * @param judgeInfo The judge info entity to edit.
+     * @param body The request body.
+     * @param problem The problem entity of the judge info.
+     * @param testdataFiles The testdata files. If not provided, it will be find by the problem entity.
+     * @throws InvalidProblemTypeException if the problem type is invalid.
+     * @throws InvalidProblemJudgeInfo if the judge info is invalid.
+     */
     public async editProblemJudgeInfoAsync(
         judgeInfo: ProblemJudgeInfoEntity,
         body: ProblemEditJudgePostRequestBodyDto,
@@ -329,46 +399,17 @@ export class ProblemService {
     }
 
     /**
-     * Should be called under lockManageFileByProblemIdAsync.
+     * Generate a new display ID for creating a new problem.
+     * @returns The new display ID.
      */
-    public async addProblemFileAsync(
-        problem: ProblemEntity,
-        type: E_ProblemFileType,
-        filename: string,
-        signedUploadRequest: ISignedUploadRequest,
-    ): Promise<CE_FileUploadError | null> {
-        let deleteOldFileActually: (() => void) | undefined;
-
-        const result = await this.dataSource.transaction("REPEATABLE READ", async (entityManager) => {
-            const result = await this.fileService.reportUploadFinishedAsync(signedUploadRequest, entityManager);
-
-            if (result.error) return result.error;
-
-            const oldProblemFile = await entityManager.findOneBy(ProblemFileEntity, {
-                problemId: problem.id,
-                type,
-                filename,
-            });
-
-            if (oldProblemFile) {
-                deleteOldFileActually = await this.fileService.deleteFileAsync(oldProblemFile.uuid, entityManager);
-                oldProblemFile.uuid = signedUploadRequest.uuid;
-                await entityManager.save(ProblemFileEntity, oldProblemFile);
-            } else {
-                const problemFile = new ProblemFileEntity();
-                problemFile.problemId = problem.id;
-                problemFile.type = type;
-                problemFile.filename = filename;
-                problemFile.uuid = signedUploadRequest.uuid;
-                await entityManager.save(ProblemFileEntity, problemFile);
-            }
-
-            return null;
+    public async generateNewDisplayIdAsync() {
+        const problems = await this.problemRepository.find({
+            order: {
+                displayId: "DESC",
+            },
+            take: 1,
         });
-
-        deleteOldFileActually?.();
-
-        return result;
+        return problems.length > 0 ? problems[0].displayId + 1 : 1000;
     }
 
     /**
@@ -376,6 +417,11 @@ export class ProblemService {
      * Currently preprocessing is detecting testcases from testdata files.
      *
      * The cache gets cleared when the testdata files or judge info changed.
+     *
+     * @param problem The problem entity.
+     * @param problemJudgeInfo The judge info entity. If not provided, it will be find by the problem entity.
+     * @param testDataFiles The testdata files. If not provided, it will be find by the problem entity.
+     * @returns The preprocessed judge info. The result is judge info only, not the whole judge info entity.
      */
     public async getPreprocessedProblemJudgeInfoAsync(
         problem: ProblemEntity,

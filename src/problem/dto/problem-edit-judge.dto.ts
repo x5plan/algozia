@@ -6,7 +6,8 @@ import { createJsonTransformer } from "@/common/transformers/json";
 import { IProblemJudgeInfo } from "@/problem-type/problem-type.type";
 
 import type { ProblemEntity } from "../problem.entity";
-import { E_ProblemType, type IProblemJudgeInfoEditable } from "../problem.type";
+import { E_ProblemType } from "../problem.enum";
+import type { IProblemJudgeInfoEditable } from "../problem.type";
 import { ProblemJudgeInfoEntity } from "../problem-judge-info.entity";
 
 export class ProblemEditJudgeGetRequestQueryDto {
