@@ -3,11 +3,7 @@ import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
 import { isInt } from "class-validator";
 import { DataSource, Repository } from "typeorm";
 
-import {
-    InvalidProblemJudgeInfo,
-    InvalidProblemTypeException,
-    NoSuchProblemFileException,
-} from "@/common/exceptions/problem";
+import { InvalidProblemTypeException, NoSuchProblemFileException } from "@/common/exceptions/problem";
 import { CE_Permission, CE_SpecificPermission } from "@/common/permission/permissions";
 import { CE_Order } from "@/common/types/order";
 import { format } from "@/common/utils/format";
@@ -214,7 +210,7 @@ export class ProblemService {
         body: ProblemEditJudgePostRequestBodyDto,
         problem: ProblemEntity,
         testdataFiles?: ProblemFileEntity[],
-    ): Promise<void> {
+    ): Promise<string | null> {
         const hasSubmissions = false; // TODO: Check if the problem has submissions.
 
         if (body.type === E_ProblemType.SubmitAnswer) {
@@ -237,10 +233,12 @@ export class ProblemService {
             );
 
         if (!result.success) {
-            throw new InvalidProblemJudgeInfo(result.message);
+            return result.message;
         }
 
         judgeInfo.judgeInfo = body.judgeInfo;
+
+        return null;
     }
 
     public async checkIsAllowedViewAsync(problem: ProblemEntity, user: UserEntity) {

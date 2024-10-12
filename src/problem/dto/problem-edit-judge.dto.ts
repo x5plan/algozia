@@ -26,8 +26,9 @@ export class ProblemEditJudgePostRequestBodyDto implements IProblemJudgeInfoEdit
 }
 
 export class ProblemEditJudgeResponseDto {
+    public error?: string | null;
     public hasSubmissions: boolean;
     public problem: ProblemEntity;
     public judgeInfo: ProblemJudgeInfoEntity;
-    public problemFileNames: string[];
+    public testDataFileNames: string[];
 }

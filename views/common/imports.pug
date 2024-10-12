@@ -25,7 +25,8 @@ mixin import-validation(name)
   +import-bundle-script(`validations/${name}`)
 
 mixin import-highlight-styles
-  +import-package-style("prismjs/themes/prism-tomorrow")
+  link(rel="stylesheet", href=`${app.cdnUrl}assets/prism-theme-github-light.css`)
+  //- +import-package-style("prismjs/themes/prism-tomorrow")
 
 mixin import-highlight-scripts
   if !__highlightUtilLoaded
@@ -54,9 +55,4 @@ mixin import-markdown-scripts
     +import-package-script-lazy("katex/katex", "__onKatexLoaded")
 
 mixin import-page-app(appName)
-  +import-bundle-script("page-app-loader")
   script.
-    window.PageAppLoaderUtil.loadPageApp(
-      !{viewUtils.serialize(appName)},
-      !{viewUtils.serialize(app.cdnUrl)},
-    )
