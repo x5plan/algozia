@@ -8,10 +8,10 @@ block append scripts
     +import-bundle-script("file-upload")
     script.
       $(() => {
-        const uploadFile = async (file) => {
+        const uploadFile = async (file, type) => {
           try {
             const error = await window.FileUploadUtil.uploadProblemFileAsync(
-              file, "additional", !{ viewUtils.serialize(problem.id) }
+              file, type, !{ viewUtils.serialize(problem.id) }
             );
 
             if (error) {
@@ -33,15 +33,16 @@ block append scripts
           }
         };
 
-        const $uploadBtn = $("#upload-btn");
-        $uploadBtn.click(() => {
+        const $uploadBtn = $(".upload-btns");
+        $uploadBtn.click((e) => {
+          const type = $(e.currentTarget).hasClass("testdata") ? "testdata" : "additional";
           window.FileUploadUtil.openUploadDialog(async (files) => {
             $("a, button").addClass("disabled");
             $uploadBtn.addClass("loading");
 
             let success = true;
             for (const file of files) {
-              success &&= await uploadFile(file);
+              success &&= await uploadFile(file, type);
             }
             if (success) { 
               window.location.reload()
@@ -56,17 +57,23 @@ block append scripts
 block content
   .padding
     .ui.center.aligned.grid
-      .row
-        h1.ui.header ##{ problem.displayId }. #{ problem.title } - 附加文件
+      .two.column.row
+        .center.aligned.column
+          h1.ui.header ##{ problem.displayId }. #{ problem.title } - 文件
+        .right.aligned.column
+          a.ui.labeled.icon.mini.button(href=`/problem/${problem.id}`)
+            i.arrow.left.icon
+            | 返回题目
 
-      .row
-        .fourteen.wide.column
+      .row(class=isAllowedEdit ? "two column" : "")
+        .wide.column(class=isAllowedEdit ? "eight" : "fourteen")
+          h3 附加文件
           table.ui.teal.table
             thead
               tr
                 th 文件名
                 th.three.wide 大小
-                th.two.wide 操作
+                th.wide(class=isAllowedEdit ? "four" : "two") 操作
             tbody
               each file in files
                 tr
@@ -88,12 +95,42 @@ block content
                         title="删除"
                       )
                         i.trash.icon
-      .row
-        .fourteen.wide.right.aligned.column
-          a.ui.labeled.icon.small.button(href=`/problem/${problem.id}`)
-            i.arrow.left.icon
-            | 返回题目
-          if isAllowedEdit
-            button#upload-btn.ui.labeled.icon.small.green.button
+        .column
+          h3 测试数据
+          table.ui.pink.table
+            thead
+              tr
+                th 文件名
+                th.three.wide 大小
+                th.four.wide 操作
+            tbody
+              each file in testDatas
+                tr
+                  td
+                    i.icon(class=`${viewUtils.getFileIcon(file.filename)}`)
+                    = file.filename
+                  td= viewUtils.formatFileSize(file.size)
+                  td
+                    a.ui.tertiary.icon.tiny.button(
+                      href=`/problem/${problem.id}/file/${file.uuid}`,
+                      target="_blank",
+                      title="下载"
+                    )
+                      i.download.icon
+                    if isAllowedEdit
+                      a.ui.tertiary.icon.tiny.red.button(
+                        tabindex="0",
+                        href-post=`/problem/${problem.id}/file/${file.uuid}/delete`,
+                        title="删除"
+                      )
+                        i.trash.icon
+      if isAllowedEdit
+        .two.column.row
+          .eight.wide.right.aligned.column
+            button.upload-btns.ui.labeled.icon.small.teal.button
               i.plus.icon
-              | 上传文件
+              | 上传附加文件
+          .eight.wide.right.aligned.column
+            button.upload-btns.testdata.ui.labeled.icon.small.pink.button
+              i.plus.icon
+              | 上传测试数据

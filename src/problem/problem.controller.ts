@@ -361,9 +361,21 @@ export class ProblemController {
             ),
         );
 
+        const testDataFiles = isAllowedEdit ? await this.problemService.findProblemTestdataFilesAsync(problem) : [];
+        const testDatas = await Promise.all(
+            testDataFiles.map(
+                async (file): Promise<ProblemFileItemDto> => ({
+                    filename: file.filename,
+                    size: (await this.fileService.findFileByUUIDAsync(file.uuid))?.size ?? 0,
+                    uuid: file.uuid,
+                }),
+            ),
+        );
+
         return {
             problem,
             files,
+            testDatas,
             isAllowedEdit,
         };
     }

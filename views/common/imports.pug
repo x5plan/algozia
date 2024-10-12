@@ -52,3 +52,11 @@ mixin import-markdown-scripts
     +import-package-script-lazy("markdown-it/markdown-it", "__onMarkdownItLoaded")
     +import-package-script-lazy("markdown-it-math/markdown-it-math", "__onMarkdownItMathLoaded")
     +import-package-script-lazy("katex/katex", "__onKatexLoaded")
+
+mixin import-page-app(appName)
+  +import-bundle-script("page-app-loader")
+  script.
+    window.PageAppLoaderUtil.loadPageApp(
+      !{viewUtils.serialize(appName)},
+      !{viewUtils.serialize(app.cdnUrl)},
+    )
