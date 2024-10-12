@@ -277,18 +277,20 @@ export class ProblemController {
             hasSubmissions: false,
             problem,
             judgeInfo,
-            problemFileNames: testDataFiles.map((file) => file.filename),
+            testDataFileNames: testDataFiles.map((file) => file.filename),
         };
     }
 
     @Post(":id/edit/judge")
-    @Render("problem-edit-judge")
     public async postProblemEditJudgeAsync(
+        @Res() res: IResponse,
         @Param() param: ProblemBasicRequestParamDto,
         @Body() body: ProblemEditJudgePostRequestBodyDto,
         @CurrentUser() currentUser: UserEntity | null,
-    ): Promise<ProblemEditJudgeResponseDto> {
+    ): Promise<void> {
         const { id } = param;
+        const render = (options: ProblemEditJudgeResponseDto) => res.render("problem-edit-judge", options);
+        const redirect = () => res.redirect(`/problem/${id}`);
 
         if (!currentUser) {
             throw new AppLoginRequiredException(`/problem/${id}/edit/judge`);
@@ -314,16 +316,27 @@ export class ProblemController {
                 judgeInfo.problemId = problem.id;
             }
 
-            this.problemService.editProblemJudgeInfoAsync(judgeInfo, body, problem, testDataFiles);
-
-            await this.problemService.updateJudgeInfoAsync(judgeInfo);
-
-            return {
-                hasSubmissions: false,
-                problem,
+            const validationError = await this.problemService.editProblemJudgeInfoAsync(
                 judgeInfo,
-                problemFileNames: testDataFiles.map((file) => file.filename),
-            };
+                body,
+                problem,
+                testDataFiles,
+            );
+
+            if (validationError) {
+                // Save temporary judge info to next edit
+                judgeInfo.judgeInfo = body.judgeInfo;
+                render({
+                    hasSubmissions: false,
+                    problem,
+                    judgeInfo,
+                    testDataFileNames: testDataFiles.map((file) => file.filename),
+                    error: validationError,
+                });
+            } else {
+                await this.problemService.updateJudgeInfoAsync(judgeInfo);
+                redirect();
+            }
         });
     }
 
@@ -361,9 +374,21 @@ export class ProblemController {
             ),
         );
 
+        const testDataFiles = isAllowedEdit ? await this.problemService.findProblemTestdataFilesAsync(problem) : [];
+        const testDatas = await Promise.all(
+            testDataFiles.map(
+                async (file): Promise<ProblemFileItemDto> => ({
+                    filename: file.filename,
+                    size: (await this.fileService.findFileByUUIDAsync(file.uuid))?.size ?? 0,
+                    uuid: file.uuid,
+                }),
+            ),
+        );
+
         return {
             problem,
             files,
+            testDatas,
             isAllowedEdit,
         };
     }

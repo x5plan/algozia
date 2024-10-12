@@ -6,6 +6,7 @@ import { ProblemBasicRequestParamDto } from "./problem-shared.dto";
 export class ProblemFileResponseDto {
     public problem: ProblemEntity;
     public files: ProblemFileItemDto[];
+    public testDatas: ProblemFileItemDto[];
     public isAllowedEdit: boolean;
 }
 

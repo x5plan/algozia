@@ -8,6 +8,7 @@ import { join } from "path";
 import { AppExceptionFilter } from "./app.filter";
 import { AppModule } from "./app.module";
 import { AppValidationException } from "./common/exceptions/common";
+import { isProduction } from "./common/utils/env";
 import { ConfigService } from "./config/config.service";
 
 async function bootstrapAsync() {
@@ -32,7 +33,7 @@ async function bootstrapAsync() {
             always: true,
             transform: true,
             whitelist: true,
-            forbidNonWhitelisted: true,
+            forbidNonWhitelisted: isProduction(),
             exceptionFactory: (errors) => new AppValidationException(errors),
         }),
     );

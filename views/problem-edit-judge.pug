@@ -3,44 +3,52 @@ extends common/layout
 block prepend title
   - this.title = `${problem.title} - 评测设置`;
 
-block append scripts
-  +import-validation("problem-edit-judge")
-  script.
-    $(".ui.radio.checkbox").checkbox();
+block append head
+  +import-highlight-styles
 
-mixin type-checkbox-item(value, disabled)
-  - const checked = judgeInfo.type === value;
-  .ui.radio.checkbox(class=checked ? "checked" : "", class=disabled ? "disabled" : "")
-    input.hidden(type="radio", name="type", value=value, tabindex="0", checked=checked, disabled=disabled)
-    label= problemTypeStringMap[value]
+block append scripts
+  +import-highlight-scripts
+  +import-bundle-script("page-app-loader")
+  -
+    const dataObj = {
+      type: judgeInfo.type,
+      judgeInfo: judgeInfo.judgeInfo,
+      hasSubmissions,
+      testDataFileNames,
+    };
+  script.
+    $(() => {
+      window.PageSharedObject = {
+        data: !{ viewUtils.serialize(dataObj) },
+        onUpdateType(type) {
+          $("input[name=type]").val(type);
+        },
+        onUpdateJudgeInfo(judgeInfo) {
+          $("input[name=judgeInfo]").val(JSON.stringify(judgeInfo));
+        },
+      };
+
+      window.PageAppLoaderUtil.loadPageApp("judge-setting", !{viewUtils.serialize(app.cdnUrl)});
+    });
 
 block content
   .padding
-    .ui.center.aligned.grid
+    .ui.grid
       .row
-        h1.ui.header ##{ problem.displayId }. #{ problem.title } - 评测设置
+        .center.aligned.column
+          h1.ui.header ##{ problem.displayId }. #{ problem.title } - 评测设置
+
+      if error
+        .row
+          .column
+            .ui.error.message= error
+
+      #app-root.row
 
       .row
-        .nine.wide.column
-          p
-            strong 为了避免系统出错，已有提交的题目不允许在提交答案和非提交答案之间更改。
-          p 题目类型为“提交答案”时，时间限制、空间限制以及 IO 方式将被忽略。
-          p 题目类型为“提交答案”或“交互”时， IO 方式将被忽略。
-          p IO 方式为“标准输入输出”时，输入文件名和输出文件名将被忽略。
-
-      .row
-        .nine.wide.column
+        .right.aligned.column
           form#judge-info-form.ui.form(action=viewUtils.makeUrl({}), method="post")
-            .inline.fields
-              label 评测类型
-              .field
-                +type-checkbox-item("traditional", hasSubmissions && judgeInfo.type === "submit-answer")
-              .field
-                +type-checkbox-item("submit-answer", hasSubmissions && judgeInfo.type !== "submit-answer")
-              .field
-                +type-checkbox-item("interaction", hasSubmissions && judgeInfo.type === "submit-answer")
-
-            .ui.error.message
-
-            button.ui.primary.button(type="submit") 保存
+            input(name="type", value=judgeInfo.type, hidden=!__viteDev__)
+            input(name="judgeInfo", value=JSON.stringify(judgeInfo.judgeInfo), hidden=!__viteDev__)
             a.ui.button(href=`/problem/${problem.id}`) 返回题目
+            button.ui.primary.button(type="submit") 保存

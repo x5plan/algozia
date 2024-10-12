@@ -1,5 +1,5 @@
 import { Transform } from "class-transformer";
-import { IsBoolean, IsEnum, IsObject } from "class-validator";
+import { IsBoolean, IsEnum, IsObject, IsOptional } from "class-validator";
 
 import { createBooleanTransformer } from "@/common/transformers/boolean";
 import { createJsonTransformer } from "@/common/transformers/json";
@@ -12,6 +12,7 @@ import { ProblemJudgeInfoEntity } from "../problem-judge-info.entity";
 export class ProblemEditJudgeGetRequestQueryDto {
     @Transform(createBooleanTransformer())
     @IsBoolean()
+    @IsOptional()
     public preprocess: boolean;
 }
 
@@ -25,8 +26,9 @@ export class ProblemEditJudgePostRequestBodyDto implements IProblemJudgeInfoEdit
 }
 
 export class ProblemEditJudgeResponseDto {
+    public error?: string | null;
     public hasSubmissions: boolean;
     public problem: ProblemEntity;
     public judgeInfo: ProblemJudgeInfoEntity;
-    public problemFileNames: string[];
+    public testDataFileNames: string[];
 }

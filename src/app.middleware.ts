@@ -9,6 +9,8 @@ import { ConfigService } from "@/config/config.service";
 import { PermissionService } from "@/permission/permission.service";
 import { UserEntity } from "@/user/user.entity";
 
+import { isProduction } from "./common/utils/env";
+
 @Injectable()
 export class AppMiddleware implements NestMiddleware {
     private readonly viewApp: IViewApp;
@@ -34,13 +36,26 @@ export class AppMiddleware implements NestMiddleware {
         const currentUser = await this.processSessionAsync(req, res);
         const permissions = await this.permissionService.getGlobalViewPermissionsAsync(currentUser);
 
-        return {
+        const view: IViewGlobal = {
             app: this.viewApp,
             activePage: req.path.split("/")[1],
             currentUser: currentUser,
             permissions,
             viewUtils: new ViewUtils(req, res),
         };
+
+        if (!isProduction() && req.query.vite) {
+            if (typeof req.query.vite === "string" && req.query.vite.startsWith("http")) {
+                view.__viteDev__ = req.query.vite;
+                if (!view.__viteDev__.endsWith("/")) {
+                    view.__viteDev__ += "/";
+                }
+            } else {
+                view.__viteDev__ = "http://localhost:5173/";
+            }
+        }
+
+        return view;
     }
 
     private parseCdnUrl(cndUrl?: string): string {
