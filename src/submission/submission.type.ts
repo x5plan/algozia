@@ -1,39 +1,12 @@
 import type { IJudgeTaskProgress } from "@/judge/judge.type";
 
+import type { E_SubmissionProgressType, E_SubmissionStatus } from "./submission.enum";
+
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ISubmissionContent {}
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ISubmissionTestcaseResult {}
-
-export enum E_SubmissionProgressType {
-    Preparing = "Preparing",
-    Compiling = "Compiling",
-    Running = "Running",
-    Finished = "Finished",
-}
-
-export enum E_SubmissionStatus {
-    Pending = "Pending",
-
-    ConfigurationError = "ConfigurationError",
-    SystemError = "SystemError",
-    Canceled = "Canceled",
-
-    CompilationError = "CompilationError",
-
-    FileError = "FileError",
-    RuntimeError = "RuntimeError",
-    TimeLimitExceeded = "TimeLimitExceeded",
-    MemoryLimitExceeded = "MemoryLimitExceeded",
-    OutputLimitExceeded = "OutputLimitExceeded",
-
-    PartiallyCorrect = "PartiallyCorrect",
-    WrongAnswer = "WrongAnswer",
-    Accepted = "Accepted",
-
-    JudgementFailed = "JudgementFailed",
-}
 
 export type ISubmissionResultOmissibleString =
     | string
