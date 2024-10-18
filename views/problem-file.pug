@@ -71,13 +71,13 @@ block content
           table.ui.teal.table
             thead
               tr
-                th 文件名
+                th.nine.wide 文件名
                 th.three.wide 大小
                 th.wide(class=isAllowedEdit ? "four" : "two") 操作
             tbody
               each file in files
                 tr
-                  td
+                  td(style="word-break: break-all")
                     i.icon(class=`${viewUtils.getFileIcon(file.filename)}`)
                     = file.filename
                   td= viewUtils.formatFileSize(file.size)
@@ -100,13 +100,13 @@ block content
           table.ui.pink.table
             thead
               tr
-                th 文件名
+                th.nine.wide 文件名
                 th.three.wide 大小
                 th.four.wide 操作
             tbody
               each file in testDatas
                 tr
-                  td
+                  td(style="word-break: break-all")
                     i.icon(class=`${viewUtils.getFileIcon(file.filename)}`)
                     = file.filename
                   td= viewUtils.formatFileSize(file.size)
