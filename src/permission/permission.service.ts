@@ -9,8 +9,6 @@ import { CE_CommonPermission, CE_SpecificPermission, E_Visibility } from "./perm
 import { CE_UserLevel } from "./permission.enum";
 import { IGlobalViewPermissions } from "./permission.type";
 
-type CommonUserLevel = Exclude<CE_UserLevel, CE_UserLevel.Specific>;
-
 @Injectable()
 export class PermissionService {
     constructor(
@@ -85,7 +83,10 @@ export class PermissionService {
      * @param permission A common permission will be checked
      * @param userLevel The user level without specific level
      */
-    public checkCommonPermission(permission: CE_CommonPermission, userLevel: CommonUserLevel) {
+    public checkCommonPermission(
+        permission: CE_CommonPermission,
+        userLevel: Exclude<CE_UserLevel, CE_UserLevel.Specific>,
+    ) {
         return userLevel >= permission;
     }
 
@@ -94,7 +95,7 @@ export class PermissionService {
      * @param visibility The visibility of the entity
      * @param userLevel The user level without specific level
      */
-    public checkVisibility(visibility: E_Visibility, userLevel: CommonUserLevel) {
+    public checkVisibility(visibility: E_Visibility, userLevel: Exclude<CE_UserLevel, CE_UserLevel.Specific>) {
         return userLevel >= visibility;
     }
 
