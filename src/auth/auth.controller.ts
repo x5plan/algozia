@@ -2,10 +2,10 @@ import { Body, Controller, Get, Post, Query, Redirect, Render, Req, Res } from "
 import { Response } from "express";
 
 import { AppDevelopingException } from "@/common/exceptions/common";
-import { CE_Permission } from "@/common/permission/permissions";
 import { CE_Page } from "@/common/types/page";
 import { IRequest } from "@/common/types/request";
 import { IResponse } from "@/common/types/response";
+import { CE_CommonPermission } from "@/permission/permission.enum";
 import { PermissionService } from "@/permission/permission.service";
 import { UserService } from "@/user/user.service";
 
@@ -74,7 +74,10 @@ export class AuthController {
             }
         }
 
-        if (!this.permissionService.checkCommonPermission(CE_Permission.AccessSite, user, true /* specificAllowed */)) {
+        if (
+            !this.permissionService.isSpecificUser(user.level) &&
+            !this.permissionService.checkCommonPermission(CE_CommonPermission.AccessSite, user.level)
+        ) {
             return render({
                 error: CE_LoginPostResponseError.PermissionDenied,
                 username,

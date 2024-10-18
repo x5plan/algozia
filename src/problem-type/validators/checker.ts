@@ -1,7 +1,7 @@
 import type { PartialDeep } from "type-fest";
 
 import type { E_CodeLanguage } from "@/code-language/code-language.type";
-import { CE_JudgeInfoValidationMessage } from "@/common/strings/judge-info-validation-message";
+import { CE_JudgeInfoValidationMessage } from "@/common/strings/exception";
 import { format } from "@/common/utils/format";
 import { isSafeInt } from "@/common/validators";
 import type { ProblemFileEntity } from "@/problem/problem-file.entity";

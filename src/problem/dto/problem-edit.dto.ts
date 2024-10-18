@@ -1,9 +1,10 @@
 import { Type } from "class-transformer";
-import { IsIn, IsNumber, IsString } from "class-validator";
+import { IsEnum, IsNumber, IsString } from "class-validator";
 
 import { CE_ExceptionString } from "@/common/strings/exception";
+import { E_Visibility } from "@/permission/permission.enum";
 
-import { CE_ProblemVisibility, IProblemEditable } from "../problem.type";
+import { IProblemEditable } from "../problem.type";
 
 export class ProblemEditPostRequestBodyDto implements IProblemEditable {
     @Type(() => Number)
@@ -26,13 +27,8 @@ export class ProblemEditPostRequestBodyDto implements IProblemEditable {
     public readonly samples: string;
 
     @Type(() => Number)
-    @IsIn([
-        CE_ProblemVisibility.Private,
-        CE_ProblemVisibility.Internal,
-        CE_ProblemVisibility.Paid,
-        CE_ProblemVisibility.Public,
-    ])
-    public readonly visibility: CE_ProblemVisibility;
+    @IsEnum(E_Visibility)
+    public readonly visibility: E_Visibility;
 
     @IsString()
     public readonly limitAndHint: string;

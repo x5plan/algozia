@@ -1,10 +1,11 @@
 import { Injectable, NestMiddleware } from "@nestjs/common";
 
+import { visibilityLabelColorMap, visibilityStringMap } from "@/common/const/visibility";
 import { IRequest } from "@/common/types/request";
 import { IResponse } from "@/common/types/response";
 
+import { problemTypeStringMap } from "./problem.const";
 import { IProblemViewGlobal } from "./problem.type";
-import { getProblemTypeStringMap, getVisibilityLabelColorMap, getVisibilityStringMap } from "./problem.util";
 
 @Injectable()
 export class ProblemMiddleware implements NestMiddleware {
@@ -15,9 +16,9 @@ export class ProblemMiddleware implements NestMiddleware {
 
     private getProblemViewGlobal(): IProblemViewGlobal {
         return {
-            problemTypeStringMap: getProblemTypeStringMap(),
-            visibilityStringMap: getVisibilityStringMap(),
-            visibilityLabelColorMap: getVisibilityLabelColorMap(),
+            problemTypeStringMap,
+            visibilityStringMap,
+            visibilityLabelColorMap,
         };
     }
 }

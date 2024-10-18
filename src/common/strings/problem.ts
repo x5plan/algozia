@@ -4,13 +4,6 @@ export const enum CE_ProblemTypeString {
     SubmitAnswer = "提交答案",
 }
 
-export const enum CE_ProblemVisibilityString {
-    Public = "公开",
-    Paid = "付费",
-    Internal = "内部",
-    Private = "私有",
-}
-
 export const enum CE_ProblemCommonString {
     UploadTestData = "上传测试数据",
 }

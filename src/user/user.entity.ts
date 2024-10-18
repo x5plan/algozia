@@ -1,7 +1,7 @@
 import { Column, Entity, Index, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 
 import { AuthEntity } from "@/auth/auth.entity";
-import { CE_UserLevel } from "@/common/permission/user-level";
+import { CE_UserLevel } from "@/permission/permission.enum";
 
 @Entity("user")
 export class UserEntity {

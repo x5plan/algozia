@@ -2,12 +2,14 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
-import { CE_Permission, CE_SpecificPermission } from "@/common/permission/permissions";
-import { CE_UserLevel } from "@/common/permission/user-level";
 import { UserEntity } from "@/user/user.entity";
 
 import { PermissionEntity } from "./permission.entity";
+import { CE_CommonPermission, CE_SpecificPermission, E_Visibility } from "./permission.enum";
+import { CE_UserLevel } from "./permission.enum";
 import { IGlobalViewPermissions } from "./permission.type";
+
+type CommonUserLevel = Exclude<CE_UserLevel, CE_UserLevel.Specific>;
 
 @Injectable()
 export class PermissionService {
@@ -16,15 +18,20 @@ export class PermissionService {
         private readonly permissionRepository: Repository<PermissionEntity>,
     ) {}
 
-    public async findPermissionAsync(user: UserEntity) {
+    public async findPermissionAsync(
+        user: UserEntity,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        userLevel: CE_UserLevel.Specific, // Just for type checking if the userLevel is specific
+    ): Promise<PermissionEntity | null> {
         return await this.permissionRepository.findOne({ where: { userId: user.id } });
     }
 
     public async findSpecificPermissionSourceIdsAsync(
         specificPermission: CE_SpecificPermission,
         user: UserEntity,
+        userLevel: CE_UserLevel.Specific, // Just for type checking if the userLevel is specific
     ): Promise<number[]> {
-        const permission = await this.findPermissionAsync(user);
+        const permission = await this.findPermissionAsync(user, userLevel);
         if (!permission) {
             return [];
         }
@@ -41,26 +48,23 @@ export class PermissionService {
     public async checkSpecificPermissionAsync(
         specificPermission: CE_SpecificPermission,
         user: UserEntity,
+        userLevel: CE_UserLevel.Specific, // Just for type checking if the userLevel is specific
         sourceId?: number,
     ) {
-        if (!this.isSpecificUser(user)) {
-            return false;
-        }
-
-        const sourceIds = await this.findSpecificPermissionSourceIdsAsync(specificPermission, user);
+        const sourceIds = await this.findSpecificPermissionSourceIdsAsync(specificPermission, user, userLevel);
         return sourceId ? sourceIds.includes(sourceId) : sourceIds.length > 0;
     }
 
-    public checkCommonPermission(permission: CE_Permission, user: UserEntity, specificAllowed = false) {
-        if (specificAllowed && this.isSpecificUser(user)) {
-            return true;
-        }
-
-        return user.level >= permission;
+    public checkCommonPermission(permission: CE_CommonPermission, userLevel: CommonUserLevel) {
+        return userLevel >= permission;
     }
 
-    public isSpecificUser(user: UserEntity) {
-        return user.level === CE_UserLevel.Specific;
+    public checkVisibility(visibility: E_Visibility, userLevel: CommonUserLevel) {
+        return userLevel >= visibility;
+    }
+
+    public isSpecificUser(userLevel: CE_UserLevel): userLevel is CE_UserLevel.Specific {
+        return userLevel === CE_UserLevel.Specific;
     }
 
     public async getGlobalViewPermissionsAsync(user: UserEntity | null): Promise<IGlobalViewPermissions> {
@@ -73,9 +77,17 @@ export class PermissionService {
             };
         }
 
-        if (this.isSpecificUser(user)) {
-            const problemPermission = await this.checkSpecificPermissionAsync(CE_SpecificPermission.Problem, user);
-            const contestPermission = await this.checkSpecificPermissionAsync(CE_SpecificPermission.Contest, user);
+        if (this.isSpecificUser(user.level)) {
+            const problemPermission = await this.checkSpecificPermissionAsync(
+                CE_SpecificPermission.Problem,
+                user,
+                user.level,
+            );
+            const contestPermission = await this.checkSpecificPermissionAsync(
+                CE_SpecificPermission.Contest,
+                user,
+                user.level,
+            );
 
             return {
                 showProblem: problemPermission,
@@ -86,10 +98,10 @@ export class PermissionService {
         }
 
         return {
-            showProblem: this.checkCommonPermission(CE_Permission.AccessProblem, user),
-            showContest: this.checkCommonPermission(CE_Permission.AccessContest, user),
-            showHomework: this.checkCommonPermission(CE_Permission.AccessHomework, user),
-            showSubmission: this.checkCommonPermission(CE_Permission.SubmitAnswer, user),
+            showProblem: this.checkCommonPermission(CE_CommonPermission.AccessProblem, user.level),
+            showContest: this.checkCommonPermission(CE_CommonPermission.AccessContest, user.level),
+            showHomework: this.checkCommonPermission(CE_CommonPermission.AccessHomework, user.level),
+            showSubmission: this.checkCommonPermission(CE_CommonPermission.SubmitAnswer, user.level),
         };
     }
 }
