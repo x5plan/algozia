@@ -48,6 +48,8 @@ export class ViewUtils {
             if (size > 1024) {
                 size /= 1024;
                 unit = currUnit;
+            } else {
+                break;
             }
         }
 
