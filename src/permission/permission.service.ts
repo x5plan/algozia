@@ -22,6 +22,7 @@ export class PermissionService {
      * Find the permission entity of the user.
      * @param user The user should be a specific level user
      * @param userLevel It's required this to remind the user to be a specific level user.
+     *                  You should pass user.level, not CE_UserLevel.Specific.
      * @returns The permission entity of the user, or null if not found
      */
     public async findPermissionAsync(
@@ -37,6 +38,7 @@ export class PermissionService {
      * @param specificPermission A specific permission will be checked
      * @param user The user should be a specific level user
      * @param userLevel It's required this to remind the user to be a specific level user.
+     *                  You should pass user.level, not CE_UserLevel.Specific.
      * @returns The source ids that the user has the specific permission to access
      */
     public async findSpecificPermissionSourceIdsAsync(
