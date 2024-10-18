@@ -22,7 +22,7 @@ export class ProblemEditJudgePostRequestBodyDto implements IProblemJudgeInfoEdit
 
     @Transform(createJsonTransformer())
     @IsObject()
-    public judgeInfo: IProblemJudgeInfo;
+    public info: IProblemJudgeInfo;
 }
 
 export class ProblemEditJudgeResponseDto {

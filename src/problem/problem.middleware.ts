@@ -4,7 +4,7 @@ import { visibilityLabelColorMap, visibilityStringMap } from "@/common/const/vis
 import { IRequest } from "@/common/types/request";
 import { IResponse } from "@/common/types/response";
 
-import { problemTypeStringMap } from "./problem.const";
+import { problemJudgeTypeStringMap, problemTypeStringMap } from "./problem.const";
 import { IProblemViewGlobal } from "./problem.type";
 
 @Injectable()
@@ -17,6 +17,7 @@ export class ProblemMiddleware implements NestMiddleware {
     private getProblemViewGlobal(): IProblemViewGlobal {
         return {
             problemTypeStringMap,
+            problemJudgeTypeStringMap,
             visibilityStringMap,
             visibilityLabelColorMap,
         };

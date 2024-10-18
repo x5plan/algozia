@@ -270,10 +270,10 @@ export class ProblemController {
             judgeInfo = new ProblemJudgeInfoEntity();
             judgeInfo.problemId = problem.id;
             judgeInfo.type = E_ProblemType.Traditional;
-            judgeInfo.judgeInfo = this.problemTypeService.get(judgeInfo.type).defaultJudgeInfo;
+            judgeInfo.info = this.problemTypeService.get(judgeInfo.type).defaultJudgeInfo;
 
             if (preprocess) {
-                judgeInfo.judgeInfo = await this.problemService.getPreprocessedProblemJudgeInfoAsync(
+                judgeInfo.info = await this.problemService.getPreprocessedProblemJudgeInfoAsync(
                     problem,
                     judgeInfo,
                     testDataFiles,
@@ -333,7 +333,7 @@ export class ProblemController {
 
             if (validationError) {
                 // Save temporary judge info to next edit
-                judgeInfo.judgeInfo = body.judgeInfo;
+                judgeInfo.info = body.info;
                 render({
                     hasSubmissions: false,
                     problem,

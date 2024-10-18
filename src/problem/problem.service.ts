@@ -230,7 +230,7 @@ export class ProblemService {
         const result = this.problemTypeService
             .get(body.type)
             .validateAndFilterJudgeInfo(
-                body.judgeInfo,
+                body.info,
                 testdataFiles || (await this.findProblemTestdataFilesAsync(problem)),
             );
 
@@ -238,7 +238,7 @@ export class ProblemService {
             return result.message;
         }
 
-        judgeInfo.judgeInfo = body.judgeInfo;
+        judgeInfo.info = body.info;
 
         return null;
     }
@@ -397,7 +397,7 @@ export class ProblemService {
         const judgeInfoEntity = problemJudgeInfo || (await problem.judgeInfoPromise);
         const problemType = judgeInfoEntity ? judgeInfoEntity.type : E_ProblemType.Traditional;
         const judgeInfo = judgeInfoEntity
-            ? judgeInfoEntity.judgeInfo
+            ? judgeInfoEntity.info
             : this.problemTypeService.get(problemType).defaultJudgeInfo;
 
         const preprocessed = this.problemTypeService

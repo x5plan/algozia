@@ -2,7 +2,7 @@ import type { visibilityLabelColorMap, visibilityStringMap } from "@/common/cons
 import type { E_Visibility } from "@/permission/permission.enum";
 import type { IProblemJudgeInfo } from "@/problem-type/problem-type.type";
 
-import type { problemTypeStringMap } from "./problem.const";
+import type { problemJudgeTypeStringMap, problemTypeStringMap } from "./problem.const";
 
 export enum E_ProblemType {
     Traditional = "traditional",
@@ -28,7 +28,7 @@ export interface IProblemEditable {
 
 export interface IProblemJudgeInfoEditable {
     type: E_ProblemType;
-    judgeInfo: IProblemJudgeInfo;
+    info: IProblemJudgeInfo;
 }
 
 export enum E_ProblemSortBy {
@@ -37,6 +37,7 @@ export enum E_ProblemSortBy {
 
 export interface IProblemViewGlobal {
     problemTypeStringMap: typeof problemTypeStringMap;
+    problemJudgeTypeStringMap: typeof problemJudgeTypeStringMap;
     visibilityStringMap: typeof visibilityStringMap;
     visibilityLabelColorMap: typeof visibilityLabelColorMap;
 }

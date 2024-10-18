@@ -7,6 +7,7 @@ import { ProblemFileEntity } from "@/problem/problem-file.entity";
 import { ISubmissionProgress } from "@/submission/submission.type";
 
 import { restrictProperties } from "../common/utils/restrict-properties";
+import { CE_JudgeInfoCheckerType } from "./problem-type.enum";
 import { IProblemTypeServiceInterface } from "./problem-type.type";
 import { autoMatchInputToOutput } from "./problem-type.utils";
 import {
@@ -37,8 +38,8 @@ export class ProblemTypeTraditionalService
             memoryLimit: 512,
             subtasks: null,
             checker: {
-                type: "lines",
-                caseSensitive: false,
+                type: CE_JudgeInfoCheckerType.Lines,
+                caseSensitive: true,
             },
         };
     }
