@@ -5,6 +5,7 @@ import type { FileEntity } from "@/file/file.entity";
 import type { ProblemFileEntity } from "@/problem/problem-file.entity";
 import type { ISubmissionContent, ISubmissionProgress, ISubmissionTestcaseResult } from "@/submission/submission.type";
 
+import type { CE_JudgeInfoCheckerType, E_ProblemJudgeInfoCustomCheckerInterface } from "./problem-type.enum";
 import type { IProblemJudgeInfoValidationResult } from "./validators/type";
 
 export interface IProblemTypeServiceInterface<
@@ -132,40 +133,31 @@ export interface IProblemJudgeInfoRequiredTestcase extends IProblemJudgeInfoTest
 }
 
 export interface IProblemJudgeInfoIntegersChecker {
-    type: "integers";
+    type: CE_JudgeInfoCheckerType.Integers;
 }
 
 export interface IProblemJudgeInfoFloatsChecker {
-    type: "floats";
+    type: CE_JudgeInfoCheckerType.Floats;
     precision: number;
 }
 
 export interface IProblemJudgeInfoLinesChecker {
-    type: "lines";
+    type: CE_JudgeInfoCheckerType.Lines;
     caseSensitive: boolean;
 }
 
 export interface IProblemJudgeInfoBinaryChecker {
-    type: "binary";
+    type: CE_JudgeInfoCheckerType.Binary;
 }
 
 export interface IProblemJudgeInfoCustomChecker {
-    type: "custom";
+    type: CE_JudgeInfoCheckerType.Custom;
     interface: E_ProblemJudgeInfoCustomCheckerInterface;
     language: E_CodeLanguage;
     compileAndRunOptions: unknown;
     filename: string;
     timeLimit?: number;
     memoryLimit?: number;
-}
-
-export enum E_ProblemJudgeInfoCustomCheckerInterface {
-    Testlib = "testlib",
-    Legacy = "legacy",
-    Lemon = "lemon",
-    HustOJ = "hustoj",
-    QduOJ = "qduoj",
-    DomJudge = "domjudge",
 }
 
 // integers: check the equivalent of each integer in user's output and answer

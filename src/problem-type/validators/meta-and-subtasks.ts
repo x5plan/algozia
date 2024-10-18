@@ -2,7 +2,7 @@ import { isArray, isNumber, isString } from "class-validator";
 import toposort from "toposort";
 import type { PartialDeep } from "type-fest";
 
-import { CE_JudgeInfoValidationMessage } from "@/common/strings/judge-info-validation-message";
+import { CE_JudgeInfoValidationMessage } from "@/common/strings/exception";
 import { format } from "@/common/utils/format";
 import { isSafeInt, isValidFilename } from "@/common/validators";
 import type { ProblemFileEntity } from "@/problem/problem-file.entity";

@@ -19,5 +19,5 @@ export class ProblemJudgeInfoEntity implements ToEntity<IProblemJudgeInfoEditabl
     public type: E_ProblemType;
 
     @Column({ type: "json" })
-    public judgeInfo: IProblemJudgeInfo;
+    public info: IProblemJudgeInfo;
 }

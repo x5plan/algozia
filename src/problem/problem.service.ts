@@ -4,12 +4,13 @@ import { isInt } from "class-validator";
 import { DataSource, Repository } from "typeorm";
 
 import { InvalidProblemTypeException, NoSuchProblemFileException } from "@/common/exceptions/problem";
-import { CE_Permission, CE_SpecificPermission } from "@/common/permission/permissions";
 import { CE_Order } from "@/common/types/order";
 import { format } from "@/common/utils/format";
 import { ConfigService } from "@/config/config.service";
 import { FileService } from "@/file/file.service";
 import { CE_FileUploadError, ISignedUploadRequest } from "@/file/file.type";
+import { CE_CommonPermission, CE_SpecificPermission } from "@/permission/permission.enum";
+import { E_Visibility } from "@/permission/permission.enum";
 import { PermissionService } from "@/permission/permission.service";
 import { ProblemTypeService } from "@/problem-type/problem-type.service";
 import { IProblemJudgeInfo } from "@/problem-type/problem-type.type";
@@ -21,7 +22,7 @@ import { UserEntity } from "@/user/user.entity";
 import { CE_ProblemEditResponseError, type ProblemEditPostRequestBodyDto } from "./dto/problem-edit.dto";
 import { ProblemEditJudgePostRequestBodyDto } from "./dto/problem-edit-judge.dto";
 import { ProblemEntity } from "./problem.entity";
-import { CE_ProblemVisibility, E_ProblemFileType, E_ProblemType } from "./problem.type";
+import { E_ProblemFileType, E_ProblemType } from "./problem.type";
 import { ProblemFileEntity } from "./problem-file.entity";
 import { ProblemJudgeInfoEntity } from "./problem-judge-info.entity";
 
@@ -72,10 +73,11 @@ export class ProblemService {
 
         const qb = this.problemRepository.createQueryBuilder("problem");
 
-        if (this.permissionService.isSpecificUser(user)) {
+        if (this.permissionService.isSpecificUser(user.level)) {
             const specificProblemIds = await this.permissionService.findSpecificPermissionSourceIdsAsync(
                 CE_SpecificPermission.Problem,
                 user,
+                user.level,
             );
 
             qb.where("problem.id IN (:...specificProblemIds)", { specificProblemIds });
@@ -121,6 +123,12 @@ export class ProblemService {
     public async countProblemAdditionalFilesAsync(problem: ProblemEntity) {
         return await this.problemFileRepository.count({
             where: { problemId: problem.id, type: E_ProblemFileType.Additional },
+        });
+    }
+
+    public async countProblemTestdataFilesAsync(problem: ProblemEntity) {
+        return await this.problemFileRepository.count({
+            where: { problemId: problem.id, type: E_ProblemFileType.Testdata },
         });
     }
 
@@ -197,7 +205,7 @@ export class ProblemService {
         problem.samples = body.samples;
         problem.limitAndHint = body.limitAndHint;
 
-        if (problem.visibility === CE_ProblemVisibility.Private && body.visibility !== CE_ProblemVisibility.Private) {
+        if (problem.visibility === E_Visibility.Private && body.visibility !== E_Visibility.Private) {
             problem.publicTime = new Date();
         }
         problem.visibility = body.visibility;
@@ -228,7 +236,7 @@ export class ProblemService {
         const result = this.problemTypeService
             .get(body.type)
             .validateAndFilterJudgeInfo(
-                body.judgeInfo,
+                body.info,
                 testdataFiles || (await this.findProblemTestdataFilesAsync(problem)),
             );
 
@@ -236,7 +244,7 @@ export class ProblemService {
             return result.message;
         }
 
-        judgeInfo.judgeInfo = body.judgeInfo;
+        judgeInfo.info = body.info;
 
         return null;
     }
@@ -250,7 +258,7 @@ export class ProblemService {
         // If the user is a specific permission user,
         // and they don't have the specific permission to view the problem,
         // they are not allowed to view the problem.
-        if (this.permissionService.isSpecificUser(user)) {
+        if (this.permissionService.isSpecificUser(user.level)) {
             return await this.permissionService.checkSpecificPermissionAsync(
                 CE_SpecificPermission.Problem,
                 user,
@@ -261,13 +269,13 @@ export class ProblemService {
         // If the user is a common permission user,
         // and they don't have the common permission to view the problem,
         // they are not allowed to view the problem.
-        if (!this.permissionService.checkCommonPermission(CE_Permission.AccessProblem, user)) {
+        if (!this.permissionService.checkCommonPermission(CE_CommonPermission.AccessProblem, user.level)) {
             return false;
         }
 
         // If the user's level is lower than the problem's visibility level,
         // they are not allowed to view the problem.
-        return problem.visibility >= user.level;
+        return this.permissionService.checkVisibility(problem.visibility, user.level);
     }
 
     public async checkIsAllowedSubmitAsync(problem: ProblemEntity, user: UserEntity) {
@@ -278,20 +286,25 @@ export class ProblemService {
         }
 
         // If specific permission users are allowed to view the problem,
-        // they are allowed to submit answers. So set specificAllowed to true.
+        // they are allowed to submit answers.
+        if (this.permissionService.isSpecificUser(user.level)) {
+            return true;
+        }
+
         // The common permission users are not allowed to submit answers by default,
         // unless they have the SubmitAnswer permission.
-        return this.permissionService.checkCommonPermission(
-            CE_Permission.SubmitAnswer,
-            user,
-            true /* specificAllowed */,
-        );
+        return this.permissionService.checkCommonPermission(CE_CommonPermission.SubmitAnswer, user.level);
     }
 
     public checkIsAllowedEdit(user: UserEntity) {
+        // Specific permission users are not allowed to edit problems.
+        if (this.permissionService.isSpecificUser(user.level)) {
+            return false;
+        }
+
         // If the user is not allowed to manage problems,
         // they are not allowed to edit problems.
-        return this.permissionService.checkCommonPermission(CE_Permission.ManageProblem, user);
+        return this.permissionService.checkCommonPermission(CE_CommonPermission.ManageProblem, user.level);
     }
 
     /**
@@ -390,7 +403,7 @@ export class ProblemService {
         const judgeInfoEntity = problemJudgeInfo || (await problem.judgeInfoPromise);
         const problemType = judgeInfoEntity ? judgeInfoEntity.type : E_ProblemType.Traditional;
         const judgeInfo = judgeInfoEntity
-            ? judgeInfoEntity.judgeInfo
+            ? judgeInfoEntity.info
             : this.problemTypeService.get(problemType).defaultJudgeInfo;
 
         const preprocessed = this.problemTypeService

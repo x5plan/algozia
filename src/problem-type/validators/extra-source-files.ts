@@ -2,7 +2,7 @@ import { isString } from "class-validator";
 import type { PartialDeep } from "type-fest";
 
 import { E_CodeLanguage } from "@/code-language/code-language.type";
-import { CE_JudgeInfoValidationMessage } from "@/common/strings/judge-info-validation-message";
+import { CE_JudgeInfoValidationMessage } from "@/common/strings/exception";
 import { format } from "@/common/utils/format";
 import { isValidFilename } from "@/common/validators";
 import type { ProblemFileEntity } from "@/problem/problem-file.entity";

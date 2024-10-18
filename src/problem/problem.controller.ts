@@ -1,19 +1,21 @@
 import { Body, Controller, Get, Logger, Param, Post, Query, Redirect, Render, Req, Res } from "@nestjs/common";
 
 import { CurrentUser } from "@/common/decorators/user.decorator";
-import { AppLoginRequiredException, AppPermissionDeniedException } from "@/common/exceptions/common";
+import { LoginRequiredException } from "@/common/exceptions/auth";
+import { PermissionDeniedException } from "@/common/exceptions/permission";
 import {
     NoSuchProblemException,
     NoSuchProblemFileException,
     TestDataRequiredException,
 } from "@/common/exceptions/problem";
-import { CE_Permission, CE_SpecificPermission } from "@/common/permission/permissions";
 import { CE_Order } from "@/common/types/order";
 import { CE_Page } from "@/common/types/page";
 import { IRequest } from "@/common/types/request";
 import { IResponse } from "@/common/types/response";
 import { ConfigService } from "@/config/config.service";
 import { FileService } from "@/file/file.service";
+import { CE_CommonPermission, CE_SpecificPermission } from "@/permission/permission.enum";
+import { E_Visibility } from "@/permission/permission.enum";
 import { PermissionService } from "@/permission/permission.service";
 import { ProblemTypeService } from "@/problem-type/problem-type.service";
 import { CE_LockType } from "@/redis/lock.type";
@@ -38,7 +40,7 @@ import { ProblemListGetRequestQueryDto, ProblemListGetResponseDto } from "./dto/
 import { ProblemBasicRequestParamDto } from "./dto/problem-shared.dto";
 import { ProblemEntity } from "./problem.entity";
 import { ProblemService } from "./problem.service";
-import { CE_ProblemVisibility, E_ProblemFileType, E_ProblemType } from "./problem.type";
+import { E_ProblemFileType, E_ProblemType } from "./problem.type";
 import { ProblemJudgeInfoEntity } from "./problem-judge-info.entity";
 
 @Controller(CE_Page.Problem)
@@ -61,19 +63,30 @@ export class ProblemController {
         const { page = 1, sortBy = "displayId", order = CE_Order.Asc, keyword = "" } = query;
 
         if (!currentUser) {
-            throw new AppLoginRequiredException(req.url);
+            throw new LoginRequiredException(req.url);
         }
 
-        if (this.permissionService.isSpecificUser(currentUser)) {
+        let allowedManageProblem = false;
+
+        if (this.permissionService.isSpecificUser(currentUser.level)) {
             if (
-                !(await this.permissionService.checkSpecificPermissionAsync(CE_SpecificPermission.Problem, currentUser))
+                !(await this.permissionService.checkSpecificPermissionAsync(
+                    CE_SpecificPermission.Problem,
+                    currentUser,
+                    currentUser.level,
+                ))
             ) {
-                throw new AppPermissionDeniedException();
+                throw new PermissionDeniedException();
             }
         } else {
-            if (!this.permissionService.checkCommonPermission(CE_Permission.Problem, currentUser)) {
-                throw new AppPermissionDeniedException();
+            if (!this.permissionService.checkCommonPermission(CE_CommonPermission.AccessProblem, currentUser.level)) {
+                throw new PermissionDeniedException();
             }
+
+            allowedManageProblem = this.permissionService.checkCommonPermission(
+                CE_CommonPermission.ManageProblem,
+                currentUser.level,
+            );
         }
 
         const { problems, count } = await this.problemService.findProblemListAndCountAsync(
@@ -85,11 +98,6 @@ export class ProblemController {
         );
 
         const pageCount = Math.max(Math.ceil(count / this.configService.config.pagination.problem), 1);
-
-        const allowedManageProblem = this.permissionService.checkCommonPermission(
-            CE_Permission.ManageProblem,
-            currentUser,
-        );
 
         return {
             problems,
@@ -111,7 +119,7 @@ export class ProblemController {
         const { id } = param;
 
         if (!currentUser) {
-            throw new AppLoginRequiredException(`/problem/${id}`);
+            throw new LoginRequiredException(`/problem/${id}`);
         }
 
         const problem = await this.problemService.findProblemByIdAsync(id);
@@ -120,14 +128,16 @@ export class ProblemController {
         }
 
         if (!(await this.problemService.checkIsAllowedViewAsync(problem, currentUser))) {
-            throw new AppPermissionDeniedException();
+            throw new PermissionDeniedException();
         }
 
         const hasAdditionalFiles = (await this.problemService.countProblemAdditionalFilesAsync(problem)) > 0;
+        const hasTestdataFiles = (await this.problemService.countProblemTestdataFilesAsync(problem)) > 0;
 
         return {
             problem,
             hasAdditionalFiles,
+            hasTestdataFiles,
             judgeInfo: await problem.judgeInfoPromise,
             isAllowedEdit: this.problemService.checkIsAllowedEdit(currentUser),
             isAllowedSubmit: await this.problemService.checkIsAllowedSubmitAsync(problem, currentUser),
@@ -143,11 +153,11 @@ export class ProblemController {
         const { id } = param;
 
         if (!currentUser) {
-            throw new AppLoginRequiredException(`/problem/${id}/edit`);
+            throw new LoginRequiredException(`/problem/${id}/edit`);
         }
 
         if (!this.problemService.checkIsAllowedEdit(currentUser)) {
-            throw new AppPermissionDeniedException();
+            throw new PermissionDeniedException();
         }
 
         if (id === 0) {
@@ -161,7 +171,7 @@ export class ProblemController {
                     outputFormat: "",
                     samples: "",
                     limitAndHint: "",
-                    visibility: CE_ProblemVisibility.Private,
+                    visibility: E_Visibility.Private,
                 },
             };
         } else {
@@ -190,11 +200,11 @@ export class ProblemController {
         const { id } = param;
 
         if (!currentUser) {
-            throw new AppLoginRequiredException(`/problem/${id}/edit`);
+            throw new LoginRequiredException(`/problem/${id}/edit`);
         }
 
         if (!this.problemService.checkIsAllowedEdit(currentUser)) {
-            throw new AppPermissionDeniedException();
+            throw new PermissionDeniedException();
         }
 
         const isNewProblem = id === 0;
@@ -237,11 +247,11 @@ export class ProblemController {
         const { preprocess } = query;
 
         if (!currentUser) {
-            throw new AppLoginRequiredException(`/problem/${id}/edit/judge`);
+            throw new LoginRequiredException(`/problem/${id}/edit/judge`);
         }
 
         if (!this.problemService.checkIsAllowedEdit(currentUser)) {
-            throw new AppPermissionDeniedException();
+            throw new PermissionDeniedException();
         }
 
         const problem = await this.problemService.findProblemByIdAsync(id);
@@ -262,10 +272,10 @@ export class ProblemController {
             judgeInfo = new ProblemJudgeInfoEntity();
             judgeInfo.problemId = problem.id;
             judgeInfo.type = E_ProblemType.Traditional;
-            judgeInfo.judgeInfo = this.problemTypeService.get(judgeInfo.type).defaultJudgeInfo;
+            judgeInfo.info = this.problemTypeService.get(judgeInfo.type).defaultJudgeInfo;
 
             if (preprocess) {
-                judgeInfo.judgeInfo = await this.problemService.getPreprocessedProblemJudgeInfoAsync(
+                judgeInfo.info = await this.problemService.getPreprocessedProblemJudgeInfoAsync(
                     problem,
                     judgeInfo,
                     testDataFiles,
@@ -293,11 +303,11 @@ export class ProblemController {
         const redirect = () => res.redirect(`/problem/${id}`);
 
         if (!currentUser) {
-            throw new AppLoginRequiredException(`/problem/${id}/edit/judge`);
+            throw new LoginRequiredException(`/problem/${id}/edit/judge`);
         }
 
         if (!this.problemService.checkIsAllowedEdit(currentUser)) {
-            throw new AppPermissionDeniedException();
+            throw new PermissionDeniedException();
         }
 
         return await this.problemService.lockProblemByIdAsync(id, CE_LockType.Write, async (problem) => {
@@ -325,7 +335,7 @@ export class ProblemController {
 
             if (validationError) {
                 // Save temporary judge info to next edit
-                judgeInfo.judgeInfo = body.judgeInfo;
+                judgeInfo.info = body.info;
                 render({
                     hasSubmissions: false,
                     problem,
@@ -349,14 +359,14 @@ export class ProblemController {
         const { id } = param;
 
         if (!currentUser) {
-            throw new AppLoginRequiredException(`/problem/${id}/file`);
+            throw new LoginRequiredException(`/problem/${id}/file`);
         }
 
         const problem = await this.problemService.findProblemByIdAsync(id);
         if (!problem) throw new NoSuchProblemException();
 
         if (!(await this.problemService.checkIsAllowedViewAsync(problem, currentUser))) {
-            throw new AppPermissionDeniedException();
+            throw new PermissionDeniedException();
         }
 
         const problemFiles = await this.problemService.findProblemAdditionalFilesAsync(problem);
@@ -402,14 +412,14 @@ export class ProblemController {
         const { id, fileId } = param;
 
         if (!currentUser) {
-            throw new AppLoginRequiredException(`/problem/${id}/file/${fileId}`);
+            throw new LoginRequiredException(`/problem/${id}/file/${fileId}`);
         }
 
         const problem = await this.problemService.findProblemByIdAsync(id);
         if (!problem) throw new NoSuchProblemException();
 
         if (!(await this.problemService.checkIsAllowedViewAsync(problem, currentUser))) {
-            throw new AppPermissionDeniedException();
+            throw new PermissionDeniedException();
         }
 
         const file = await this.problemService.findProblemAdditionalFileByUUIDAsync(problem, fileId);
@@ -432,7 +442,7 @@ export class ProblemController {
         const type = isEditData ? E_ProblemFileType.Testdata : E_ProblemFileType.Additional;
 
         if (!currentUser || !this.problemService.checkIsAllowedEdit(currentUser)) {
-            throw new AppPermissionDeniedException();
+            throw new PermissionDeniedException();
         }
 
         return await this.problemService.lockManageFileByProblemIdAsync(id, type, async (problem) => {
@@ -453,7 +463,7 @@ export class ProblemController {
         @CurrentUser() currentUser: UserEntity | null,
     ) {
         if (!currentUser || !this.problemService.checkIsAllowedEdit(currentUser)) {
-            throw new AppPermissionDeniedException();
+            throw new PermissionDeniedException();
         }
 
         const problem = await this.problemService.findProblemByIdAsync(param.id);

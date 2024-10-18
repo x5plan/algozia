@@ -7,7 +7,7 @@ import { IProblemJudgeInfo } from "@/problem-type/problem-type.type";
 
 import type { ProblemEntity } from "../problem.entity";
 import { E_ProblemType, type IProblemJudgeInfoEditable } from "../problem.type";
-import { ProblemJudgeInfoEntity } from "../problem-judge-info.entity";
+import type { ProblemJudgeInfoEntity } from "../problem-judge-info.entity";
 
 export class ProblemEditJudgeGetRequestQueryDto {
     @Transform(createBooleanTransformer())
@@ -22,7 +22,7 @@ export class ProblemEditJudgePostRequestBodyDto implements IProblemJudgeInfoEdit
 
     @Transform(createJsonTransformer())
     @IsObject()
-    public judgeInfo: IProblemJudgeInfo;
+    public info: IProblemJudgeInfo;
 }
 
 export class ProblemEditJudgeResponseDto {

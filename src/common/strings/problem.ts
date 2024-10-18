@@ -4,13 +4,14 @@ export const enum CE_ProblemTypeString {
     SubmitAnswer = "提交答案",
 }
 
-export const enum CE_ProblemVisibilityString {
-    Public = "公开",
-    Paid = "付费",
-    Internal = "内部",
-    Private = "私有",
-}
-
 export const enum CE_ProblemCommonString {
     UploadTestData = "上传测试数据",
+}
+
+export const enum CE_ProblemJudgeTypeString {
+    Integers = "整数比较",
+    Floats = "浮点数比较",
+    Lines = "行比较",
+    Binary = "二进制比较",
+    Custom = "Special Judge",
 }

@@ -36,34 +36,36 @@ block content
         .column
           span.ui.label 题目类型: #{ problemTypeStringMap[judgeInfo.type] }
           if judgeInfo.type !== "submit-answer"
-            span.ui.label 时间限制: #{ judgeInfo.timeLimit } ms
-            span.ui.label 空间限制: #{ judgeInfo.memoryLimit } MiB
+            span.ui.label 时间限制: #{ judgeInfo.info.timeLimit } ms
+            span.ui.label 空间限制: #{ judgeInfo.info.memoryLimit } MiB
 
       if judgeInfo.type !== "interaction"
         .row(style="padding-top: 0; padding-bottom: 5px")
           .column
             if judgeInfo.type === "traditional"
-              if judgeInfo.fileIO
-                span.ui.label 输入文件: #{ judgeInfo.inputFileName }
-                span.ui.label 输出文件: #{ judgeInfo.outputFileName }
+              if judgeInfo.info.fileIO
+                span.ui.label 输入文件: #{ judgeInfo.info.fileIO.inputFilename }
+                span.ui.label 输出文件: #{ judgeInfo.info.fileIO.outputFilename }
               else
                 span.ui.label 标准输入输出
-            span.ui.label 评测方式: #{ testcase ? (testcase.spj ? "Special Judge" : "文本比较") : "无测试数据" }
+            span.ui.label 评测方式: #{ problemJudgeTypeStringMap[judgeInfo.info.checker.type] }
 
   .ui.grid
     .row
       .column
         .ui.buttons
-          if isAllowedSubmit
-            a.ui.small.primary.button(href="#submit_code") 提交
+          if judgeInfo && isAllowedSubmit
+            a.ui.small.primary.button(href="#submit-code") 提交
           a.ui.small.positive.button(href=`/submissions?problemId=${problem.id}`) 提交记录
-          if hasAdditionalFiles || isAllowedEdit
-            a.ui.small.teal.button(href=`/problem/${problem.id}/file`) 附加文件
+          if hasAdditionalFiles
+            a.ui.small.teal.button(href=`/problem/${problem.id}/file`) 文件
         if isAllowedEdit
           .ui.buttons.right.floated
             a.ui.small.button(href=`/problem/${problem.id}/edit`) 编辑
-            a.ui.small.button(href=`/problem/${problem.id}/edit/judge`) 评测设置
-            a.ui.small.button(href=`/problem/${problem.id}/edit/data`) 管理数据
+            a.ui.small.button(href=`/problem/${problem.id}/file`) 文件和数据
+            a.ui.small.button(class=hasTestdataFiles ? "" : "disabled", href=`/problem/${problem.id}/edit/judge`) 评测
+            if !hasTestdataFiles
+              .floating.ui.pointing.below.orange.tiny.circular.label(style="top: -2.5em !important; right: 11em") 请先上传测试数据
             button#delete-button.ui.small.red.button 删除
 
     if problem.description

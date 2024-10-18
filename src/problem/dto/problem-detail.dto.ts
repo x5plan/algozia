@@ -5,6 +5,7 @@ export class ProblemDetailResponseDto {
     public problem: ProblemEntity;
     public judgeInfo: ProblemJudgeInfoEntity | null;
     public hasAdditionalFiles: boolean;
+    public hasTestdataFiles: boolean;
     public testdata?: unknown;
 
     public isAllowedEdit: boolean;

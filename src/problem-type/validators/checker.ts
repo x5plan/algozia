@@ -1,12 +1,13 @@
 import type { PartialDeep } from "type-fest";
 
 import type { E_CodeLanguage } from "@/code-language/code-language.type";
-import { CE_JudgeInfoValidationMessage } from "@/common/strings/judge-info-validation-message";
+import { CE_JudgeInfoValidationMessage } from "@/common/strings/exception";
 import { format } from "@/common/utils/format";
 import { isSafeInt } from "@/common/validators";
 import type { ProblemFileEntity } from "@/problem/problem-file.entity";
 
 import { restrictProperties } from "../../common/utils/restrict-properties";
+import { CE_JudgeInfoCheckerType } from "../problem-type.enum";
 import type { IProblemJudgeInfo, IProblemJudgeInfoChecker } from "../problem-type.type";
 import type { IProblemJudgeInfoValidationResult } from "./type";
 import { isValidCheckerInterface, isValidCodeLanguage } from "./utils";
@@ -35,11 +36,11 @@ export function validateChecker(
     }
 
     switch (judgeInfo.checker.type) {
-        case "integers":
+        case CE_JudgeInfoCheckerType.Integers:
             restrictProperties(judgeInfo.checker, ["type"]);
             break;
 
-        case "floats":
+        case CE_JudgeInfoCheckerType.Floats:
             if (!(isSafeInt(judgeInfo.checker.precision) && judgeInfo.checker.precision > 0)) {
                 return {
                     success: false,
@@ -50,7 +51,7 @@ export function validateChecker(
             restrictProperties(judgeInfo.checker, ["type", "precision"]);
             break;
 
-        case "lines":
+        case CE_JudgeInfoCheckerType.Lines:
             if (typeof judgeInfo.checker.caseSensitive !== "boolean") {
                 return {
                     success: false,
@@ -61,11 +62,11 @@ export function validateChecker(
             restrictProperties(judgeInfo.checker, ["type", "caseSensitive"]);
             break;
 
-        case "binary":
+        case CE_JudgeInfoCheckerType.Binary:
             restrictProperties(judgeInfo.checker, ["type"]);
             break;
 
-        case "custom": {
+        case CE_JudgeInfoCheckerType.Custom: {
             const { checker } = judgeInfo;
             if (!isValidCheckerInterface(checker.interface)) {
                 return {

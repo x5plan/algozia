@@ -7,6 +7,7 @@ import { FileEntity } from "@/file/file.entity";
 import { ProblemFileEntity } from "@/problem/problem-file.entity";
 import { ISubmissionProgress } from "@/submission/submission.type";
 
+import { CE_JudgeInfoCheckerType } from "./problem-type.enum";
 import { IProblemTypeServiceInterface } from "./problem-type.type";
 import { autoMatchOutputToInput } from "./problem-type.utils";
 import {
@@ -33,8 +34,8 @@ export class ProblemTypeSubmitAnswerService
         return {
             subtasks: null,
             checker: {
-                type: "lines",
-                caseSensitive: false,
+                type: CE_JudgeInfoCheckerType.Lines,
+                caseSensitive: true,
             },
         };
     }

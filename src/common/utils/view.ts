@@ -1,6 +1,6 @@
 import serialize from "serialize-javascript";
 
-import { defaultIcon, suffixIconMap } from "../const/file-icon-map";
+import { defaultIcon, suffixIconMap } from "../const/file-icon";
 import type { IRequest } from "../types/request";
 import type { IResponse } from "../types/response";
 
@@ -48,6 +48,8 @@ export class ViewUtils {
             if (size > 1024) {
                 size /= 1024;
                 unit = currUnit;
+            } else {
+                break;
             }
         }
 
