@@ -126,6 +126,12 @@ export class ProblemService {
         });
     }
 
+    public async countProblemTestdataFilesAsync(problem: ProblemEntity) {
+        return await this.problemFileRepository.count({
+            where: { problemId: problem.id, type: E_ProblemFileType.Testdata },
+        });
+    }
+
     public async findProblemTestdataFilesAsync(problem: ProblemEntity) {
         return await this.problemFileRepository.find({
             where: { problemId: problem.id, type: E_ProblemFileType.Testdata },

@@ -132,10 +132,12 @@ export class ProblemController {
         }
 
         const hasAdditionalFiles = (await this.problemService.countProblemAdditionalFilesAsync(problem)) > 0;
+        const hasTestdataFiles = (await this.problemService.countProblemTestdataFilesAsync(problem)) > 0;
 
         return {
             problem,
             hasAdditionalFiles,
+            hasTestdataFiles,
             judgeInfo: await problem.judgeInfoPromise,
             isAllowedEdit: this.problemService.checkIsAllowedEdit(currentUser),
             isAllowedSubmit: await this.problemService.checkIsAllowedSubmitAsync(problem, currentUser),

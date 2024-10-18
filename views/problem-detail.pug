@@ -54,16 +54,18 @@ block content
     .row
       .column
         .ui.buttons
-          if isAllowedSubmit
-            a.ui.small.primary.button(href="#submit_code") 提交
+          if judgeInfo && isAllowedSubmit
+            a.ui.small.primary.button(href="#submit-code") 提交
           a.ui.small.positive.button(href=`/submissions?problemId=${problem.id}`) 提交记录
-          if hasAdditionalFiles || isAllowedEdit
+          if hasAdditionalFiles
             a.ui.small.teal.button(href=`/problem/${problem.id}/file`) 文件
         if isAllowedEdit
           .ui.buttons.right.floated
             a.ui.small.button(href=`/problem/${problem.id}/edit`) 编辑
-            a.ui.small.button(href=`/problem/${problem.id}/file`) 文件
-            a.ui.small.button(href=`/problem/${problem.id}/edit/judge`) 评测
+            a.ui.small.button(href=`/problem/${problem.id}/file`) 文件和数据
+            a.ui.small.button(class=hasTestdataFiles ? "" : "disabled", href=`/problem/${problem.id}/edit/judge`) 评测
+            if !hasTestdataFiles
+              .floating.ui.pointing.below.orange.tiny.circular.label(style="top: -2.5em !important; right: 11em") 请先上传测试数据
             button#delete-button.ui.small.red.button 删除
 
     if problem.description

@@ -11,44 +11,20 @@ block append scripts
   +import-bundle-script("page-app-loader")
   -
     const dataObj = {
+      title: `#${problem.displayId}. ${problem.title} - 评测设置`,
+      problemUrl: `/problem/${problem.id}`,
+      postUrl: viewUtils.makeUrl({}),
+      error,
       type: judgeInfo.type,
-      judgeInfo: judgeInfo.info,
+      info: judgeInfo.info,
       hasSubmissions,
       testDataFileNames,
     };
   script.
     $(() => {
-      window.PageSharedObject = {
-        data: !{ viewUtils.serialize(dataObj) },
-        onUpdateType(type) {
-          $("input[name=type]").val(type);
-        },
-        onUpdateJudgeInfo(judgeInfo) {
-          $("input[name=judgeInfo]").val(JSON.stringify(judgeInfo));
-        },
-      };
-
+      window.PageSharedObject = !{ viewUtils.serialize(dataObj) };
       window.PageAppLoaderUtil.loadPageApp("judge-setting", !{viewUtils.serialize(app.cdnUrl)});
     });
 
 block content
-  .padding
-    .ui.grid
-      .row
-        .center.aligned.column
-          h1.ui.header ##{ problem.displayId }. #{ problem.title } - 评测设置
-
-      if error
-        .row
-          .column
-            .ui.error.message= error
-
-      #app-root.row
-
-      .row
-        .right.aligned.column
-          form#judge-info-form.ui.form(action=viewUtils.makeUrl({}), method="post")
-            input(name="type", value=judgeInfo.type, hidden=!__viteDev__)
-            input(name="judgeInfo", value=JSON.stringify(judgeInfo.judgeInfo), hidden=!__viteDev__)
-            a.ui.button(href=`/problem/${problem.id}`) 返回题目
-            button.ui.primary.button(type="submit") 保存
+  #app-root.padding
