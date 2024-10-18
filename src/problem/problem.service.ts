@@ -269,7 +269,7 @@ export class ProblemService {
 
         // If the user's level is lower than the problem's visibility level,
         // they are not allowed to view the problem.
-        return problem.visibility >= user.level;
+        return this.permissionService.checkVisibility(problem.visibility, user.level);
     }
 
     public async checkIsAllowedSubmitAsync(problem: ProblemEntity, user: UserEntity) {
