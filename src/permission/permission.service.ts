@@ -44,10 +44,9 @@ export class PermissionService {
     public async findSpecificPermissionSourceIdsAsync(
         specificPermission: CE_SpecificPermission,
         user: UserEntity,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         userLevel: CE_UserLevel.Specific, // Just for type checking if the userLevel is specific
     ): Promise<number[]> {
-        const permission = await this.findPermissionAsync(user, CE_UserLevel.Specific);
+        const permission = await this.findPermissionAsync(user, userLevel);
         if (!permission) {
             return [];
         }
@@ -77,11 +76,7 @@ export class PermissionService {
         userLevel: CE_UserLevel.Specific, // Just for type checking if the userLevel is specific
         sourceId?: number,
     ) {
-        const sourceIds = await this.findSpecificPermissionSourceIdsAsync(
-            specificPermission,
-            user,
-            CE_UserLevel.Specific,
-        );
+        const sourceIds = await this.findSpecificPermissionSourceIdsAsync(specificPermission, user, userLevel);
         return sourceId ? sourceIds.includes(sourceId) : sourceIds.length > 0;
     }
 
