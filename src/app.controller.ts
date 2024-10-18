@@ -8,11 +8,7 @@ export class AppController {
 
     @Get()
     @Render("home")
-    public app(): { message: string } {
-        return {
-            message: this.appService.getHello(),
-        };
-    }
+    public home() {}
 
     @Get(CE_Page.Help)
     @Render("help")
