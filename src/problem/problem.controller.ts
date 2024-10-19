@@ -513,6 +513,7 @@ export class ProblemController {
     }
 
     @Post(":id/delete")
+    @Redirect("/problem")
     public async deleteProblemAsync(
         @Param() param: ProblemBasicRequestParamDto,
         @Res() res: IResponse,
@@ -528,8 +529,6 @@ export class ProblemController {
         }
 
         await this.problemService.deleteProblemAsync(problem);
-
-        res.redirect("/problem");
     }
 
     @Post(":id/signFileUploadRequest")
