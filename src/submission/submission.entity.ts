@@ -33,7 +33,7 @@ export class SubmissionEntity {
     public visibility: E_Visibility;
 
     // Start: Fields for "some of the problem types" only
-    @Column({ name: "code_lang", type: "enum", enum: E_CodeLanguage, nullable: true, length: 20 })
+    @Column({ name: "code_lang", type: "enum", enum: E_CodeLanguage, nullable: true })
     @Index()
     public codeLanguage: E_CodeLanguage | null;
 

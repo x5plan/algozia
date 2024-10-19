@@ -2,7 +2,7 @@ import { E_CodeLanguage } from "@/code-language/code-language.type";
 
 import { E_ProblemJudgeInfoCustomCheckerInterface } from "../problem-type.enum";
 import { E_ProblemJudgeInfoScoringType } from "../problem-type.type";
-import { E_ProblemJudgeInfoInteractionInteractorInterface } from "../problem-type-interaction.type";
+import { E_ProblemJudgeInfoInteractionInteractorInterface } from "../problem-type-interaction.enum";
 
 export function isValidCodeLanguage(language: unknown): language is E_CodeLanguage {
     return Object.values<unknown>(E_CodeLanguage).includes(language);
