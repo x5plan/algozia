@@ -1,8 +1,4 @@
-import type {
-    ISubmissionContent,
-    ISubmissionResultOmissibleString,
-    ISubmissionTestcaseResult,
-} from "@/submission/submission.type";
+import type { ISubmissionResultOmissibleString, ISubmissionTestcaseResult } from "@/submission/submission.type";
 
 import type {
     IProblemJudgeInfo,
@@ -10,6 +6,7 @@ import type {
     IProblemJudgeInfoOptionalInputTestcase,
     IProblemJudgeInfoSubtask,
 } from "./problem-type.type";
+import type { E_SubmissionTestcaseStatusSubmitAnswer } from "./problem-type-submit-answer.enum";
 
 export interface IProblemJudgeInfoSubmitAnswer extends IProblemJudgeInfo {
     /*
@@ -29,22 +26,6 @@ export interface IProblemJudgeInfoSubmitAnswerSubtask extends IProblemJudgeInfoS
 export interface IProblemJudgeInfoSubmitAnswerTestcase extends IProblemJudgeInfoOptionalInputTestcase {
     // By default, user's output filename is equal to output filename
     userOutputFilename?: string;
-}
-
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface ISubmissionContentSubmitAnswer extends ISubmissionContent {}
-
-export enum E_SubmissionTestcaseStatusSubmitAnswer {
-    SystemError = "SystemError",
-
-    FileError = "FileError",
-    OutputLimitExceeded = "OutputLimitExceeded",
-
-    PartiallyCorrect = "PartiallyCorrect",
-    WrongAnswer = "WrongAnswer",
-    Accepted = "Accepted",
-
-    JudgementFailed = "JudgementFailed",
 }
 
 export interface ISubmissionTestcaseResultSubmitAnswer extends ISubmissionTestcaseResult {

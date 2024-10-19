@@ -21,6 +21,10 @@ export const enum CE_ExceptionString {
     Problem_NoSuchProblemFile = "题目文件不存在",
     Problem_FileSizeTooLarge = "文件大小超过限制",
     Problem_TestDataRequired = "请先添加测试数据",
+    Problem_NoProblemJudgeInfo = "题目没有评测信息",
+    Problem_InvalidLanguageOrCompileOptions = "无效的语言或编译选项",
+    Problem_EmptyCode = "代码为空",
+    Problem_NotAllowedToSubmitFile = "不允许提交文件",
 
     // File
     File_NoSuchFile = "未找到文件",

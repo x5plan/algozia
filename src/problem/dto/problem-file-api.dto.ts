@@ -41,6 +41,7 @@ export class ProblemReportFileUploadFinishedResponseDto {
 export const enum CE_ProblemFileUploadError {
     NoSuchProblem = CE_ExceptionString.NoSuchProblem,
     PermissionDenied = CE_ExceptionString.PermissionDenied,
+    NotAllowedToSubmitFile = CE_ExceptionString.Problem_NotAllowedToSubmitFile,
     MinIOError = CE_ExceptionString.MinIOError,
     Data = "Data",
 }

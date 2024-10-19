@@ -1,7 +1,8 @@
 extends common/layout
 
-block prepend title
+block prepend document
   - this.title = problem.title + " - 题目";
+  - const canSubmit = isAllowedSubmit && judgeInfo;
 
 block append head
   +import-markdown-styles
@@ -22,6 +23,19 @@ block append scripts
           $("#delete-confirmation").modal("show");
         });
       });
+
+  if canSubmit
+    if judgeInfo.type === "submit-answer"
+      script.
+        $(() => {
+          console.log("TODO: Submit answer form");
+        });
+    else
+      +import-bundle-script("page-app-loader")
+      script.
+        $(() => {
+          window.PageAppLoaderUtil.loadPageApp("submit-code", !{ viewUtils.serialize(app.cdnUrl) });
+        });
 
 block content
   .ui.center.aligned.grid
@@ -54,9 +68,9 @@ block content
     .row
       .column
         .ui.buttons
-          if judgeInfo && isAllowedSubmit
+          if canSubmit
             a.ui.small.primary.button(href="#submit-code") 提交
-          a.ui.small.positive.button(href=`/submissions?problemId=${problem.id}`) 提交记录
+          a.ui.small.positive.button(href=`/submission?problemId=${problem.id}`) 提交记录
           if hasAdditionalFiles
             a.ui.small.teal.button(href=`/problem/${problem.id}/file`) 文件
         if isAllowedEdit
@@ -102,6 +116,14 @@ block content
           h4.ui.top.attached.block.header 数据范围与提示
           #limit-and-hint.ui.bottom.attached.segment.font-content
             +markdown-loading
+
+    if canSubmit
+      .row
+        .column
+          h4#submit-code.ui.top.attached.block.header 提交
+          .ui.bottom.attached.segment
+            form#app-root.ui.form(method="post", action=`/problem/${problem.id}/submit`)
+              +markdown-loading
 
   if isAllowedEdit
     #delete-confirmation.ui.basic.modal

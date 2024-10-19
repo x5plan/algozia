@@ -16,17 +16,21 @@ export class ViewUtils {
         path,
         query = {},
         serialize = false,
+        inheritQuery = true,
     }: {
         path?: string;
         query?: Record<string, string>;
         serialize?: boolean;
+        inheritQuery?: boolean;
     }): string {
         const searchParams = new URLSearchParams();
         path = path || this.req.path;
 
-        for (const [key, value] of Object.entries(this.req.query)) {
-            if (key && typeof value === "string") {
-                searchParams.set(key, value);
+        if (inheritQuery) {
+            for (const [key, value] of Object.entries(this.req.query)) {
+                if (key && typeof value === "string") {
+                    searchParams.set(key, value);
+                }
             }
         }
 

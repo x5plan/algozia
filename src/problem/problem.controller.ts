@@ -1,9 +1,14 @@
 import { Body, Controller, Get, Logger, Param, Post, Query, Redirect, Render, Req, Res } from "@nestjs/common";
 
+import { CodeLanguageService } from "@/code-language/code-language.service";
 import { CurrentUser } from "@/common/decorators/user.decorator";
 import { LoginRequiredException } from "@/common/exceptions/auth";
 import { PermissionDeniedException } from "@/common/exceptions/permission";
 import {
+    EmptyAnswerFileException,
+    EmptyCodeException,
+    InvalidLanguageOrCompileOptionsException,
+    NoProblemJudgeInfoException,
     NoSuchProblemException,
     NoSuchProblemFileException,
     TestDataRequiredException,
@@ -23,12 +28,13 @@ import { UserEntity } from "@/user/user.entity";
 
 import { ProblemDetailResponseDto } from "./dto/problem-detail.dto";
 import { ProblemEditPostRequestBodyDto, ProblemEditResponseDto } from "./dto/problem-edit.dto";
+import { ProblemEditJudgePostRequestBodyDto, ProblemEditJudgeResponseDto } from "./dto/problem-edit-judge.dto";
 import {
-    ProblemEditJudgeGetRequestQueryDto,
-    ProblemEditJudgePostRequestBodyDto,
-    ProblemEditJudgeResponseDto,
-} from "./dto/problem-edit-judge.dto";
-import { ProblemFileItemDto, ProblemFileRequestParamDto, ProblemFileResponseDto } from "./dto/problem-file.dto";
+    ProblemFileDeletePostRequestQueryDto,
+    ProblemFileItemDto,
+    ProblemFileRequestParamDto,
+    ProblemFileResponseDto,
+} from "./dto/problem-file.dto";
 import {
     CE_ProblemFileUploadError,
     ProblemReportFileUploadFinishedPostRequestBodyDto,
@@ -38,9 +44,10 @@ import {
 } from "./dto/problem-file-api.dto";
 import { ProblemListGetRequestQueryDto, ProblemListGetResponseDto } from "./dto/problem-list.dto";
 import { ProblemBasicRequestParamDto } from "./dto/problem-shared.dto";
+import { ProblemSubmitPostRequestBodyDto } from "./dto/problem-submit.dto";
 import { ProblemEntity } from "./problem.entity";
 import { ProblemService } from "./problem.service";
-import { E_ProblemFileType, E_ProblemType } from "./problem.type";
+import { E_ProblemType } from "./problem.type";
 import { ProblemJudgeInfoEntity } from "./problem-judge-info.entity";
 
 @Controller(CE_Page.Problem)
@@ -49,6 +56,7 @@ export class ProblemController {
         private readonly problemService: ProblemService,
         private readonly problemTypeService: ProblemTypeService,
         private readonly permissionService: PermissionService,
+        private readonly codeLanguageService: CodeLanguageService,
         private readonly fileService: FileService,
         private readonly configService: ConfigService,
     ) {}
@@ -240,11 +248,9 @@ export class ProblemController {
     @Render("problem-edit-judge")
     public async getProblemEditJudgeAsync(
         @Param() param: ProblemBasicRequestParamDto,
-        @Query() query: ProblemEditJudgeGetRequestQueryDto,
         @CurrentUser() currentUser: UserEntity | null,
     ): Promise<ProblemEditJudgeResponseDto> {
         const { id } = param;
-        const { preprocess } = query;
 
         if (!currentUser) {
             throw new LoginRequiredException(`/problem/${id}/edit/judge`);
@@ -273,14 +279,6 @@ export class ProblemController {
             judgeInfo.problemId = problem.id;
             judgeInfo.type = E_ProblemType.Traditional;
             judgeInfo.info = this.problemTypeService.get(judgeInfo.type).defaultJudgeInfo;
-
-            if (preprocess) {
-                judgeInfo.info = await this.problemService.getPreprocessedProblemJudgeInfoAsync(
-                    problem,
-                    judgeInfo,
-                    testDataFiles,
-                );
-            }
         }
 
         return {
@@ -380,6 +378,7 @@ export class ProblemController {
                     filename: file.filename,
                     size: (await this.fileService.findFileByUUIDAsync(file.uuid))?.size ?? 0,
                     uuid: file.uuid,
+                    type: file.type,
                 }),
             ),
         );
@@ -391,6 +390,7 @@ export class ProblemController {
                     filename: file.filename,
                     size: (await this.fileService.findFileByUUIDAsync(file.uuid))?.size ?? 0,
                     uuid: file.uuid,
+                    type: file.type,
                 }),
             ),
         );
@@ -430,16 +430,15 @@ export class ProblemController {
         return { url: downloadUrl };
     }
 
-    @Post([":id/file/:fileId/delete", ":id/edit/data/:fileId/delete"])
+    @Post(":id/file/:fileId/delete")
     @Redirect()
     public async postProblemFileDeleteAsync(
-        @Req() req: IRequest,
         @Param() param: ProblemFileRequestParamDto,
+        @Query() query: ProblemFileDeletePostRequestQueryDto,
         @CurrentUser() currentUser: UserEntity | null,
     ) {
         const { id, fileId } = param;
-        const isEditData = req.path.includes("edit/data");
-        const type = isEditData ? E_ProblemFileType.Testdata : E_ProblemFileType.Additional;
+        const { type } = query;
 
         if (!currentUser || !this.problemService.checkIsAllowedEdit(currentUser)) {
             throw new PermissionDeniedException();
@@ -451,12 +450,56 @@ export class ProblemController {
             await this.problemService.deleteProblemFileAsync(problem, fileId);
 
             return {
-                url: isEditData ? `/problem/${id}/edit/data` : `/problem/${id}/file`,
+                url: `/problem/${id}/file`,
             };
         });
     }
 
+    @Post(":id/submit")
+    @Redirect()
+    public async postProblemSubmitAsync(
+        @Param() param: ProblemBasicRequestParamDto,
+        @Body() body: ProblemSubmitPostRequestBodyDto,
+        @CurrentUser() currentUser: UserEntity | null,
+    ) {
+        const { id } = param;
+
+        if (!currentUser) {
+            throw new LoginRequiredException(`/problem/${id}/submit`);
+        }
+
+        return await this.problemService.lockProblemByIdAsync(id, CE_LockType.Read, async (problem) => {
+            if (!problem) throw new NoSuchProblemException();
+            if (!(await this.problemService.checkIsAllowedSubmitAsync(problem, currentUser))) {
+                throw new PermissionDeniedException();
+            }
+
+            const judgeInfo = await problem.judgeInfoPromise;
+            if (!judgeInfo) throw new NoProblemJudgeInfoException();
+
+            if (this.problemTypeService.get(judgeInfo.type).shouldUploadAnswerFile) {
+                const { uploadRequest } = body;
+                if (!uploadRequest) throw new EmptyAnswerFileException();
+
+                // TODO: create file submission
+            } else {
+                const { language, code, compileAndRunOptions } = body;
+                if (!code) throw new EmptyCodeException();
+                if (
+                    !language ||
+                    !compileAndRunOptions ||
+                    this.codeLanguageService.validateCompileAndRunOptions(language, compileAndRunOptions).length > 0
+                ) {
+                    throw new InvalidLanguageOrCompileOptionsException();
+                }
+
+                // TODO: create code submission
+            }
+        });
+    }
+
     @Post(":id/delete")
+    @Redirect("/problem")
     public async deleteProblemAsync(
         @Param() param: ProblemBasicRequestParamDto,
         @Res() res: IResponse,
@@ -472,8 +515,6 @@ export class ProblemController {
         }
 
         await this.problemService.deleteProblemAsync(problem);
-
-        res.redirect("/problem");
     }
 
     @Post(":id/signFileUploadRequest")
@@ -527,5 +568,35 @@ export class ProblemController {
 
             return { done: true };
         });
+    }
+
+    @Post(":id/signSubmitAnswerFileUploadRequest")
+    public async postSignSubmitAnswerFileUploadRequestAsync(
+        @Param() param: ProblemBasicRequestParamDto,
+        @Body() body: ProblemSignFileUploadRequestPostRequestBodyDto,
+        @CurrentUser() currentUser: UserEntity | null,
+    ): Promise<ProblemSignFileUploadRequestResponseDto> {
+        if (!currentUser) {
+            return { error: CE_ProblemFileUploadError.PermissionDenied };
+        }
+        const problem = await this.problemService.findProblemByIdAsync(param.id);
+        if (!problem) {
+            return { error: CE_ProblemFileUploadError.NoSuchProblem };
+        }
+        if (!(await this.problemService.checkIsAllowedSubmitAsync(problem, currentUser))) {
+            return { error: CE_ProblemFileUploadError.PermissionDenied };
+        }
+        const judgeInfo = await problem.judgeInfoPromise;
+        if (!judgeInfo || !this.problemTypeService.get(judgeInfo.type).shouldUploadAnswerFile) {
+            return { error: CE_ProblemFileUploadError.NotAllowedToSubmitFile };
+        }
+
+        try {
+            const uploadRequest = await this.fileService.signUploadRequestAsync(body.size);
+            return { uploadRequest };
+        } catch (e) {
+            Logger.error(`Failed to sign upload request for problem "${problem.id}": ${e}`);
+            return { error: CE_ProblemFileUploadError.MinIOError };
+        }
     }
 }

@@ -1,6 +1,6 @@
 extends common/layout
 
-block prepend title
+block prepend document
   - this.title = isNewProblem ? "新建题目" : `${problem.title} - 编辑题目`;
 
 block append head

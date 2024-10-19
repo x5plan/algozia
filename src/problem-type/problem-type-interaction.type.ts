@@ -1,15 +1,15 @@
 import type { E_CodeLanguage } from "@/code-language/code-language.type";
-import type {
-    ISubmissionContent,
-    ISubmissionResultOmissibleString,
-    ISubmissionTestcaseResult,
-} from "@/submission/submission.type";
+import type { ISubmissionResultOmissibleString, ISubmissionTestcaseResult } from "@/submission/submission.type";
 
 import type {
     IProblemJudgeInfo,
     IProblemJudgeInfoOptionalOutputTestcase,
     IProblemJudgeInfoSubtask,
 } from "./problem-type.type";
+import type {
+    E_ProblemJudgeInfoInteractionInteractorInterface,
+    E_SubmissionTestcaseStatusInteraction,
+} from "./problem-type-interaction.enum";
 
 export interface IProblemJudgeInfoInteraction extends IProblemJudgeInfo {
     /*
@@ -51,11 +51,6 @@ export interface IProblemJudgeInfoInteractionTestcase extends IProblemJudgeInfoO
     memoryLimit?: number;
 }
 
-export enum E_ProblemJudgeInfoInteractionInteractorInterface {
-    stdio = "stdio",
-    shm = "shm",
-}
-
 export interface IProblemJudgeInfoInteractionInteractor {
     // stdio: The interactor and user's program's stdin and stdout are connected with two pipes
     // shm: A shared memory region is created for interactor and user's program's communication
@@ -66,22 +61,6 @@ export interface IProblemJudgeInfoInteractionInteractor {
     filename: string;
     timeLimit?: number;
     memoryLimit?: number;
-}
-
-// For subtasks and testcases
-export enum E_SubmissionTestcaseStatusInteraction {
-    SystemError = "SystemError",
-
-    RuntimeError = "RuntimeError",
-    TimeLimitExceeded = "TimeLimitExceeded",
-    MemoryLimitExceeded = "MemoryLimitExceeded",
-    OutputLimitExceeded = "OutputLimitExceeded",
-
-    PartiallyCorrect = "PartiallyCorrect",
-    WrongAnswer = "WrongAnswer",
-    Accepted = "Accepted",
-
-    JudgementFailed = "JudgementFailed",
 }
 
 export interface ISubmissionTestcaseResultInteraction extends ISubmissionTestcaseResult {
@@ -98,11 +77,4 @@ export interface ISubmissionTestcaseResultInteraction extends ISubmissionTestcas
     userError?: ISubmissionResultOmissibleString;
     interactorMessage?: ISubmissionResultOmissibleString;
     systemMessage?: ISubmissionResultOmissibleString;
-}
-
-export interface ISubmissionContentInteraction extends ISubmissionContent {
-    language: E_CodeLanguage;
-    code: string;
-    compileAndRunOptions: unknown;
-    skipSamples?: boolean;
 }

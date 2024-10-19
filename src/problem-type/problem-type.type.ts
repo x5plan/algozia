@@ -1,16 +1,12 @@
-import type { ValidationError } from "class-validator";
-
 import type { E_CodeLanguage } from "@/code-language/code-language.type";
-import type { FileEntity } from "@/file/file.entity";
 import type { ProblemFileEntity } from "@/problem/problem-file.entity";
-import type { ISubmissionContent, ISubmissionProgress, ISubmissionTestcaseResult } from "@/submission/submission.type";
+import type { ISubmissionProgress, ISubmissionTestcaseResult } from "@/submission/submission.type";
 
 import type { CE_JudgeInfoCheckerType, E_ProblemJudgeInfoCustomCheckerInterface } from "./problem-type.enum";
 import type { IProblemJudgeInfoValidationResult } from "./validators/type";
 
 export interface IProblemTypeServiceInterface<
     TJudgeInfo extends IProblemJudgeInfo,
-    TSubmissionContent extends ISubmissionContent,
     TSubmissionTestcaseResult extends ISubmissionTestcaseResult,
 > {
     /**
@@ -43,27 +39,6 @@ export interface IProblemTypeServiceInterface<
      * @param testData The problem's testdata files.
      */
     validateAndFilterJudgeInfo(judgeInfo: TJudgeInfo, testData: ProblemFileEntity[]): IProblemJudgeInfoValidationResult;
-
-    /**
-     * Validate a submission content submitted by user. Return the validation errors by class-validator.
-     * @param submissionContent The submission content submitted by user.
-     * @returns The validation errors by class-validator.
-     */
-    validateSubmissionContentAsync(submissionContent: TSubmissionContent): Promise<ValidationError[]>;
-
-    /**
-     * Get code language and answer size from submission content and file submitted by user.
-     * @param submissionContent The submission content submitted by user.
-     * @param file The file submitted by user.
-     * @returns An object containing the code language and answer size of the submission content.
-     */
-    getCodeLanguageAndAnswerSizeFromSubmissionContentAndFileAsync(
-        submissionContent: TSubmissionContent,
-        file?: FileEntity,
-    ): Promise<{
-        language: string | null;
-        answerSize: number;
-    }>;
 
     /**
      * Get time and memory used from finished submission result object.

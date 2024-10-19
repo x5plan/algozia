@@ -5,7 +5,7 @@ import { restrictProperties } from "@/common/utils/restrict-properties";
 import { isSafeInt } from "@/common/validators";
 import type { ProblemFileEntity } from "@/problem/problem-file.entity";
 
-import { E_ProblemJudgeInfoInteractionInteractorInterface } from "../problem-type-interaction.type";
+import { E_ProblemJudgeInfoInteractionInteractorInterface } from "../problem-type-interaction.enum";
 import type { IProblemJudgeInfoValidationResult } from "./type";
 import { isValidCodeLanguage, isValidInteractorInterface } from "./utils";
 

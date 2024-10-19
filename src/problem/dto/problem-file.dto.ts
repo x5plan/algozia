@@ -1,6 +1,7 @@
-import { IsUUID } from "class-validator";
+import { IsEnum, IsUUID } from "class-validator";
 
 import { ProblemEntity } from "../problem.entity";
+import { E_ProblemFileType } from "../problem.type";
 import { ProblemBasicRequestParamDto } from "./problem-shared.dto";
 
 export class ProblemFileResponseDto {
@@ -15,8 +16,14 @@ export class ProblemFileRequestParamDto extends ProblemBasicRequestParamDto {
     public readonly fileId: string;
 }
 
+export class ProblemFileDeletePostRequestQueryDto {
+    @IsEnum(E_ProblemFileType)
+    public readonly type: E_ProblemFileType;
+}
+
 export class ProblemFileItemDto {
     public filename: string;
     public uuid: string;
     public size: number;
+    public type: E_ProblemFileType;
 }
