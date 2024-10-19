@@ -1,4 +1,4 @@
-import type { E_CodeLanguage } from "@/code-language/code-language.type";
+import type { E_CodeLanguage } from "@/code-language/code-language.enum";
 import type {
     ISubmissionContent,
     ISubmissionResultOmissibleString,

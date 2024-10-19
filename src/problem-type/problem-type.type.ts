@@ -1,6 +1,6 @@
 import type { ValidationError } from "class-validator";
 
-import type { E_CodeLanguage } from "@/code-language/code-language.type";
+import type { E_CodeLanguage } from "@/code-language/code-language.enum";
 import type { FileEntity } from "@/file/file.entity";
 import type { ProblemFileEntity } from "@/problem/problem-file.entity";
 import type { ISubmissionContent, ISubmissionProgress, ISubmissionTestcaseResult } from "@/submission/submission.type";

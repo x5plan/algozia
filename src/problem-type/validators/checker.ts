@@ -1,6 +1,6 @@
 import type { PartialDeep } from "type-fest";
 
-import type { E_CodeLanguage } from "@/code-language/code-language.type";
+import type { E_CodeLanguage } from "@/code-language/code-language.enum";
 import { CE_JudgeInfoValidationMessage } from "@/common/strings/exception";
 import { format } from "@/common/utils/format";
 import { isSafeInt } from "@/common/validators";

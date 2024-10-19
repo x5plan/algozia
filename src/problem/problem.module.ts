@@ -1,10 +1,12 @@
 import { forwardRef, MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 
+import { CodeLanguageModule } from "@/code-language/code-language.module";
 import { FileModule } from "@/file/file.module";
 import { PermissionModule } from "@/permission/permission.module";
 import { ProblemTypeModule } from "@/problem-type/problem-type.module";
 import { RedisModule } from "@/redis/redis.module";
+import { SubmissionModule } from "@/submission/submission.module";
 
 import { ProblemController } from "./problem.controller";
 import { ProblemEntity } from "./problem.entity";
@@ -22,6 +24,8 @@ import { ProblemJudgeInfoEntity } from "./problem-judge-info.entity";
         forwardRef(() => PermissionModule),
         forwardRef(() => ProblemTypeModule),
         forwardRef(() => RedisModule),
+        forwardRef(() => CodeLanguageModule),
+        forwardRef(() => SubmissionModule),
     ],
     controllers: [ProblemController],
     providers: [ProblemService],

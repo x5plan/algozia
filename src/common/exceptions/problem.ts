@@ -42,3 +42,27 @@ export class TestDataRequiredException extends AppHttpException {
         });
     }
 }
+
+export class NoProblemJudgeInfoException extends AppHttpException {
+    constructor() {
+        super(CE_ExceptionString.Problem_NoProblemJudgeInfo, HttpStatus.BAD_REQUEST);
+    }
+}
+
+export class InvalidLanguageOrCompileOptionsException extends AppHttpException {
+    constructor() {
+        super(CE_ExceptionString.Problem_InvalidLanguageOrCompileOptions, HttpStatus.BAD_REQUEST);
+    }
+}
+
+export class EmptyCodeException extends AppHttpException {
+    constructor() {
+        super(CE_ExceptionString.Problem_EmptyCode, HttpStatus.BAD_REQUEST);
+    }
+}
+
+export class EmptyAnswerFileException extends AppHttpException {
+    constructor() {
+        super(CE_ExceptionString.File_NoSuchFile, HttpStatus.BAD_REQUEST);
+    }
+}
