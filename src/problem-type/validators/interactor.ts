@@ -1,4 +1,4 @@
-import type { E_CodeLanguage } from "@/code-language/code-language.enum";
+import type { E_CodeLanguage } from "@/code-language/code-language.type";
 import { CE_JudgeInfoValidationMessage } from "@/common/strings/exception";
 import { format } from "@/common/utils/format";
 import { restrictProperties } from "@/common/utils/restrict-properties";

@@ -1,6 +1,4 @@
 import { Injectable } from "@nestjs/common";
-import { plainToClass } from "class-transformer";
-import { validate, ValidationError } from "class-validator";
 
 import { CodeLanguageService } from "@/code-language/code-language.service";
 import { restrictProperties } from "@/common/utils/restrict-properties";
@@ -9,12 +7,7 @@ import { ISubmissionProgress } from "@/submission/submission.type";
 
 import { IProblemTypeServiceInterface } from "./problem-type.type";
 import { autoMatchInputToOutput } from "./problem-type.utils";
-import {
-    IProblemJudgeInfoInteraction,
-    ISubmissionContentInteraction,
-    ISubmissionTestcaseResultInteraction,
-} from "./problem-type-interaction.type";
-import { SubmissionContentInteraction } from "./submission-content.schema";
+import { IProblemJudgeInfoInteraction, ISubmissionTestcaseResultInteraction } from "./problem-type-interaction.type";
 import { validateExtraSourceFiles } from "./validators/extra-source-files";
 import { validateInteractor } from "./validators/interactor";
 import { validateMetaAndSubtasks } from "./validators/meta-and-subtasks";
@@ -22,12 +15,7 @@ import { IProblemJudgeInfoValidationResult } from "./validators/type";
 
 @Injectable()
 export class ProblemTypeInteractionService
-    implements
-        IProblemTypeServiceInterface<
-            IProblemJudgeInfoInteraction,
-            ISubmissionContentInteraction,
-            ISubmissionTestcaseResultInteraction
-        >
+    implements IProblemTypeServiceInterface<IProblemJudgeInfoInteraction, ISubmissionTestcaseResultInteraction>
 {
     constructor(private codeLanguageService: CodeLanguageService) {}
 
@@ -87,32 +75,6 @@ export class ProblemTypeInteractionService
         restrictProperties(judgeInfo, ["timeLimit", "memoryLimit", "subtasks", "interactor", "extraSourceFiles"]);
 
         return { success: true };
-    }
-
-    public async validateSubmissionContentAsync(
-        submissionContent: ISubmissionContentInteraction,
-    ): Promise<ValidationError[]> {
-        const errors = await validate(plainToClass(SubmissionContentInteraction, submissionContent), {
-            whitelist: true,
-            forbidNonWhitelisted: true,
-        });
-        if (errors.length > 0) return errors;
-        return this.codeLanguageService.validateCompileAndRunOptions(
-            submissionContent.language,
-            submissionContent.compileAndRunOptions,
-        );
-    }
-
-    public async getCodeLanguageAndAnswerSizeFromSubmissionContentAndFileAsync(
-        submissionContent: ISubmissionContentInteraction,
-    ) {
-        return {
-            language: submissionContent.language,
-
-            // string.length returns the number of characters in the string
-            // Convert to a buffer to get the number of bytes
-            answerSize: Buffer.from(submissionContent.code).length,
-        };
     }
 
     public getTimeAndMemoryUsedFromFinishedSubmissionProgress(

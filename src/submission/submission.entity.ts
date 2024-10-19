@@ -1,5 +1,6 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 
+import { E_CodeLanguage } from "@/code-language/code-language.type";
 import { E_Visibility } from "@/permission/permission.enum";
 import { ProblemEntity } from "@/problem/problem.entity";
 import { UserEntity } from "@/user/user.entity";
@@ -32,9 +33,9 @@ export class SubmissionEntity {
     public visibility: E_Visibility;
 
     // Start: Fields for "some of the problem types" only
-    @Column({ name: "code_lang", type: "varchar", nullable: true, length: 20 })
+    @Column({ name: "code_lang", type: "enum", enum: E_CodeLanguage, nullable: true, length: 20 })
     @Index()
-    public codeLanguage: string | null;
+    public codeLanguage: E_CodeLanguage | null;
 
     @Column({ name: "answer_size", type: "integer", nullable: true })
     public answerSize: number | null;

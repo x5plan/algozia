@@ -1,9 +1,5 @@
-import type { E_CodeLanguage } from "@/code-language/code-language.enum";
-import type {
-    ISubmissionContent,
-    ISubmissionResultOmissibleString,
-    ISubmissionTestcaseResult,
-} from "@/submission/submission.type";
+import type { E_CodeLanguage } from "@/code-language/code-language.type";
+import type { ISubmissionResultOmissibleString, ISubmissionTestcaseResult } from "@/submission/submission.type";
 
 import type {
     IProblemJudgeInfo,
@@ -11,6 +7,7 @@ import type {
     IProblemJudgeInfoRequiredTestcase,
     IProblemJudgeInfoSubtask,
 } from "./problem-type.type";
+import type { E_SubmissionTestcaseStatusTraditional } from "./problem-type-traditional.enum";
 
 export interface IProblemJudgeInfoTraditional extends IProblemJudgeInfo {
     /*
@@ -65,30 +62,7 @@ export interface IProblemJudgeInfoTraditionalTestcase extends IProblemJudgeInfoR
     memoryLimit?: number;
 }
 
-export interface ISubmissionContentTraditional extends ISubmissionContent {
-    readonly language: E_CodeLanguage;
-    readonly code: string;
-    readonly compileAndRunOptions: unknown;
-    readonly skipSamples?: boolean;
-}
-
 // For subtasks and testcasese
-export enum E_SubmissionTestcaseStatusTraditional {
-    SystemError = "SystemError",
-
-    FileError = "FileError",
-    RuntimeError = "RuntimeError",
-    TimeLimitExceeded = "TimeLimitExceeded",
-    MemoryLimitExceeded = "MemoryLimitExceeded",
-    OutputLimitExceeded = "OutputLimitExceeded",
-
-    PartiallyCorrect = "PartiallyCorrect",
-    WrongAnswer = "WrongAnswer",
-    Accepted = "Accepted",
-
-    JudgementFailed = "JudgementFailed",
-}
-
 export interface ISubmissionTestcaseResultTraditional extends ISubmissionTestcaseResult {
     testcaseInfo: {
         timeLimit: number;

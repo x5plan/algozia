@@ -28,11 +28,7 @@ import { UserEntity } from "@/user/user.entity";
 
 import { ProblemDetailResponseDto } from "./dto/problem-detail.dto";
 import { ProblemEditPostRequestBodyDto, ProblemEditResponseDto } from "./dto/problem-edit.dto";
-import {
-    ProblemEditJudgeGetRequestQueryDto,
-    ProblemEditJudgePostRequestBodyDto,
-    ProblemEditJudgeResponseDto,
-} from "./dto/problem-edit-judge.dto";
+import { ProblemEditJudgePostRequestBodyDto, ProblemEditJudgeResponseDto } from "./dto/problem-edit-judge.dto";
 import {
     ProblemFileDeletePostRequestQueryDto,
     ProblemFileItemDto,
@@ -252,11 +248,9 @@ export class ProblemController {
     @Render("problem-edit-judge")
     public async getProblemEditJudgeAsync(
         @Param() param: ProblemBasicRequestParamDto,
-        @Query() query: ProblemEditJudgeGetRequestQueryDto,
         @CurrentUser() currentUser: UserEntity | null,
     ): Promise<ProblemEditJudgeResponseDto> {
         const { id } = param;
-        const { preprocess } = query;
 
         if (!currentUser) {
             throw new LoginRequiredException(`/problem/${id}/edit/judge`);
@@ -285,14 +279,6 @@ export class ProblemController {
             judgeInfo.problemId = problem.id;
             judgeInfo.type = E_ProblemType.Traditional;
             judgeInfo.info = this.problemTypeService.get(judgeInfo.type).defaultJudgeInfo;
-
-            if (preprocess) {
-                judgeInfo.info = await this.problemService.getPreprocessedProblemJudgeInfoAsync(
-                    problem,
-                    judgeInfo,
-                    testDataFiles,
-                );
-            }
         }
 
         return {
@@ -491,7 +477,7 @@ export class ProblemController {
             const judgeInfo = await problem.judgeInfoPromise;
             if (!judgeInfo) throw new NoProblemJudgeInfoException();
 
-            if (judgeInfo.type === E_ProblemType.SubmitAnswer) {
+            if (this.problemTypeService.get(judgeInfo.type).shouldUploadAnswerFile) {
                 const { uploadRequest } = body;
                 if (!uploadRequest) throw new EmptyAnswerFileException();
 
@@ -601,7 +587,7 @@ export class ProblemController {
             return { error: CE_ProblemFileUploadError.PermissionDenied };
         }
         const judgeInfo = await problem.judgeInfoPromise;
-        if (!judgeInfo || judgeInfo.type !== E_ProblemType.SubmitAnswer) {
+        if (!judgeInfo || !this.problemTypeService.get(judgeInfo.type).shouldUploadAnswerFile) {
             return { error: CE_ProblemFileUploadError.NotAllowedToSubmitFile };
         }
 

@@ -1,6 +1,4 @@
 import { Injectable } from "@nestjs/common";
-import { plainToClass } from "class-transformer";
-import { validate, ValidationError } from "class-validator";
 
 import { CodeLanguageService } from "@/code-language/code-language.service";
 import { ProblemFileEntity } from "@/problem/problem-file.entity";
@@ -10,12 +8,7 @@ import { restrictProperties } from "../common/utils/restrict-properties";
 import { CE_JudgeInfoCheckerType } from "./problem-type.enum";
 import { IProblemTypeServiceInterface } from "./problem-type.type";
 import { autoMatchInputToOutput } from "./problem-type.utils";
-import {
-    IProblemJudgeInfoTraditional,
-    ISubmissionContentTraditional,
-    ISubmissionTestcaseResultTraditional,
-} from "./problem-type-traditional.type";
-import { SubmissionContentTraditionalSchema } from "./submission-content.schema";
+import { IProblemJudgeInfoTraditional, ISubmissionTestcaseResultTraditional } from "./problem-type-traditional.type";
 import { validateChecker } from "./validators/checker";
 import { validateExtraSourceFiles } from "./validators/extra-source-files";
 import { validateMetaAndSubtasks } from "./validators/meta-and-subtasks";
@@ -23,12 +16,7 @@ import { IProblemJudgeInfoValidationResult } from "./validators/type";
 
 @Injectable()
 export class ProblemTypeTraditionalService
-    implements
-        IProblemTypeServiceInterface<
-            IProblemJudgeInfoTraditional,
-            ISubmissionContentTraditional,
-            ISubmissionTestcaseResultTraditional
-        >
+    implements IProblemTypeServiceInterface<IProblemJudgeInfoTraditional, ISubmissionTestcaseResultTraditional>
 {
     constructor(private codeLanguageService: CodeLanguageService) {}
 
@@ -103,32 +91,6 @@ export class ProblemTypeTraditionalService
         restrictProperties(judgeInfo.fileIo, ["inputFilename", "outputFilename"]);
 
         return { success: true };
-    }
-
-    public async validateSubmissionContentAsync(
-        submissionContent: ISubmissionContentTraditional,
-    ): Promise<ValidationError[]> {
-        const errors = await validate(plainToClass(SubmissionContentTraditionalSchema, submissionContent), {
-            whitelist: true,
-            forbidNonWhitelisted: true,
-        });
-        if (errors.length > 0) return errors;
-        return this.codeLanguageService.validateCompileAndRunOptions(
-            submissionContent.language,
-            submissionContent.compileAndRunOptions,
-        );
-    }
-
-    public async getCodeLanguageAndAnswerSizeFromSubmissionContentAndFileAsync(
-        submissionContent: ISubmissionContentTraditional,
-    ) {
-        return {
-            language: submissionContent.language,
-
-            // string.length returns the number of charactars in the string
-            // Convert to a buffer to get the number of bytes
-            answerSize: Buffer.from(submissionContent.code).length,
-        };
     }
 
     // Should called after validateAndFilterJudgeInfo

@@ -3,9 +3,6 @@ import type { IJudgeTaskProgress } from "@/judge/judge.type";
 import type { E_SubmissionProgressType, E_SubmissionStatus } from "./submission.enum";
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface ISubmissionContent {}
-
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ISubmissionTestcaseResult {}
 
 export type ISubmissionResultOmissibleString =

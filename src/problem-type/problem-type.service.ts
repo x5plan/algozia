@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 
 import { E_ProblemType } from "@/problem/problem.type";
-import { ISubmissionContent, ISubmissionTestcaseResult } from "@/submission/submission.type";
+import { ISubmissionTestcaseResult } from "@/submission/submission.type";
 
 import { IProblemJudgeInfo, IProblemTypeServiceInterface } from "./problem-type.type";
 import { ProblemTypeInteractionService } from "./problem-type-interaction.service";
@@ -12,7 +12,7 @@ import { ProblemTypeTraditionalService } from "./problem-type-traditional.servic
 export class ProblemTypeService {
     private readonly typeServiceMap: Record<
         E_ProblemType,
-        IProblemTypeServiceInterface<IProblemJudgeInfo, ISubmissionContent, ISubmissionTestcaseResult>
+        IProblemTypeServiceInterface<IProblemJudgeInfo, ISubmissionTestcaseResult>
     >;
 
     constructor(

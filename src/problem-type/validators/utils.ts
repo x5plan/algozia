@@ -1,4 +1,4 @@
-import { E_CodeLanguage } from "@/code-language/code-language.enum";
+import { E_CodeLanguage } from "@/code-language/code-language.type";
 
 import { E_ProblemJudgeInfoCustomCheckerInterface } from "../problem-type.enum";
 import { E_ProblemJudgeInfoScoringType } from "../problem-type.type";

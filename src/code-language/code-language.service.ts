@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { plainToClass } from "class-transformer";
 import { validateSync, ValidationError } from "class-validator";
 
-import { E_CodeLanguage } from "./code-language.enum";
+import { E_CodeLanguage } from "./code-language.type";
 import {
     CompileAndRunOptionsC,
     CompileAndRunOptionsCpp,

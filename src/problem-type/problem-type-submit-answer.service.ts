@@ -1,9 +1,7 @@
 import { Injectable } from "@nestjs/common";
-import { ValidationError } from "class-validator";
 
 import { CodeLanguageService } from "@/code-language/code-language.service";
 import { restrictProperties } from "@/common/utils/restrict-properties";
-import { FileEntity } from "@/file/file.entity";
 import { ProblemFileEntity } from "@/problem/problem-file.entity";
 import { ISubmissionProgress } from "@/submission/submission.type";
 
@@ -12,7 +10,6 @@ import { IProblemTypeServiceInterface } from "./problem-type.type";
 import { autoMatchOutputToInput } from "./problem-type.utils";
 import {
     IProblemJudgeInfoSubmitAnswer,
-    ISubmissionContentSubmitAnswer,
     ISubmissionTestcaseResultSubmitAnswer,
 } from "./problem-type-submit-answer.type";
 import { validateChecker } from "./validators/checker";
@@ -21,12 +18,7 @@ import { IProblemJudgeInfoValidationResult } from "./validators/type";
 
 @Injectable()
 export class ProblemTypeSubmitAnswerService
-    implements
-        IProblemTypeServiceInterface<
-            IProblemJudgeInfoSubmitAnswer,
-            ISubmissionContentSubmitAnswer,
-            ISubmissionTestcaseResultSubmitAnswer
-        >
+    implements IProblemTypeServiceInterface<IProblemJudgeInfoSubmitAnswer, ISubmissionTestcaseResultSubmitAnswer>
 {
     constructor(private codeLanguageService: CodeLanguageService) {}
 
@@ -84,20 +76,6 @@ export class ProblemTypeSubmitAnswerService
         restrictProperties(judgeInfo, ["subtasks", "checker"]);
 
         return { success: true };
-    }
-
-    public async validateSubmissionContentAsync(): Promise<ValidationError[]> {
-        return [];
-    }
-
-    public async getCodeLanguageAndAnswerSizeFromSubmissionContentAndFileAsync(
-        submissionContent: ISubmissionContentSubmitAnswer,
-        file: FileEntity,
-    ) {
-        return {
-            language: null,
-            answerSize: file.size,
-        };
     }
 
     public getTimeAndMemoryUsedFromFinishedSubmissionProgress(
