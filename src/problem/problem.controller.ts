@@ -24,6 +24,8 @@ import { E_Visibility } from "@/permission/permission.enum";
 import { PermissionService } from "@/permission/permission.service";
 import { ProblemTypeService } from "@/problem-type/problem-type.service";
 import { CE_LockType } from "@/redis/lock.type";
+import { SubmissionEntity } from "@/submission/submission.entity";
+import { SubmissionService } from "@/submission/submission.service";
 import { UserEntity } from "@/user/user.entity";
 
 import { ProblemDetailResponseDto } from "./dto/problem-detail.dto";
@@ -57,6 +59,7 @@ export class ProblemController {
         private readonly problemTypeService: ProblemTypeService,
         private readonly permissionService: PermissionService,
         private readonly codeLanguageService: CodeLanguageService,
+        private readonly submissionService: SubmissionService,
         private readonly fileService: FileService,
         private readonly configService: ConfigService,
     ) {}
@@ -477,11 +480,12 @@ export class ProblemController {
             const judgeInfo = await problem.judgeInfoPromise;
             if (!judgeInfo) throw new NoProblemJudgeInfoException();
 
+            let submission: SubmissionEntity;
+
             if (this.problemTypeService.get(judgeInfo.type).shouldUploadAnswerFile) {
                 const { uploadRequest } = body;
                 if (!uploadRequest) throw new EmptyAnswerFileException();
-
-                // TODO: create file submission
+                submission = await this.submissionService.addFileSubmissionAsync(uploadRequest, problem, currentUser);
             } else {
                 const { language, code, compileAndRunOptions } = body;
                 if (!code) throw new EmptyCodeException();
@@ -492,9 +496,18 @@ export class ProblemController {
                 ) {
                     throw new InvalidLanguageOrCompileOptionsException();
                 }
-
-                // TODO: create code submission
+                submission = await this.submissionService.addCodeSubmissionAsync(
+                    code,
+                    language,
+                    compileAndRunOptions,
+                    problem,
+                    currentUser,
+                );
             }
+
+            return {
+                url: `/submission/${submission.id}`,
+            };
         });
     }
 

@@ -29,6 +29,7 @@ export const enum CE_ExceptionString {
     // File
     File_NoSuchFile = "未找到文件",
     File_UUIDExists = "文件 UUID 已存在",
+    File_InvalidSignedData = "无效的签名数据",
 }
 
 export const enum CE_JudgeInfoValidationMessage {

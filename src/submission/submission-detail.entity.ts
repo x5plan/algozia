@@ -25,5 +25,5 @@ export class SubmissionDetailEntity {
     // End: Fields for "some of the problem types" only
 
     @Column({ name: "result", type: "json", nullable: true })
-    public result: ISubmissionProgress;
+    public result: ISubmissionProgress | null;
 }
