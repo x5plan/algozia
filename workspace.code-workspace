@@ -20,11 +20,12 @@
         "editor.defaultFormatter": "esbenp.prettier-vscode",
         "cSpell.words": [
             "interactor",
+            "minio",
             "testcase",
             "testcases",
             "testdata",
             "typeorm",
-            "tywzoj"
+            "algozia"
         ],
         "editor.detectIndentation": true,
     },
