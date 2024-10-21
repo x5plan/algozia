@@ -425,7 +425,11 @@ export class ProblemController {
         const file = await this.problemService.findProblemAdditionalFileByUUIDAsync(problem, fileId);
         if (!file) throw new NoSuchProblemFileException();
 
-        const downloadUrl = await this.fileService.signDownloadUrlAsync(file.uuid, file.filename);
+        const downloadUrl = await this.fileService.signDownloadUrlAsync(
+            file.uuid,
+            file.filename,
+            true /* replaceUrl */,
+        );
 
         return { url: downloadUrl };
     }

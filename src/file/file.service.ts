@@ -17,6 +17,7 @@ const FILE_DOWNLOAD_EXPIRE_TIME = 20 * 60 * 60; // 20 hours download expire time
 export class FileService implements OnModuleInit {
     private readonly minioClient: MinioClient;
     private readonly bucket: string;
+    private readonly tempBucket: string;
     private readonly urlReplacer: (url: string) => string;
 
     constructor(
@@ -36,6 +37,7 @@ export class FileService implements OnModuleInit {
         });
 
         this.bucket = config.bucket;
+        this.tempBucket = config.tempBucket;
 
         if (config.publicUrlEndPoint) {
             const url = new URL(config.publicUrlEndPoint);
@@ -55,19 +57,53 @@ export class FileService implements OnModuleInit {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public async onModuleInit(): Promise<void> {
         let bucketExists: boolean;
+        let tempBucketExists: boolean;
 
         try {
             bucketExists = await this.minioClient.bucketExists(this.bucket);
+            tempBucketExists = await this.minioClient.bucketExists(this.tempBucket);
         } catch (e) {
             throw new Error(
                 `Error initializing the MinIO client. Please check your configuration file and MinIO server. ${e}`,
             );
         }
 
-        if (!bucketExists) {
+        if (!bucketExists || !tempBucketExists) {
+            let notFoundBucketNames = bucketExists ? "" : this.bucket;
+
+            if (!tempBucketExists) {
+                if (notFoundBucketNames) {
+                    notFoundBucketNames = `${notFoundBucketNames} and ${this.tempBucket}`;
+                } else {
+                    notFoundBucketNames = this.tempBucket;
+                }
+            }
+
             throw new Error(
-                `MinIO bucket ${this.bucket} doesn't exist. Please check your configuration file and MinIO server.`,
+                `MinIO bucket ${notFoundBucketNames} do${bucketExists || tempBucketExists ? "es" : ""}n't exist. Please check your configuration file and MinIO server.`,
             );
+        }
+
+        // Set up the lifecycle rule for the temp bucket to expire files after 1 day if client not reported to save it into the database.
+        const tempBucketRuleId = "temp-file-expire";
+        const tempBucketLifecycle = await this.minioClient.getBucketLifecycle(this.tempBucket);
+        const tempBucketRule = tempBucketLifecycle?.Rule?.find(
+            (rule) => rule?.ID === tempBucketRuleId && rule?.Status === "Enabled",
+        );
+
+        // Check if the rule is already set up to avoid setting it up again.
+        if (!tempBucketRule) {
+            await this.minioClient.setBucketLifecycle(this.tempBucket, {
+                Rule: [
+                    {
+                        ID: tempBucketRuleId,
+                        Status: "Enabled",
+                        Expiration: {
+                            Days: 1,
+                        },
+                    },
+                ],
+            });
         }
     }
 
@@ -75,13 +111,18 @@ export class FileService implements OnModuleInit {
         return this.fileRepository.findOne({ where: { uuid } });
     }
 
-    public async fileExistsInMinioAsync(uuid: string): Promise<boolean> {
+    public async fileExistsInMinioAsync(uuid: string, inTempBucket = false): Promise<boolean> {
         try {
-            await this.minioClient.statObject(this.bucket, uuid);
+            await this.minioClient.statObject(inTempBucket ? this.tempBucket : this.bucket, uuid);
             return true;
         } catch {
             return false;
         }
+    }
+
+    private async moveTempFileToBucketAsync(uuid: string): Promise<void> {
+        await this.minioClient.copyObject(this.bucket, uuid, `/${this.tempBucket}/${uuid}`);
+        await this.minioClient.removeObject(this.tempBucket, uuid);
     }
 
     /**
@@ -117,12 +158,20 @@ export class FileService implements OnModuleInit {
             if (e.message === "The specified key does not exist.") return;
             Logger.error(`Failed to delete unfinished uploaded file ${uuid}: ${e}`);
         });
+        this.minioClient.removeObject(this.tempBucket, uuid).catch((e) => {
+            if (e.message === "The specified key does not exist.") return;
+            Logger.error(`Failed to delete unfinished uploaded file ${uuid}: ${e}`);
+        });
     }
 
-    public async signUploadRequestAsync(size: number): Promise<ISignedUploadRequest> {
+    public async signUploadRequestAsync(size: number, noTemp = false): Promise<ISignedUploadRequest> {
         const uuid = uuidv4();
         const policy = this.minioClient.newPostPolicy();
-        policy.setBucket(this.bucket);
+        if (noTemp) {
+            policy.setBucket(this.bucket);
+        } else {
+            policy.setBucket(this.tempBucket);
+        }
         policy.setKey(uuid);
         policy.setExpires(new Date(Date.now() + FILE_UPLOAD_EXPIRE_TIME * 1000));
         policy.setContentLengthRange(size, size);
@@ -150,7 +199,11 @@ export class FileService implements OnModuleInit {
             return { error: CE_FileUploadError.FileUUIDExists };
         }
 
-        if (!(await this.fileExistsInMinioAsync(uploadRequest.uuid))) {
+        if (await this.fileExistsInMinioAsync(uploadRequest.uuid, true /* inTempBucket */)) {
+            // If the file is in temp bucket, move it to the real bucket.
+            await this.moveTempFileToBucketAsync(uploadRequest.uuid);
+        } else if (!(await this.fileExistsInMinioAsync(uploadRequest.uuid, false))) {
+            // If the file is not in temp bucket and not in the real bucket, it's not uploaded.
             return { error: CE_FileUploadError.FileNotFound };
         }
 

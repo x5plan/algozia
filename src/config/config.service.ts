@@ -12,7 +12,7 @@ export class ConfigService {
     public readonly config: IAppConfig;
 
     constructor() {
-        const configFilePath = process.env.TYWZOJ_WEB_CONFIG || "./config.yaml";
+        const configFilePath = process.env.ALGOZIA_WEB_CONFIG || "./config.yaml";
         const rawConfig = loadYaml(readFileSync(configFilePath, "utf-8"));
         this.config = this.validateConfig(rawConfig);
     }
