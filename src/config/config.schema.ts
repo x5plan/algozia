@@ -88,6 +88,10 @@ class MinIOConfig implements IMinIOConfig {
     @IsString()
     @IsNotEmpty()
     public readonly bucket: string;
+
+    @IsString()
+    @IsNotEmpty()
+    public readonly tempBucket: string;
 }
 
 class SecurityConfig implements ISecurityConfig {

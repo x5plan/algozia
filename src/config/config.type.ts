@@ -20,6 +20,7 @@ export interface IMinIOConfig {
     readonly accessKey: string;
     readonly secretKey: string;
     readonly bucket: string;
+    readonly tempBucket: string;
 }
 
 export interface ISecurityConfig {
