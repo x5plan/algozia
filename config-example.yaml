@@ -37,3 +37,5 @@ pagination:
   submission: 50
   ranklist: 20
   article: 20
+
+dynamicJudgeTaskPriority: true

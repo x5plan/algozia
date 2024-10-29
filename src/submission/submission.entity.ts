@@ -82,5 +82,5 @@ export class SubmissionEntity {
     public submitterId: number;
 
     @OneToOne(() => SubmissionDetailEntity, (submissionDetail) => submissionDetail.submissionPromise)
-    public detailPromise: Promise<SubmissionDetailEntity>;
+    public detailPromise: Promise<SubmissionDetailEntity | null>;
 }

@@ -168,4 +168,7 @@ export class AppConfig implements IAppConfig {
     @ValidateNested()
     @IsNotEmptyObject()
     public readonly pagination: IPaginationConfig;
+
+    @IsBoolean()
+    public readonly dynamicJudgeTaskPriority: boolean;
 }

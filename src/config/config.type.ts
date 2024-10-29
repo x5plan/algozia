@@ -46,4 +46,5 @@ export interface IAppConfig {
     readonly security: ISecurityConfig;
     readonly cdnUrl?: string;
     readonly pagination: IPaginationConfig;
+    readonly dynamicJudgeTaskPriority: boolean;
 }
