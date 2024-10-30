@@ -313,6 +313,14 @@
     multer "1.4.4-lts.1"
     tslib "2.7.0"
 
+"@nestjs/platform-socket.io@^10.4.6":
+  version "10.4.6"
+  resolved "https://registry.yarnpkg.com/@nestjs/platform-socket.io/-/platform-socket.io-10.4.6.tgz#06941e3f6d85c6b2f1a88e816c562071cd056080"
+  integrity sha512-lGv99O7C00wtnGq9M0mcwrOpH2qmuqAXQyvo/d/I7rmaf3OO1Sg8qWDLAnPKHdaumwOL2mnET3kvCJ06MaL6WA==
+  dependencies:
+    socket.io "4.8.0"
+    tslib "2.7.0"
+
 "@nestjs/schematics@^10.0.0", "@nestjs/schematics@^10.0.1":
   version "10.1.4"
   resolved "https://registry.yarnpkg.com/@nestjs/schematics/-/schematics-10.1.4.tgz#e445b856eefce9bd338c5fc1cf2c95f0985849cf"
@@ -3778,6 +3786,19 @@ socket.io@*, socket.io@^4.8.1:
   version "4.8.1"
   resolved "https://registry.yarnpkg.com/socket.io/-/socket.io-4.8.1.tgz#fa0eaff965cc97fdf4245e8d4794618459f7558a"
   integrity sha512-oZ7iUCxph8WYRHHcjBEc9unw3adt5CmSNlppj/5Q4k2RIrhl8Z5yY2Xr4j9zj0+wzVZ0bxmYoGSzKJnRl6A4yg==
+  dependencies:
+    accepts "~1.3.4"
+    base64id "~2.0.0"
+    cors "~2.8.5"
+    debug "~4.3.2"
+    engine.io "~6.6.0"
+    socket.io-adapter "~2.5.2"
+    socket.io-parser "~4.2.4"
+
+socket.io@4.8.0:
+  version "4.8.0"
+  resolved "https://registry.yarnpkg.com/socket.io/-/socket.io-4.8.0.tgz#33d05ae0915fad1670bd0c4efcc07ccfabebe3b1"
+  integrity sha512-8U6BEgGjQOfGz3HHTYaC/L1GaxDCJ/KM0XTkJly0EhZ5U/du9uNEZy4ZgYzEzIqlx2CMm25CrCqr1ck899eLNA==
   dependencies:
     accepts "~1.3.4"
     base64id "~2.0.0"

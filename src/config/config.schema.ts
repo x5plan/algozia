@@ -210,5 +210,6 @@ export class AppConfig implements IAppConfig {
 
     @ValidateNested()
     @Type(() => JudgeConfig)
+    @IsNotEmptyObject()
     public readonly judge: JudgeConfig;
 }
