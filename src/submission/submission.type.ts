@@ -1,4 +1,4 @@
-import type { IJudgeTaskProgress } from "@/judge/judge.type";
+import type { E_CodeLanguage } from "@/code-language/code-language.type";
 
 import type { E_SubmissionProgressType, E_SubmissionStatus } from "./submission.enum";
 
@@ -19,8 +19,7 @@ interface ITestcaseProgressReference {
     testcaseHash?: string;
 }
 
-export interface ISubmissionProgress<TestcaseResult extends ISubmissionTestcaseResult = ISubmissionTestcaseResult>
-    extends IJudgeTaskProgress {
+export interface ISubmissionProgress<TestcaseResult extends ISubmissionTestcaseResult = ISubmissionTestcaseResult> {
     progressType: E_SubmissionProgressType;
 
     // Only valid when finished
@@ -46,4 +45,18 @@ export interface ISubmissionProgress<TestcaseResult extends ISubmissionTestcaseR
         fullScore: number;
         testcases: ITestcaseProgressReference[];
     }[];
+}
+
+export interface ISubmissionContent {
+    language: E_CodeLanguage;
+    code: string;
+    compileAndRunOptions: unknown;
+    skipSamples: true;
+}
+
+export interface ISubmissionProgressMessage {
+    taskMeta: {
+        taskId: string;
+    };
+    progress: ISubmissionProgress;
 }

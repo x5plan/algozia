@@ -71,6 +71,8 @@ export class SubmissionEntity {
     @Index()
     public problemId: number;
 
+    // TODO: Contest id, null if not in a contest
+
     @ManyToOne(() => UserEntity)
     @JoinColumn({ name: "submitter_id" })
     public submitterPromise: Promise<UserEntity>;
@@ -80,5 +82,5 @@ export class SubmissionEntity {
     public submitterId: number;
 
     @OneToOne(() => SubmissionDetailEntity, (submissionDetail) => submissionDetail.submissionPromise)
-    public detailPromise: Promise<SubmissionDetailEntity>;
+    public detailPromise: Promise<SubmissionDetailEntity | null>;
 }

@@ -1,5 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import jwt from "jsonwebtoken";
 import { Client as MinioClient } from "minio";
 import { EntityManager, In, Repository } from "typeorm";
 import { v4 as uuidv4 } from "uuid";
@@ -176,6 +177,9 @@ export class FileService implements OnModuleInit {
         policy.setExpires(new Date(Date.now() + FILE_UPLOAD_EXPIRE_TIME * 1000));
         policy.setContentLengthRange(size, size);
         const policyResult = await this.minioClient.presignedPostPolicy(policy);
+        const signedIdAndSize = jwt.sign({ uuid, size }, this.configService.config.security.sessionSecret, {
+            expiresIn: FILE_UPLOAD_EXPIRE_TIME,
+        });
 
         return {
             uuid,
@@ -184,6 +188,7 @@ export class FileService implements OnModuleInit {
             url: this.urlReplacer(policyResult.postURL),
             extraFormData: policyResult.formData,
             fileFieldName: "file",
+            signedIdAndSize,
         };
     }
 
@@ -191,6 +196,19 @@ export class FileService implements OnModuleInit {
         uploadRequest: ISignedUploadRequest,
         entityManager: EntityManager,
     ): Promise<IFileUploadReportResult> {
+        try {
+            const { uuid, size } = jwt.verify(
+                uploadRequest.signedIdAndSize,
+                this.configService.config.security.sessionSecret,
+            ) as { uuid: string; size: number };
+
+            if (uuid !== uploadRequest.uuid || size !== uploadRequest.size) {
+                return { error: CE_FileUploadError.InvalidSignedData };
+            }
+        } catch {
+            return { error: CE_FileUploadError.InvalidSignedData };
+        }
+
         if (
             (await entityManager.countBy(FileEntity, {
                 uuid: uploadRequest.uuid,

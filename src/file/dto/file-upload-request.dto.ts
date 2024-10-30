@@ -17,6 +17,9 @@ export class SignedUploadRequestDto implements ISignedUploadRequest {
     @IsNumber()
     public size: number;
 
+    @IsString()
+    public signedIdAndSize: string;
+
     @IsOptional()
     public extraFormData?: unknown;
 

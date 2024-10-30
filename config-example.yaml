@@ -3,6 +3,8 @@ appName: Algozia
 server:
   hostname: 127.0.0.1
   port: 5050
+  trustProxy:
+    - loopback
 
 database:
   hostname: 127.0.0.1
@@ -38,3 +40,12 @@ pagination:
   submission: 50
   ranklist: 20
   article: 20
+
+judge:
+  dynamicTaskPriority: true
+  limit:
+    compilerMessage: 524288
+    outputSize: 104857600
+    dataDisplay: 128
+    dataDisplayForSubmitAnswer: 128
+    stderrDisplay: 5120
