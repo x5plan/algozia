@@ -19,13 +19,14 @@
         "editor.formatOnSave": true,
         "editor.defaultFormatter": "esbenp.prettier-vscode",
         "cSpell.words": [
+            "algozia",
+            "Aliyun",
             "interactor",
             "minio",
             "testcase",
             "testcases",
             "testdata",
-            "typeorm",
-            "algozia"
+            "typeorm"
         ],
         "editor.detectIndentation": true,
     },
