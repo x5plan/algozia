@@ -1,6 +1,7 @@
 export interface IServerConfig {
     readonly hostname: string;
     readonly port: number;
+    readonly trustProxy: string[];
 }
 
 export interface IDatabaseConfig {
@@ -37,6 +38,19 @@ export interface IPaginationConfig {
     readonly article: number;
 }
 
+export interface IJudgeLimitConfig {
+    readonly compilerMessage: number;
+    readonly outputSize: number;
+    readonly dataDisplay: number;
+    readonly dataDisplayForSubmitAnswer: number;
+    readonly stderrDisplay: number;
+}
+
+export interface IJudgeConfig {
+    readonly dynamicTaskPriority: boolean;
+    readonly limit: IJudgeLimitConfig;
+}
+
 export interface IAppConfig {
     readonly appName: string;
     readonly server: IServerConfig;
@@ -46,5 +60,5 @@ export interface IAppConfig {
     readonly security: ISecurityConfig;
     readonly cdnUrl?: string;
     readonly pagination: IPaginationConfig;
-    readonly dynamicJudgeTaskPriority: boolean;
+    readonly judge: IJudgeConfig;
 }

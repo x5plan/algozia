@@ -1,5 +1,6 @@
 import { Type } from "class-transformer";
 import {
+    IsArray,
     IsBoolean,
     IsIn,
     IsInt,
@@ -9,6 +10,7 @@ import {
     IsOptional,
     IsString,
     IsUrl,
+    Min,
     ValidateNested,
 } from "class-validator";
 
@@ -17,6 +19,8 @@ import { IsHostname, IsPortNumber } from "@/common/validators";
 import {
     IAppConfig,
     IDatabaseConfig,
+    IJudgeConfig,
+    IJudgeLimitConfig,
     IMinIOConfig,
     IPaginationConfig,
     ISecurityConfig,
@@ -29,6 +33,10 @@ class ServerConfig implements IServerConfig {
 
     @IsPortNumber()
     public readonly port: number;
+
+    @IsArray()
+    @IsString({ each: true })
+    public readonly trustProxy: string[];
 }
 
 class DatabaseConfig implements IDatabaseConfig {
@@ -122,6 +130,37 @@ class PaginationConfig implements IPaginationConfig {
     public readonly article: number;
 }
 
+class JudgeLimitConfig implements IJudgeLimitConfig {
+    @IsInt()
+    @Min(1)
+    public readonly compilerMessage: number;
+
+    @IsInt()
+    @Min(1)
+    public readonly outputSize: number;
+
+    @IsInt()
+    @Min(1)
+    public readonly dataDisplay: number;
+
+    @IsInt()
+    @Min(1)
+    public readonly dataDisplayForSubmitAnswer: number;
+
+    @IsInt()
+    @Min(1)
+    public readonly stderrDisplay: number;
+}
+
+class JudgeConfig implements IJudgeConfig {
+    @IsBoolean()
+    public readonly dynamicTaskPriority: boolean;
+
+    @ValidateNested()
+    @Type(() => JudgeLimitConfig)
+    public readonly limit: JudgeLimitConfig;
+}
+
 export class AppConfig implements IAppConfig {
     @IsString()
     @IsNotEmpty()
@@ -169,6 +208,7 @@ export class AppConfig implements IAppConfig {
     @IsNotEmptyObject()
     public readonly pagination: IPaginationConfig;
 
-    @IsBoolean()
-    public readonly dynamicJudgeTaskPriority: boolean;
+    @ValidateNested()
+    @Type(() => JudgeConfig)
+    public readonly judge: JudgeConfig;
 }

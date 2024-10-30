@@ -19,6 +19,7 @@ interface IJudgeTaskExtraInfo {
 // Extra info is also send to judge client while ONLY meta is used to identity the task
 export interface IJudgeTask {
     taskId: string;
+    type: "Submission";
     priorityType: E_JudgeTaskPriorityType;
     priority: number;
     extraInfo: IJudgeTaskExtraInfo;

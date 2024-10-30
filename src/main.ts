@@ -19,14 +19,18 @@ async function bootstrapAsync() {
 
     const app = await NestFactory.create<INestExpressApplication>(AppModule, {
         bodyParser: false,
+        logger: isProduction() ? ["warn", "error"] : ["log", "error", "warn", "debug", "verbose"],
     });
 
+    const config = app.get(ConfigService).config;
+
+    app.set("trust proxy", config.server.trustProxy);
     app.setBaseViewsDir(join(__dirname, "..", "views"));
     app.setViewEngine("pug");
+
     app.use(urlencoded({ extended: true, limit: "50mb" }));
     app.use(json({ limit: "50mb" }));
     app.use(cookieParser());
-
     app.useGlobalFilters(app.get(AppExceptionFilter));
     app.useGlobalPipes(
         new ValidationPipe({
@@ -37,8 +41,6 @@ async function bootstrapAsync() {
             exceptionFactory: (errors) => new AppValidationException(errors),
         }),
     );
-
-    const config = app.get(ConfigService).config;
 
     await app.listen(config.server.port, config.server.hostname);
 

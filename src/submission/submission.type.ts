@@ -53,3 +53,10 @@ export interface ISubmissionContent {
     compileAndRunOptions: unknown;
     skipSamples: true;
 }
+
+export interface ISubmissionProgressMessage {
+    taskMeta: {
+        taskId: string;
+    };
+    progress: ISubmissionProgress;
+}

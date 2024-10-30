@@ -74,6 +74,7 @@ export class SubmissionService {
 
             return {
                 taskId,
+                type: "Submission",
                 priorityType: E_JudgeTaskPriorityType.High,
                 priority,
                 extraInfo: {
@@ -235,11 +236,14 @@ export class SubmissionService {
             userPendingCount,
             userOccupiedTimeRecently,
             { avg: avgEveryUsersOccupiedTimeRecently, std: stdEveryUsersOccupiedTimeRecently },
-        ] = await Promise.all([
-            findUserPendingCountAsync(),
-            findUserOccupiedTimeRecentlyAsync(),
-            findAvgAndStdEveryUsersOccupiedTimeRecentlyAsync(),
-        ]);
+        ] =
+            this.configService.config.judge.dynamicTaskPriority && !isRejudge
+                ? await Promise.all([
+                      findUserPendingCountAsync(),
+                      findUserOccupiedTimeRecentlyAsync(),
+                      findAvgAndStdEveryUsersOccupiedTimeRecentlyAsync(),
+                  ])
+                : [0, 0, { avg: 0, std: 0 }];
 
         await this.judgeQueueService.pushTaskAsync(
             submission.taskId,
