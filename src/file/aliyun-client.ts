@@ -19,7 +19,6 @@ export class AliyunClient implements ISharedOssClient {
             accessKeyId: config.accessKey,
             accessKeySecret: config.secretKey,
             secure: config.useSSL,
-
             // @ts-ignore
             authorizationV4: true,
         };
