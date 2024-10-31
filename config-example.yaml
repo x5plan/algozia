@@ -18,16 +18,21 @@ minio:
   endPoint: 127.0.0.1
   port: 9000
   useSSL: false
-  publicUrlEndPoint: https://minio.algozia.example/
   accessKey: access key
   secretKey: secret key
-  bucket: algozia
-  tempBucket: algozia-temp
+  region: us-east-1
+  bucket:
+    name: algozia
+    publicUrl: https://file.algozia.example/
+  tempBucket:
+    name: algozia-temp
+    publicUrl: https://upload.algozia.example/
 
 redis: redis://127.0.0.1:6379
 
 security:
   sessionSecret: # do not leak this secret
+  fileUploadSecret: # do not leak this secret
 
 cdnUrl: https://cdn.algozia.example/
 

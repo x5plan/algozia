@@ -1,10 +1,8 @@
-import { Transform, Type } from "class-transformer";
-import { IsEnum, IsObject, IsOptional, IsString, Length, ValidateNested } from "class-validator";
+import { Transform } from "class-transformer";
+import { IsEnum, IsObject, IsOptional, IsString, Length } from "class-validator";
 
 import { E_CodeLanguage } from "@/code-language/code-language.type";
 import { createJsonTransformer } from "@/common/transformers/json";
-import { SignedUploadRequestDto } from "@/file/dto/file-upload-request.dto";
-import { ISignedUploadRequest } from "@/file/file.type";
 
 export class ProblemSubmitPostRequestBodyDto {
     @IsEnum(E_CodeLanguage)
@@ -21,9 +19,7 @@ export class ProblemSubmitPostRequestBodyDto {
     @IsOptional()
     public readonly compileAndRunOptions?: unknown;
 
-    @Transform(createJsonTransformer())
-    @Type(() => SignedUploadRequestDto)
-    @ValidateNested()
+    @IsString()
     @IsOptional()
-    public readonly uploadRequest?: ISignedUploadRequest;
+    public readonly fileUploadToken?: string;
 }

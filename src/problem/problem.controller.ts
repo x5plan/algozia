@@ -487,9 +487,9 @@ export class ProblemController {
             let submission: SubmissionEntity;
 
             if (this.problemTypeService.get(judgeInfo.type).shouldUploadAnswerFile) {
-                const { uploadRequest } = body;
-                if (!uploadRequest) throw new EmptyAnswerFileException();
-                submission = await this.submissionService.addFileSubmissionAsync(uploadRequest, problem, currentUser);
+                const { fileUploadToken } = body;
+                if (!fileUploadToken) throw new EmptyAnswerFileException();
+                submission = await this.submissionService.addFileSubmissionAsync(fileUploadToken, problem, currentUser);
             } else {
                 const { language, code, compileAndRunOptions } = body;
                 if (!code) throw new EmptyCodeException();
@@ -572,12 +572,7 @@ export class ProblemController {
             if (!problem) {
                 return { error: CE_ProblemFileUploadError.NoSuchProblem };
             }
-            const error = await this.problemService.addProblemFileAsync(
-                problem,
-                body.type,
-                body.filename,
-                body.uploadRequest,
-            );
+            const error = await this.problemService.addProblemFileAsync(problem, body.type, body.filename, body.token);
 
             if (error) {
                 return { error };

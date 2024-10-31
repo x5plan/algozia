@@ -58,7 +58,7 @@ export class AppMiddleware implements NestMiddleware {
         return view;
     }
 
-    private parseCdnUrl(cndUrl?: string): string {
+    private parseCdnUrl(cndUrl?: string | null): string {
         if (!cndUrl) {
             return "/cdn/";
         }

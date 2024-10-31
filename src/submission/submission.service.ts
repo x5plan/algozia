@@ -7,7 +7,6 @@ import { E_CodeLanguage } from "@/code-language/code-language.type";
 import { FileUploadException } from "@/common/exceptions/file";
 import { ConfigService } from "@/config/config.service";
 import { FileService } from "@/file/file.service";
-import { ISignedUploadRequest } from "@/file/file.type";
 import { E_JudgeTaskPriorityType } from "@/judge/judge.enum";
 import { IJudgeTask } from "@/judge/judge.type";
 import { JudgeQueueService } from "@/judge/judge-queue.service";
@@ -143,13 +142,9 @@ export class SubmissionService {
         return submission;
     }
 
-    public async addFileSubmissionAsync(
-        signedUploadRequest: ISignedUploadRequest,
-        problem: ProblemEntity,
-        submitter: UserEntity,
-    ) {
+    public async addFileSubmissionAsync(token: string, problem: ProblemEntity, submitter: UserEntity) {
         const submission = await this.dataSource.transaction("READ COMMITTED", async (entityManager) => {
-            const result = await this.fileService.reportUploadFinishedAsync(signedUploadRequest, entityManager);
+            const result = await this.fileService.reportUploadFinishedAsync(token, entityManager);
             if (result.error) {
                 throw new FileUploadException(result.error);
             }
@@ -157,7 +152,7 @@ export class SubmissionService {
             const submission = new SubmissionEntity();
             submission.visibility = problem.visibility;
             submission.codeLanguage = null;
-            submission.answerSize = signedUploadRequest.size;
+            submission.answerSize = result.file.size;
             submission.score = null;
             submission.status = E_SubmissionStatus.Pending;
             submission.submitTime = new Date();
@@ -168,7 +163,7 @@ export class SubmissionService {
             submissionDetail.submissionId = submission.id;
             submissionDetail.code = null;
             submissionDetail.compileAndRunOptions = null;
-            submissionDetail.fileUuid = signedUploadRequest.uuid;
+            submissionDetail.fileUuid = result.file.uuid;
             submissionDetail.result = null;
             await entityManager.save(submissionDetail);
 

@@ -8,7 +8,7 @@ import { CE_Order } from "@/common/types/order";
 import { format } from "@/common/utils/format";
 import { ConfigService } from "@/config/config.service";
 import { FileService } from "@/file/file.service";
-import { CE_FileUploadError, ISignedUploadRequest } from "@/file/file.type";
+import { CE_FileUploadError } from "@/file/file.type";
 import { CE_CommonPermission, CE_SpecificPermission } from "@/permission/permission.enum";
 import { E_Visibility } from "@/permission/permission.enum";
 import { PermissionService } from "@/permission/permission.service";
@@ -346,12 +346,12 @@ export class ProblemService {
         problem: ProblemEntity,
         type: E_ProblemFileType,
         filename: string,
-        signedUploadRequest: ISignedUploadRequest,
+        token: string,
     ): Promise<CE_FileUploadError | null> {
         let deleteOldFileActually: (() => void) | undefined;
 
         const result = await this.dataSource.transaction("REPEATABLE READ", async (entityManager) => {
-            const result = await this.fileService.reportUploadFinishedAsync(signedUploadRequest, entityManager);
+            const result = await this.fileService.reportUploadFinishedAsync(token, entityManager);
 
             if (result.error) return result.error;
 
@@ -363,14 +363,14 @@ export class ProblemService {
 
             if (oldProblemFile) {
                 deleteOldFileActually = await this.fileService.deleteFileAsync(oldProblemFile.uuid, entityManager);
-                oldProblemFile.uuid = signedUploadRequest.uuid;
+                oldProblemFile.uuid = result.file.uuid;
                 await entityManager.save(ProblemFileEntity, oldProblemFile);
             } else {
                 const problemFile = new ProblemFileEntity();
                 problemFile.problemId = problem.id;
                 problemFile.type = type;
                 problemFile.filename = filename;
-                problemFile.uuid = signedUploadRequest.uuid;
+                problemFile.uuid = result.file.uuid;
                 await entityManager.save(ProblemFileEntity, problemFile);
             }
 
