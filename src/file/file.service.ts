@@ -35,6 +35,7 @@ export class FileService implements OnModuleInit {
             useSSL: config.useSSL,
             accessKey: config.accessKey,
             secretKey: config.secretKey,
+            pathStyle: false,
             ...(config.region && { region: config.region }),
         });
 
