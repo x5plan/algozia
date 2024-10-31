@@ -21,6 +21,7 @@ import {
     IDatabaseConfig,
     IJudgeConfig,
     IJudgeLimitConfig,
+    IMinIOBucketConfig,
     IMinIOConfig,
     IPaginationConfig,
     ISecurityConfig,
@@ -64,6 +65,21 @@ class DatabaseConfig implements IDatabaseConfig {
     public readonly type: "mysql" | "mariadb";
 }
 
+class MinIOBucketConfig implements IMinIOBucketConfig {
+    @IsString()
+    @IsNotEmpty()
+    public readonly name: string;
+
+    @IsUrl({
+        protocols: ["http", "https"],
+        require_protocol: true,
+        require_host: true,
+        require_tld: false,
+    })
+    @IsOptional()
+    public readonly publicUrl?: string | null;
+}
+
 class MinIOConfig implements IMinIOConfig {
     @IsHostname({
         require_tld: false,
@@ -76,15 +92,6 @@ class MinIOConfig implements IMinIOConfig {
     @IsBoolean()
     public readonly useSSL: boolean;
 
-    @IsUrl({
-        protocols: ["http", "https"],
-        require_protocol: true,
-        require_host: true,
-        require_tld: false,
-    })
-    @IsOptional()
-    public readonly publicUrlEndPoint?: string;
-
     @IsString()
     @IsNotEmpty()
     public readonly accessKey: string;
@@ -93,19 +100,32 @@ class MinIOConfig implements IMinIOConfig {
     @IsNotEmpty()
     public readonly secretKey: string;
 
-    @IsString()
-    @IsNotEmpty()
-    public readonly bucket: string;
+    @IsBoolean()
+    public readonly pathStyle: boolean;
 
     @IsString()
-    @IsNotEmpty()
-    public readonly tempBucket: string;
+    @IsOptional()
+    public readonly region?: string | null;
+
+    @Type(() => MinIOBucketConfig)
+    @ValidateNested()
+    @IsNotEmptyObject()
+    public readonly bucket: IMinIOBucketConfig;
+
+    @Type(() => MinIOBucketConfig)
+    @ValidateNested()
+    @IsOptional()
+    public readonly tempBucket?: IMinIOBucketConfig | null;
 }
 
 class SecurityConfig implements ISecurityConfig {
     @IsString()
     @IsNotEmpty()
     public readonly sessionSecret: string;
+
+    @IsString()
+    @IsNotEmpty()
+    public readonly fileUploadSecret: string;
 }
 
 class PaginationConfig implements IPaginationConfig {
@@ -162,7 +182,8 @@ class JudgeConfig implements IJudgeConfig {
 
     @ValidateNested()
     @Type(() => JudgeLimitConfig)
-    public readonly limit: JudgeLimitConfig;
+    @IsNotEmptyObject()
+    public readonly limit: IJudgeLimitConfig;
 }
 
 export class AppConfig implements IAppConfig {
@@ -205,7 +226,7 @@ export class AppConfig implements IAppConfig {
         require_tld: false,
     })
     @IsOptional()
-    public readonly cdnUrl?: string;
+    public readonly cdnUrl?: string | null;
 
     @Type(() => PaginationConfig)
     @ValidateNested()
@@ -215,5 +236,5 @@ export class AppConfig implements IAppConfig {
     @ValidateNested()
     @Type(() => JudgeConfig)
     @IsNotEmptyObject()
-    public readonly judge: JudgeConfig;
+    public readonly judge: IJudgeConfig;
 }

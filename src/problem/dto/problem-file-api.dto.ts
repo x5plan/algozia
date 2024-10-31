@@ -1,9 +1,7 @@
-import { Type } from "class-transformer";
-import { IsEnum, IsNumber, Length, ValidateNested } from "class-validator";
+import { IsEnum, IsNumber, IsString, Length } from "class-validator";
 
 import { CE_ExceptionString } from "@/common/strings/exception";
 import { IsValidFilename } from "@/common/validators/filename";
-import { SignedUploadRequestDto } from "@/file/dto/file-upload-request.dto";
 import { CE_FileUploadError, ISignedUploadRequest } from "@/file/file.type";
 
 import { E_ProblemFileType } from "../problem.type";
@@ -27,9 +25,8 @@ export class ProblemReportFileUploadFinishedPostRequestBodyDto {
     @IsEnum(E_ProblemFileType)
     public readonly type: E_ProblemFileType;
 
-    @Type(() => SignedUploadRequestDto)
-    @ValidateNested()
-    public readonly uploadRequest: ISignedUploadRequest;
+    @IsString()
+    public readonly token: string;
 }
 
 // All the properties in this DTO will be sent to the client as JSON, do not include any sensitive information.

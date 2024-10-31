@@ -13,19 +13,26 @@ export interface IDatabaseConfig {
     readonly type: "mysql" | "mariadb";
 }
 
+export interface IMinIOBucketConfig {
+    readonly name: string;
+    readonly publicUrl?: string | null;
+}
+
 export interface IMinIOConfig {
     readonly endPoint: string;
     readonly port: number;
     readonly useSSL: boolean;
-    readonly publicUrlEndPoint?: string;
     readonly accessKey: string;
     readonly secretKey: string;
-    readonly bucket: string;
-    readonly tempBucket: string;
+    readonly pathStyle: boolean;
+    readonly region?: string | null;
+    readonly bucket: IMinIOBucketConfig;
+    readonly tempBucket?: IMinIOBucketConfig | null;
 }
 
 export interface ISecurityConfig {
     readonly sessionSecret: string;
+    readonly fileUploadSecret: string;
 }
 
 export interface IPaginationConfig {
@@ -59,7 +66,7 @@ export interface IAppConfig {
     readonly minio: IMinIOConfig;
     readonly redis: string;
     readonly security: ISecurityConfig;
-    readonly cdnUrl?: string;
+    readonly cdnUrl?: string | null;
     readonly pagination: IPaginationConfig;
     readonly judge: IJudgeConfig;
 }
