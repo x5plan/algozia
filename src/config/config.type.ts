@@ -24,6 +24,7 @@ export interface IMinIOConfig {
     readonly useSSL: boolean;
     readonly accessKey: string;
     readonly secretKey: string;
+    readonly pathStyle: boolean;
     readonly region?: string | null;
     readonly bucket: IMinIOBucketConfig;
     readonly tempBucket?: IMinIOBucketConfig | null;

@@ -100,6 +100,9 @@ class MinIOConfig implements IMinIOConfig {
     @IsNotEmpty()
     public readonly secretKey: string;
 
+    @IsBoolean()
+    public readonly pathStyle: boolean;
+
     @IsString()
     @IsOptional()
     public readonly region?: string | null;

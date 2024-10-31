@@ -20,6 +20,7 @@ minio:
   useSSL: false
   accessKey: access key
   secretKey: secret key
+  pathStyle: true
   region: us-east-1
   bucket:
     name: algozia
