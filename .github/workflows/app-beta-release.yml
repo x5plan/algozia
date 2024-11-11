@@ -1,0 +1,34 @@
+name: APP Beta Release
+
+on:
+  push:
+    branches: [main]
+    paths: ["app/**"]
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+
+    env:
+      TARGET_BRANCH: "release/app/beta"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.0.0
+        with:
+          fetch-depth: 0
+          ref: ${{ env.TARGET_BRANCH }}
+          ssh-key: ${{ secrets.AUTO_RELEASE_DEPLOY_KEY }}
+          persist-credentials: true
+
+      - name: Merge main into beta
+        run: |
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+
+          git fetch origin
+          git checkout $TARGET_BRANCH
+
+          TIMESTAMP=$(date +"%Y-%m-%d %H:%M:%S")
+          git merge origin/main -m "Auto-merge main into $TARGET_BRANCH at $TIMESTAMP"
+          git push origin $TARGET_BRANCH
