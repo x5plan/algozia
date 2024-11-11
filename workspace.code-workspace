@@ -19,26 +19,28 @@
         "editor.formatOnSave": true,
         "editor.defaultFormatter": "esbenp.prettier-vscode",
         "cSpell.words": [
+            "algozia",
             "interactor",
             "minio",
             "testcase",
             "testcases",
             "testdata",
             "typeorm",
-            "algozia"
+            "websockets",
         ],
         "editor.detectIndentation": true,
     },
     "extensions": {
         "recommendations": [
-            "editorconfig.editorconfig",
-            "eamodio.gitlens",
             "dbaeumer.vscode-eslint",
+            "eamodio.gitlens",
+            "editorconfig.editorconfig",
             "esbenp.prettier-vscode",
+            "github.vscode-github-actions",
+            "kuscamara.remove-unused-imports",
             "mike-co.import-sorter",
             "rvest.vs-code-prettier-eslint",
-            "kuscamara.remove-unused-imports",
-            "github.vscode-github-actions",
+            "streetsidesoftware.code-spell-checker",
         ],
     },
 }
