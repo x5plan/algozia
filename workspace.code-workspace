@@ -7,6 +7,9 @@
             "path": "./cdn"
         },
         {
+            "path": "./docs"
+        },
+        {
             "path": "./.github"
         }
     ],
@@ -29,11 +32,12 @@
             "interactor",
             "katex",
             "minio",
+            "ranklist",
             "testcase",
             "testcases",
             "testdata",
             "typeorm",
-            "websockets",
+            "websockets"
         ],
     },
     "extensions": {

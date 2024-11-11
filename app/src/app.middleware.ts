@@ -10,6 +10,7 @@ import { PermissionService } from "@/permission/permission.service";
 import { UserEntity } from "@/user/user.entity";
 
 import { LOCAL_CDN_BASE } from "./common/const/cdn";
+import { VITE_DEV_SERVER_URL } from "./common/const/vite";
 import { isProduction } from "./common/utils/env";
 
 @Injectable()
@@ -52,7 +53,7 @@ export class AppMiddleware implements NestMiddleware {
                     view.__viteDev__ += "/";
                 }
             } else {
-                view.__viteDev__ = "http://localhost:5173/";
+                view.__viteDev__ = VITE_DEV_SERVER_URL;
             }
         }
 
