@@ -9,6 +9,7 @@ import { ConfigService } from "@/config/config.service";
 import { PermissionService } from "@/permission/permission.service";
 import { UserEntity } from "@/user/user.entity";
 
+import { LOCAL_CDN_BASE } from "./common/const/cdn";
 import { isProduction } from "./common/utils/env";
 
 @Injectable()
@@ -60,7 +61,7 @@ export class AppMiddleware implements NestMiddleware {
 
     private parseCdnUrl(cndUrl?: string | null): string {
         if (!cndUrl) {
-            return "/cdn/";
+            return LOCAL_CDN_BASE;
         }
 
         return cndUrl.endsWith("/") ? cndUrl : `${cndUrl}/`;

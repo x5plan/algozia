@@ -1,4 +1,4 @@
-export const suffixIconMap: Record<string, string> = {
+export const SUFFIX_ICON_MAP: Record<string, string> = {
     ".cpp": "file code outline",
     ".c": "file code outline",
     ".cs": "file code outline",
@@ -44,4 +44,4 @@ export const suffixIconMap: Record<string, string> = {
     ".mpg": "file audio outline",
 };
 
-export const defaultIcon = "file outline";
+export const DEFAULT_ICON = "file outline";

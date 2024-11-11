@@ -1,4 +1,4 @@
-import type { visibilityLabelColorMap, visibilityStringMap } from "@/common/const/visibility";
+import type { VISIBILITY_LABEL_COLOR_MAP, VISIBILITY_STRING_MAP } from "@/common/const/visibility";
 import type { E_Visibility } from "@/permission/permission.enum";
 import type { IProblemJudgeInfo } from "@/problem-type/problem-type.type";
 
@@ -38,6 +38,6 @@ export enum E_ProblemSortBy {
 export interface IProblemViewGlobal {
     problemTypeStringMap: typeof problemTypeStringMap;
     problemJudgeTypeStringMap: typeof problemJudgeTypeStringMap;
-    visibilityStringMap: typeof visibilityStringMap;
-    visibilityLabelColorMap: typeof visibilityLabelColorMap;
+    visibilityStringMap: typeof VISIBILITY_STRING_MAP;
+    visibilityLabelColorMap: typeof VISIBILITY_LABEL_COLOR_MAP;
 }

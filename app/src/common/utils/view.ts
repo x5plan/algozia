@@ -1,6 +1,6 @@
 import serialize from "serialize-javascript";
 
-import { defaultIcon, suffixIconMap } from "../const/file-icon";
+import { DEFAULT_ICON, SUFFIX_ICON_MAP } from "../const/file-icon";
 import type { IRequest } from "../types/request";
 import type { IResponse } from "../types/response";
 
@@ -63,6 +63,6 @@ export class ViewUtils {
 
     public getFileIcon(filename: string) {
         const ext = filename.split(".").pop();
-        return suffixIconMap[`.${ext}`] || defaultIcon;
+        return SUFFIX_ICON_MAP[`.${ext}`] || DEFAULT_ICON;
     }
 }
