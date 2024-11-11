@@ -1,0 +1,11 @@
+{
+    "semantic-ui": "fomantic-ui/dist",
+    "jquery": "jquery/dist",
+    "socket.io": "socket.io-client/dist",
+    "katex": "katex/dist",
+    "prismjs": "prismjs",
+    "dompurify": "dompurify/dist",
+    "markdown-it": "markdown-it/dist",
+    "clipboard": "clipboard-polyfill/dist",
+    "markdown-it-math": "markdown-it-math-loose/dist"
+}

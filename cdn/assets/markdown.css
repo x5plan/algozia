@@ -1,0 +1,61 @@
+.markdown-content {
+    position: relative;
+    overflow: hidden;
+    transform: translate3d(0,0,0);
+}
+.markdown-content:not(.noOverflowCutFix) {
+    padding: 2px;
+    margin: -2px;
+}
+.markdown-content p, .markdown-content blockquote, .markdown-content mjx-container[display="true"] {
+    overflow: auto;
+    overflow-y: hidden;
+}
+.markdown-content blockquote {
+    color: #777;
+    padding: 0 0 0 1em;
+    border-left: 0.25em solid #dedede;
+    margin: 1em 0;
+}
+.markdown-content ul:first-child, .markdown-content ol:first-child, .markdown-content blockquote:first-child, .markdown-content mjx-container[display="true"]:first-child {
+    margin-top: 0 !important;
+}
+.markdown-content ul:last-child, .markdown-content ol:last-child, .markdown-content blockquote:last-child, .markdown-content mjx-container[display="true"]:last-child {
+    margin-bottom: 0 !important;
+}
+.markdown-content p > img:only-child {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+}
+.markdown-content ul, .markdown-content ol {
+    padding-left: 2em;
+}
+.markdown-content ul ul, .markdown-content ul ol, .markdown-content ol ul, .markdown-content ol ol {
+    padding-left: 1.5em;
+}
+.markdown-content :global(.contains-task-list), .markdown-content :global(.contains-task-list) ul, .markdown-content :global(.contains-task-list) ol {
+    padding-left: 21px;
+}
+.markdown-content :global(.contains-task-list) li {
+    margin-top: 6px;
+}
+.markdown-content :global(.contains-task-list) li:global(.task-list-item) {
+    list-style-type: none;
+    margin-left: -18.5px;
+}
+.markdown-content :global(.contains-task-list) li:not(:global(.task-list-item)) {
+    padding-left: 5.5px;
+}
+.markdown-content :global(.contains-task-list) .taskListCheckbox > label:first-of-type + div {
+    padding-left: 24px;
+}
+.markdown-content mjx-container {
+    font-size: 1.15em;
+}
+.markdown-content mjx-container :global(.copy) {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    font-size: 0;
+}

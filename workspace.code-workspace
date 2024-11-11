@@ -1,15 +1,21 @@
 {
     "folders": [
         {
-            "path": ".",
+            "path": "./app"
         },
+        {
+            "path": "./cdn"
+        },
+        {
+            "path": "./.github"
+        }
     ],
     "settings": {
         "git.ignoreLimitWarning": true,
+        "git.openRepositoryInParentFolders": "always",
         "typescript.suggest.autoImports": true,
         "files.eol": "\n",
         "files.insertFinalNewline": true,
-        "typescript.tsdk": "node_modules/typescript/lib",
         "importSorter.importStringConfiguration.maximumNumberOfImportExpressionsPerLine.count": 120,
         "importSorter.importStringConfiguration.quoteMark": "double",
         "importSorter.importStringConfiguration.trailingComma": "multiLine",
@@ -21,6 +27,7 @@
         "cSpell.words": [
             "algozia",
             "interactor",
+            "katex",
             "minio",
             "testcase",
             "testcases",
@@ -28,7 +35,6 @@
             "typeorm",
             "websockets",
         ],
-        "editor.detectIndentation": true,
     },
     "extensions": {
         "recommendations": [
