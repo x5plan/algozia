@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      TARGET_BRANCH: "release/cdn/beta"
+      TARGET_BRANCH: "releases/cdn/beta"
 
     steps:
       - name: Checkout
