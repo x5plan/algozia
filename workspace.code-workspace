@@ -6,6 +6,9 @@
         {
             "path": "./cdn"
         },
+        {
+            "path": "./.github"
+        }
     ],
     "settings": {
         "git.ignoreLimitWarning": true,
