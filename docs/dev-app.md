@@ -6,7 +6,9 @@
 
 ```sh
 cd app
-yarn
+nvm install # 安装 Node.js 仅第一次需要，之后跳过这一步。
+nvm use # 使用 .nvmrc 对应版本的 Node.js
+yarn install # 安装依赖
 ```
 
 ## 配置
