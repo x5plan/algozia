@@ -3,10 +3,14 @@ name: CDN CI
 on:
   push:
     branches: [main]
-    paths: ["cdn/**"]
+    paths:
+      - "cdn/**"
+      - ".github/workflows/cdn-ci.yml"
   pull_request:
     branches: [main]
-    paths: ["cdn/**"]
+    paths:
+      - "cdn/**"
+      - ".github/workflows/cdn-ci.yml"
 
 jobs:
   builds:

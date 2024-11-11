@@ -3,7 +3,9 @@ name: APP Beta Release
 on:
   push:
     branches: [main]
-    paths: ["app/**"]
+    paths:
+      - "app/**"
+      - ".github/workflows/app-beta-release.yml"
 
 jobs:
   auto-merge:
