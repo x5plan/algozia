@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Render Markdown Example</title>
+        <link rel="stylesheet" href="../dist/packages/prismjs/themes/prism-tomorrow.min.css" />
+        <link rel="stylesheet" href="../dist/fonts/fonts.min.css" />
+
+        <script src="../dist/packages/jquery/jquery.min.js"></script>
+        <script src="../dist/bundle/index.js"></script>
+
+        <script src="../dist/packages/prismjs/prism.js"></script>
+        <script src="../dist/packages/prismjs/plugins/autoloader/prism-autoloader.min.js"></script>
+
+        <script src="../dist/packages/dompurify/purify.min.js"></script>
+
+        <script src="../dist/bundle/highlight.js"></script>
+    </head>
+    <body>
+        <div id="py-root"></div>
+        <div id="cpp-root"></div>
+        <script>
+            $(() => {
+                const pycode = `print("Hello World!")`;
+                const cppcode = `std::cout << "Hello World!" << std::endl;`;
+
+                window.HighlightUtil.highlightCodeWithAutoLoadAsync(pycode, "py", document.getElementById("py-root"));
+                window.HighlightUtil.highlightCodeWithAutoLoadAsync(
+                    cppcode,
+                    "cpp",
+                    document.getElementById("cpp-root"),
+                );
+            });
+        </script>
+    </body>
+</html>

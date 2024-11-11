@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Render Markdown Example</title>
+        <link rel="stylesheet" href="../dist/packages/prismjs/themes/prism-tomorrow.min.css" />
+        <link rel="stylesheet" href="../dist/packages/katex/katex.min.css" />
+        <link rel="stylesheet" href="../dist/fonts/fonts.min.css" />
+        <link rel="stylesheet" href="../assets/markdown.css" />
+
+        <script src="../dist/packages/jquery/jquery.min.js"></script>
+        <script src="../dist/bundle/index.js"></script>
+
+        <script src="../dist/packages/prismjs/prism.js"></script>
+        <script src="../dist/packages/prismjs/plugins/autoloader/prism-autoloader.min.js"></script>
+
+        <script src="../dist/packages/dompurify/purify.min.js"></script>
+
+        <script src="../dist/packages/markdown-it/markdown-it.min.js"></script>
+        <script src="../dist/packages/markdown-it-math/markdown-it-math.min.js"></script>
+
+        <script defer src="../dist/packages/katex/katex.min.js" onload="onLatexLoad()"></script>
+
+        <script src="../dist/bundle/highlight.js"></script>
+        <script src="../dist/bundle/markdown.js"></script>
+    </head>
+    <body>
+        <div id="root"></div>
+        <script>
+            const [onLatexLoad] = window.MarkdownUtil.registerDepsOnLoad();
+
+            $(() => {
+                const mdstring = `
+# Hello World
+
+## This is a test
+### This is a test
+
+\`\`\`javascript
+console.log("Hello World");
+\`\`\`
+
+\`\`\`py
+print("Hello World")
+\`\`\`
+
+<a href="https://www.google.com">Google</a>
+<a href="javascript:alert('Hello World')">Click Me</a>
+
+\$\$ x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a} \$\$
+
+\$\$ x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a} \$\$
+
+test \$ x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a} \$ test
+
+<script>alert('Hello World')<\/script>
+
+> test
+> test
+>
+> test
+
+- test
+- test
+- test
+
+`;
+                window.MarkdownUtil.renderSanitizedMarkdownAsync(mdstring, document.getElementById("root"));
+            });
+        </script>
+    </body>
+</html>

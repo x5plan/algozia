@@ -1,0 +1,20 @@
+.compileAndRunOptions {
+    :global(.field) {
+        @margin: 7px;
+        display: inline-block;
+
+        &:nth-child(3n-2) {
+            margin-right: @margin;
+            width: calc(33.33% - @margin);
+        }
+
+        &:nth-child(3n-1) {
+            width: 33.33%;
+        }
+
+        &:nth-child(3n) {
+            margin-left: @margin;
+            width: calc(33.33% - @margin);
+        }
+    }
+}
