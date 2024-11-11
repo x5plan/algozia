@@ -3,14 +3,16 @@ name: APP Beta Release
 on:
   push:
     branches: [main]
-    paths: ["app/**"]
+    paths:
+      - "app/**"
+      - ".github/workflows/app-beta-release.yml"
 
 jobs:
   auto-merge:
     runs-on: ubuntu-latest
 
     env:
-      TARGET_BRANCH: "release/app/beta"
+      TARGET_BRANCH: "releases/app/beta"
 
     steps:
       - name: Checkout
