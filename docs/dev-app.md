@@ -156,7 +156,7 @@ cdnUrl: # 留空
 
 ## 以开发模式运行
 
-```
+```sh
 yarn start:dev
 ```
 
