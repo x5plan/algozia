@@ -30,6 +30,9 @@ export const enum CE_ExceptionString {
     File_NoSuchFile = "未找到文件",
     File_UUIDExists = "文件 UUID 已存在",
     File_InvalidToken = "无效的 Token",
+
+    // Submission
+    Submission_NoSuchSubmission = "提交记录不存在",
 }
 
 export const enum CE_JudgeInfoValidationMessage {
