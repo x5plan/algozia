@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./cdn
+        working-directory: "./cdn"
     steps:
       - name: Checkout
         uses: actions/checkout@v4.0.0
@@ -20,7 +20,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version-file: ".nvmrc"
+          node-version-file: "cdn/.nvmrc"
 
       - name: Install dependencies
         run: yarn install
