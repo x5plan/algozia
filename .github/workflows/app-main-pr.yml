@@ -1,4 +1,4 @@
-name: APP CI
+name: APP PR Validation
 
 on:
   pull_request:

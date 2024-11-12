@@ -1,4 +1,4 @@
-name: APP Beta Release
+name: CDN Build and Beta Release
 
 on:
   push:
