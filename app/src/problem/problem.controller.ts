@@ -49,7 +49,7 @@ import { ProblemBasicRequestParamDto } from "./dto/problem-shared.dto";
 import { ProblemSubmitPostRequestBodyDto } from "./dto/problem-submit.dto";
 import { ProblemEntity } from "./problem.entity";
 import { ProblemService } from "./problem.service";
-import { E_ProblemType } from "./problem.type";
+import { E_ProblemSortBy, E_ProblemType } from "./problem.type";
 import { ProblemJudgeInfoEntity } from "./problem-judge-info.entity";
 
 @Controller(CE_Page.Problem)
@@ -71,7 +71,7 @@ export class ProblemController {
         @Query() query: ProblemListGetRequestQueryDto,
         @CurrentUser() currentUser: UserEntity | null,
     ): Promise<ProblemListGetResponseDto> {
-        const { page = 1, sortBy = "displayId", order = CE_Order.Asc, keyword = "" } = query;
+        const { page = 1, sortBy = E_ProblemSortBy.DisplayId, order = CE_Order.Asc, keyword = "" } = query;
 
         if (!currentUser) {
             throw new LoginRequiredException(req.url);

@@ -22,7 +22,7 @@ import { UserEntity } from "@/user/user.entity";
 import { CE_ProblemEditResponseError, type ProblemEditPostRequestBodyDto } from "./dto/problem-edit.dto";
 import { ProblemEditJudgePostRequestBodyDto } from "./dto/problem-edit-judge.dto";
 import { ProblemEntity } from "./problem.entity";
-import { E_ProblemFileType, E_ProblemType } from "./problem.type";
+import { E_ProblemFileType, E_ProblemSortBy, E_ProblemType } from "./problem.type";
 import { ProblemFileEntity } from "./problem-file.entity";
 import { ProblemJudgeInfoEntity } from "./problem-judge-info.entity";
 
@@ -61,7 +61,7 @@ export class ProblemService {
 
     public async findProblemListAndCountAsync(
         page: number,
-        sortBy: "displayId",
+        sortBy: E_ProblemSortBy,
         order: CE_Order,
         keyword: string,
         user: UserEntity,
