@@ -39,9 +39,6 @@
             "typeorm",
             "websockets"
         ],
-        "[json]": {
-            "editor.defaultFormatter": "esbenp.prettier-vscode"
-        },
     },
     "extensions": {
         "recommendations": [
