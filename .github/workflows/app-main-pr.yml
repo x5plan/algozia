@@ -1,31 +1,26 @@
-name: APP CI
+name: APP PR Validation
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "app/**"
-      - ".github/workflows/app-ci.yml"
   pull_request:
     branches: [main]
     paths:
       - "app/**"
-      - ".github/workflows/app-ci.yml"
+      - ".github/workflows/app-main-pr.yml"
 
 jobs:
-  builds:
+  build:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./app
+        working-directory: "./app"
     steps:
       - name: Checkout
         uses: actions/checkout@v4.0.0
 
       - name: Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: "22.x"
+          node-version-file: "app/.nvmrc"
 
       - name: Install dependencies
         run: yarn install

@@ -9,26 +9,17 @@
   "semi": true,
   "overrides": [
     {
-      "files": [
-        "*.json",
-        "*.yaml",
-        "*.yml"
-      ],
+      "files": ["*.json", "*.yaml", "*.yml", ".prettierrc"],
       "options": {
         "tabWidth": 2
       }
     },
     {
-      "files": [
-        "*.html",
-        "*.pug"
-      ],
+      "files": ["*.html", "*.pug"],
       "options": {
         "tabWidth": 2
       }
     }
   ],
-  "plugins": [
-    "@prettier/plugin-pug"
-  ]
+  "plugins": ["@prettier/plugin-pug"]
 }

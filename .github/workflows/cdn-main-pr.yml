@@ -1,31 +1,26 @@
-name: CDN CI
+name: CDN PR Validation
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "cdn/**"
-      - ".github/workflows/cdn-ci.yml"
   pull_request:
     branches: [main]
     paths:
       - "cdn/**"
-      - ".github/workflows/cdn-ci.yml"
+      - ".github/workflows/cdn-main-pr.yml"
 
 jobs:
-  builds:
+  build:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./cdn
+        working-directory: "./cdn"
     steps:
       - name: Checkout
         uses: actions/checkout@v4.0.0
 
       - name: Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: "22.x"
+          node-version-file: "cdn/.nvmrc"
 
       - name: Install dependencies
         run: yarn install
