@@ -1,0 +1,21 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Nest.js",
+      "type": "node",
+      "request": "launch",
+      "runtimeVersion": "22",
+      "runtimeExecutable": "yarn",
+      "runtimeArgs": ["start:debug", "--inspect-brk"],
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "autoAttachChildProcesses": true,
+      "restart": true,
+      "sourceMaps": true,
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    }
+  ]
+}
