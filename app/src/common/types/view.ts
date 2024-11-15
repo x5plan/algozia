@@ -14,5 +14,6 @@ export type IViewGlobal<T extends object = object> = {
     currentUser: UserEntity | null;
     permissions: IGlobalViewPermissions;
     viewUtils: ViewUtils;
+    isProduction: boolean;
     __viteDev__?: string;
 } & T;

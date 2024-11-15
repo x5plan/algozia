@@ -3,23 +3,23 @@
 - let __markdownUtilLoaded = false;
 - let __highlightUtilLoaded = false;
 
-mixin import-package-script(file, min = true)
+mixin import-package-script(file, min = isProduction)
   if !__packagesSet.has(file)
     - __packagesSet.add(file);
     script(src=`${app.cdnUrl}packages/${file}${min ? ".min" : ""}.js`)
 
-mixin import-package-script-lazy(file, onLoadCallback, min = true)
+mixin import-package-script-lazy(file, onLoadCallback, min = isProduction)
   if !__packagesSet.has(file)
     - __packagesSet.add(file);
     script(src=`${app.cdnUrl}packages/${file}${min ? ".min" : ""}.js`, onload=`${onLoadCallback}()`, defer, async)
 
-mixin import-package-style(file, min= true)
+mixin import-package-style(file, min= isProduction)
   link(rel="stylesheet", href=`${app.cdnUrl}packages/${file}${min ? ".min" : ""}.css`)
 
-mixin import-bundle-script(file)
+mixin import-bundle-script(file, min = isProduction)
   if !__bundlesSet.has(file)
     - __bundlesSet.add(file);
-    script(src=`${app.cdnUrl}bundle/${file}.js`)
+    script(src=`${app.cdnUrl}bundle/${file}${min ? ".min" : ""}.js`)
 
 mixin import-validation(name)
   +import-bundle-script(`validations/${name}`)
