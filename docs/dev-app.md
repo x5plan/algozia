@@ -45,9 +45,6 @@ docker run --name mariadb -p 3306:3306 -e MARIADB_ROOT_PASSWORD=12345678 -d mari
   ```sh
   export MYSQL_CLI_HOMEBREW=$(brew --prefix mysql-client@8.4)
   export PATH="$MYSQL_CLI_HOMEBREW/bin:$PATH"
-  export LDFLAGS="-L$MYSQL_CLI_HOMEBREW/lib"
-  export CPPFLAGS="-I$MYSQL_CLI_HOMEBREW/include"
-  export PKG_CONFIG_PATH="$MYSQL_CLI_HOMEBREW/lib/pkgconfig"
   ```
 
   保存后执行
@@ -165,8 +162,8 @@ yarn start:dev
 进入数据库执行以下 SQL
 
 ```sql
-INSERT INTO `user` (`username`, `email`, `level`, `registration_time`) VALUES ('root', 'root@mail.test', '100', '2024-01-01 00:00:00')
-INSERT INTO `auth` (`user_id`, `password`, `legacy_password`) VALUES ('2', '', 'c0d4cb00c32ca7fa00f2ddba49f1b512')
+INSERT INTO `user` (`username`, `email`, `level`, `registration_time`) VALUES ('root', 'root@mail.test', 100, '2024-01-01 00:00:00')
+INSERT INTO `auth` (`user_id`, `password`, `legacy_password`) VALUES (LAST_INSERT_ID(), '', 'c0d4cb00c32ca7fa00f2ddba49f1b512')
 ```
 
 你创建了一个用户名 `root` 密码 `12345678` 的测试 Admin 用户。
@@ -184,7 +181,7 @@ INSERT INTO `auth` (`user_id`, `password`, `legacy_password`) VALUES ('2', '', '
 ```sh
 git checkout main # 无论如何请都先回到 main 上
 git pull # 请务必拉取最新的代码
-git checkout users/<一个全小写纯字母的名字>/<给你的新分支起个简短名字>
+git checkout -b users/<一个全小写纯字母的名字>/<给你的新分支起个简短名字>
 ```
 
 ### 添加/提交

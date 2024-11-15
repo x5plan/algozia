@@ -46,7 +46,7 @@
    [ -s "/usr/local/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/usr/local/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
    ```
 
-   请把上述内容从 `Add the following to your shell profile e.g. ~/.profile or ~/.zshrc:` 之后（不包含）的部分追加到文件 `~/.zprofile` 的开头。
+   请把上述内容从 `Add the following to your shell profile e.g. ~/.profile or ~/.zshrc:` 之后（不包含）的部分追加到文件 `~/.zprofile` 的末尾。
 
    如果你在上一步已经成功安装 Visual Studio Code 你可以使用命令 `code ~/.zprofile` 打开并编辑它。
 
