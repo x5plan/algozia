@@ -3,23 +3,23 @@
 - let __markdownUtilLoaded = false;
 - let __highlightUtilLoaded = false;
 
-mixin import-package-script(file, min = true)
+mixin import-package-script(file, min = isProduction)
   if !__packagesSet.has(file)
     - __packagesSet.add(file);
     script(src=`${app.cdnUrl}packages/${file}${min ? ".min" : ""}.js`)
 
-mixin import-package-script-lazy(file, onLoadCallback, min = true)
+mixin import-package-script-lazy(file, onLoadCallback, min = isProduction)
   if !__packagesSet.has(file)
     - __packagesSet.add(file);
     script(src=`${app.cdnUrl}packages/${file}${min ? ".min" : ""}.js`, onload=`${onLoadCallback}()`, defer, async)
 
-mixin import-package-style(file, min= true)
+mixin import-package-style(file, min= isProduction)
   link(rel="stylesheet", href=`${app.cdnUrl}packages/${file}${min ? ".min" : ""}.css`)
 
-mixin import-bundle-script(file)
+mixin import-bundle-script(file, min = isProduction)
   if !__bundlesSet.has(file)
     - __bundlesSet.add(file);
-    script(src=`${app.cdnUrl}bundle/${file}.js`)
+    script(src=`${app.cdnUrl}bundle/${file}${min ? ".min" : ""}.js`)
 
 mixin import-validation(name)
   +import-bundle-script(`validations/${name}`)
@@ -47,12 +47,12 @@ mixin import-markdown-scripts
     +import-highlight-scripts
     +import-bundle-script("markdown")
     script.
-      const [__onMarkdownItLoaded] = window.MarkdownUtil.registerDepsOnLoad();
-      const [__onMarkdownItMathLoaded] = window.MarkdownUtil.registerDepsOnLoad();
-      const [__onKatexLoaded] = window.MarkdownUtil.registerDepsOnLoad();
-    +import-package-script-lazy("markdown-it/markdown-it", "__onMarkdownItLoaded")
-    +import-package-script-lazy("markdown-it-math/markdown-it-math", "__onMarkdownItMathLoaded")
-    +import-package-script-lazy("katex/katex", "__onKatexLoaded")
+      const [__onMarkdownItLoad /* onLoad, onError */] = window.MarkdownUtil.registerDepsOnLoad();
+      const [__onMarkdownItMathLoad /* onLoad, onError */] = window.MarkdownUtil.registerDepsOnLoad();
+      const [__onKatexLoad /* onLoad, onError */] = window.MarkdownUtil.registerDepsOnLoad();
+    +import-package-script-lazy("markdown-it/markdown-it", "__onMarkdownItLoad")
+    +import-package-script-lazy("markdown-it-math/markdown-it-math", "__onMarkdownItMathLoad")
+    +import-package-script-lazy("katex/katex", "__onKatexLoad")
 
 mixin import-page-app(appName)
   script.

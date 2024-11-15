@@ -9,15 +9,15 @@ const validations = ["auth-login", "auth-register", "problem-edit-judge"];
  */
 export default [
     {
-        src: "common/index.js",
-        dist: "index.js",
+        src: "common/index",
+        dist: "index",
     },
     ...utils.map((util) => ({
-        src: `utils/${util}.js`,
-        dist: `${util}.js`,
+        src: `utils/${util}`,
+        dist: `${util}`,
     })),
     ...validations.map((validation) => ({
-        src: `validations/${validation}.js`,
-        dist: `validations/${validation}.js`,
+        src: `validations/${validation}`,
+        dist: `validations/${validation}`,
     })),
 ];

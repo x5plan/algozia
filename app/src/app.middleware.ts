@@ -43,6 +43,7 @@ export class AppMiddleware implements NestMiddleware {
             activePage: req.path.split("/")[1],
             currentUser: currentUser,
             permissions,
+            isProduction: isProduction(),
             viewUtils: new ViewUtils(req, res),
         };
 

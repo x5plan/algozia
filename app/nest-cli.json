@@ -7,10 +7,6 @@
   },
   "compilerOptions": {
     "deleteOutDir": true,
-    "assets": [
-      "**/*.lua",
-      "views/**/*.ejs",
-      "public/**/*"
-    ]
+    "assets": ["**/*.lua", "views/**/*.pug", "public/**/*"]
   }
 }
