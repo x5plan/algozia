@@ -3,7 +3,7 @@ import { CE_Prompt } from "./common/prompt";
 $(() => {
     $("#login-form").form({
         on: "submit",
-        keyboardShortcuts: true,
+        keyboardShortcuts: false,
         fields: {
             username: {
                 identifier: "username",
