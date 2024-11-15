@@ -1,59 +1,59 @@
 {
-    "folders": [
-        {
-            "path": "./app"
-        },
-        {
-            "path": "./cdn"
-        },
-        {
-            "path": "./docs"
-        },
-        {
-            "path": "./.github"
-        }
-    ],
-    "settings": {
-        "git.ignoreLimitWarning": true,
-        "git.openRepositoryInParentFolders": "always",
-        "typescript.suggest.autoImports": true,
-        "files.eol": "\n",
-        "files.insertFinalNewline": true,
-        "importSorter.importStringConfiguration.maximumNumberOfImportExpressionsPerLine.count": 120,
-        "importSorter.importStringConfiguration.quoteMark": "double",
-        "importSorter.importStringConfiguration.trailingComma": "multiLine",
-        "editor.codeActionsOnSave": {
-            "source.fixAll.eslint": "explicit",
-        },
-        "editor.formatOnSave": true,
-        "editor.defaultFormatter": "esbenp.prettier-vscode",
-        "cSpell.words": [
-            "algozia",
-            "interactor",
-            "katex",
-            "minio",
-            "ranklist",
-            "testcase",
-            "testcases",
-            "testdata",
-            "typeorm",
-            "websockets"
-        ],
-        "[json]": {
-            "editor.defaultFormatter": "esbenp.prettier-vscode"
-        },
+  "folders": [
+    {
+      "name": "Algozia",
+      "path": "app"
     },
-    "extensions": {
-        "recommendations": [
-            "dbaeumer.vscode-eslint",
-            "eamodio.gitlens",
-            "editorconfig.editorconfig",
-            "esbenp.prettier-vscode",
-            "github.vscode-github-actions",
-            "kuscamara.remove-unused-imports",
-            "mike-co.import-sorter",
-            "rvest.vs-code-prettier-eslint",
-            "streetsidesoftware.code-spell-checker",
-        ],
+    {
+      "name": "CDN",
+      "path": "cdn"
     },
+    {
+      "name": "Documentation",
+      "path": "docs"
+    },
+    {
+      "path": ".github"
+    }
+  ],
+  "settings": {
+    "git.ignoreLimitWarning": true,
+    "git.openRepositoryInParentFolders": "always",
+    "typescript.suggest.autoImports": true,
+    "files.eol": "\n",
+    "files.insertFinalNewline": true,
+    "importSorter.importStringConfiguration.maximumNumberOfImportExpressionsPerLine.count": 120,
+    "importSorter.importStringConfiguration.quoteMark": "double",
+    "importSorter.importStringConfiguration.trailingComma": "multiLine",
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    },
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "cSpell.words": [
+      "algozia",
+      "interactor",
+      "katex",
+      "minio",
+      "ranklist",
+      "testcase",
+      "testcases",
+      "testdata",
+      "typeorm",
+      "websockets"
+    ]
+  },
+  "extensions": {
+    "recommendations": [
+      "dbaeumer.vscode-eslint",
+      "eamodio.gitlens",
+      "editorconfig.editorconfig",
+      "esbenp.prettier-vscode",
+      "github.vscode-github-actions",
+      "kuscamara.remove-unused-imports",
+      "mike-co.import-sorter",
+      "rvest.vs-code-prettier-eslint",
+      "streetsidesoftware.code-spell-checker"
+    ]
+  }
 }
