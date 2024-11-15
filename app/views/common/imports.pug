@@ -47,12 +47,12 @@ mixin import-markdown-scripts
     +import-highlight-scripts
     +import-bundle-script("markdown")
     script.
-      const [__onMarkdownItLoaded] = window.MarkdownUtil.registerDepsOnLoad();
-      const [__onMarkdownItMathLoaded] = window.MarkdownUtil.registerDepsOnLoad();
-      const [__onKatexLoaded] = window.MarkdownUtil.registerDepsOnLoad();
-    +import-package-script-lazy("markdown-it/markdown-it", "__onMarkdownItLoaded")
-    +import-package-script-lazy("markdown-it-math/markdown-it-math", "__onMarkdownItMathLoaded")
-    +import-package-script-lazy("katex/katex", "__onKatexLoaded")
+      const [__onMarkdownItLoad /* onLoad, onError */] = window.MarkdownUtil.registerDepsOnLoad();
+      const [__onMarkdownItMathLoad /* onLoad, onError */] = window.MarkdownUtil.registerDepsOnLoad();
+      const [__onKatexLoad /* onLoad, onError */] = window.MarkdownUtil.registerDepsOnLoad();
+    +import-package-script-lazy("markdown-it/markdown-it", "__onMarkdownItLoad")
+    +import-package-script-lazy("markdown-it-math/markdown-it-math", "__onMarkdownItMathLoad")
+    +import-package-script-lazy("katex/katex", "__onKatexLoad")
 
 mixin import-page-app(appName)
   script.
