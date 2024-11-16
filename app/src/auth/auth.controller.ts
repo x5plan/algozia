@@ -36,7 +36,6 @@ export class AuthController {
     }
 
     @Post("login")
-    @Render("auth-login")
     public async postLoginAsync(
         @Req() req: IRequest,
         @Res() res: IResponse,

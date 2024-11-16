@@ -1,17 +1,16 @@
 import { Injectable, NestMiddleware } from "@nestjs/common";
 
 import { AuthSessionService } from "@/auth/auth-session.service";
+import { LOCAL_CDN_BASE } from "@/common/const/cdn";
+import { VITE_DEV_SERVER_URL } from "@/common/const/vite";
 import { IRequest } from "@/common/types/request";
 import { IResponse } from "@/common/types/response";
 import { IViewApp, IViewGlobal } from "@/common/types/view";
+import { isProduction } from "@/common/utils/env";
 import { ViewUtils } from "@/common/utils/view";
 import { ConfigService } from "@/config/config.service";
 import { PermissionService } from "@/permission/permission.service";
 import { UserEntity } from "@/user/user.entity";
-
-import { LOCAL_CDN_BASE } from "./common/const/cdn";
-import { VITE_DEV_SERVER_URL } from "./common/const/vite";
-import { isProduction } from "./common/utils/env";
 
 @Injectable()
 export class AppMiddleware implements NestMiddleware {
