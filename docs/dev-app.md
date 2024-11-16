@@ -162,8 +162,8 @@ yarn start:dev
 进入数据库执行以下 SQL
 
 ```sql
-INSERT INTO `user` (`username`, `email`, `level`, `registration_time`) VALUES ('root', 'root@mail.test', 100, '2024-01-01 00:00:00')
-INSERT INTO `auth` (`user_id`, `password`, `legacy_password`) VALUES (LAST_INSERT_ID(), '', 'c0d4cb00c32ca7fa00f2ddba49f1b512')
+INSERT INTO `user` (`username`, `email`, `level`, `registration_time`) VALUES ('root', 'root@mail.test', 100, '2024-01-01 00:00:00');
+INSERT INTO `auth` (`user_id`, `password`, `legacy_password`) VALUES (LAST_INSERT_ID(), '', 'c0d4cb00c32ca7fa00f2ddba49f1b512');
 ```
 
 你创建了一个用户名 `root` 密码 `12345678` 的测试 Admin 用户。
